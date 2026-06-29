@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// useRef is used to import functions from a child
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 // import {
@@ -27,7 +28,6 @@ import { useTranslation } from 'react-i18next';
 import {
   Accordion,
   Button,
-  Card,
   Translate
 } from '../components';
 import { useLocalStorage } from '../hooks/useLocalStorage';
@@ -41,6 +41,9 @@ const Settings = () => {
   // const passwordFormRef = useRef(null);
   const { t } = useTranslation();
   const [containerName] = useLocalStorage("containerName", '');
+  
+  // Create a reference holder for the child component
+  const serverInfosRef = useRef(null);
 
 // to handle data coming from the child form: <FormContainerAdd onInfosSubmit={handleInfosReceived} />
   const About = () => {
@@ -62,8 +65,8 @@ const Settings = () => {
 
   // https://icons.getbootstrap.com/
   const settingTabs = [
-    { id: 1, title: "settings.titleContainerAdd", icon: "house-add",      content: FormContainerAdd(),  },
-    { id: 2, title: "settings.titleServerInfos",  icon: "house-fill",     content: ServerInfos(), titleExtra: t('common.forWhat', {what:containerName}) },
+    { id: 1, title: "settings.titleContainerAdd", icon: "house-add",      content: <FormContainerAdd />,  },
+    { id: 2, title: "settings.titleServerInfos",  icon: "house-fill",     content: <ServerInfos ref={serverInfosRef} />, titleExtra: t('common.forWhat', {what:containerName}), onClickRefresh: () => serverInfosRef.current?.onClickRefresh(), },
     { id: 3, title: "settings.titleContainers",   icon: "houses-fill",    content: <></>, },
     { id: 4, title: "settings.aboutTitle",        icon: "question-circle",content: About(), },
   ];

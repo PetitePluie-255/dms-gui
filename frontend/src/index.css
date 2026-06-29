@@ -160,7 +160,7 @@ tr .MuiChip-root  {
 }
 /* -------------------- pages -------------------- */
 
-/* -------------------- Accordion and Cards -------------------- */
+/* -------------------- Accordion -------------------- */
 /* Custom Sticky Rules for React-Bootstrap Accordion Headers */
 .main-content .accordion-header {
   position: sticky;
@@ -170,8 +170,8 @@ tr .MuiChip-root  {
 
 /* Force Bootstrap's internal button style to inherit the layout cleanly */
 /* .main-content .accordion-button {
-  background-color: #e7f1ff;
-  --bs-accordion-active-bg: #e7f1ff; 
+  background-color: #cfe2ff;
+  --bs-accordion-active-bg: #cfe2ff; 
 } */
 
 /* Optional Polish: Keeps a tiny clean drop-shadow when the header is locked sticky */
@@ -201,6 +201,24 @@ tr .MuiChip-root  {
   display: flex;
   align-items: center;
 }
+
+/* separate refresh button trick: Set a standard baseline background when the tab is closed */
+.custom-accordion-header {
+  background-color: var(--bs-accordion-bg);
+}
+
+/* separate refresh button trick: Automatically grab the active tint background when the sibling button expands! */
+.custom-accordion-header:has(.accordion-button:not(.collapsed)) {
+  /* Maps to that solid opaque light blue layer we calculated (#e7f1ff) */
+  background-color: #cfe2ff !important; 
+}
+
+/* separate refresh button trick: Optional: Align the flex block to fill the entire header height so the color is seamless */
+.custom-accordion-header .accordion-header-actions-wrapper {
+  background-color: transparent;
+  align-self: stretch;
+}
+
 
 /* -------------------- Accordion -------------------- */
 

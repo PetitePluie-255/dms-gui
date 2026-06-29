@@ -598,7 +598,7 @@ function FormContainerAdd() {
   // https://www.w3schools.com/react/react_useeffect.asp
   useEffect(() => {
     fetchAll();
-    if (firstRun) triggerToast({
+    if (firstRun && !containerName) triggerToast({
       type: 'success',
       message: 'settings.isFirstRun',
       delay: 0

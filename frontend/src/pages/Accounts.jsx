@@ -641,92 +641,112 @@ const Accounts = () => {
 
 
   const FormNewAccount = (
-          <form onSubmit={handleSubmitNewAccount} className="form-wrapper">
-            <div>
-              <FormField
-                type="email"
-                id="mailbox"
-                name="mailbox"
-                label="accounts.mailbox"
-                value={newAccountformData.mailbox}
-                onChange={handleNewAccountInputChange}
-                maxLength={254}
-                groupClass="mb-0" // Removed margin so the badge sits cleanly right under the input field
-                placeholder="user@domain.com"
-                error={newAccountFormErrors.mailbox}
-                required
-              />
-              
-              {/* The Live Character Counter Badge */}
-              <div className="text-end small mb-2" style={{ marginTop: "-2px" }}>
-                <span className={newAccountformData.mailbox?.length >= 200 ? "text-danger fw-bold" : "text-muted"}>
-                  {newAccountformData.mailbox?.length || 0}/254
-                </span>
-              </div>
-            </div>
+    <>
+      <form onSubmit={handleSubmitNewAccount} className="form-wrapper">
+        <div>
+          <FormField
+            type="email"
+            id="mailbox"
+            name="mailbox"
+            label="accounts.mailbox"
+            value={newAccountformData.mailbox}
+            onChange={handleNewAccountInputChange}
+            maxLength={254}
+            groupClass="mb-0" // Removed margin so the badge sits cleanly right under the input field
+            placeholder="user@domain.com"
+            error={newAccountFormErrors.mailbox}
+            required
+          />
+          
+          {/* The Live Character Counter Badge */}
+          <div className="text-end small mb-2" style={{ marginTop: "-2px" }}>
+            <span className={newAccountformData.mailbox?.length >= 200 ? "text-danger fw-bold" : "text-muted"}>
+              {newAccountformData.mailbox?.length || 0}/254
+            </span>
+          </div>
+        </div>
 
-            <FormField
-              type="password"
-              id="password"
-              name="password"
-              label="password.password"
-              value={newAccountformData.password}
-              onChange={handleNewAccountInputChange}
-              error={newAccountFormErrors.password}
-              required
-            />
+        <FormField
+          type="password"
+          id="password"
+          name="password"
+          label="password.password"
+          value={newAccountformData.password}
+          onChange={handleNewAccountInputChange}
+          error={newAccountFormErrors.password}
+          required
+        />
 
-            <FormField
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              label="password.confirmPassword"
-              value={newAccountformData.confirmPassword}
-              onChange={handleNewAccountInputChange}
-              error={newAccountFormErrors.confirmPassword}
-              required
-            />
+        <FormField
+          type="password"
+          id="confirmPassword"
+          name="confirmPassword"
+          label="password.confirmPassword"
+          value={newAccountformData.confirmPassword}
+          onChange={handleNewAccountInputChange}
+          error={newAccountFormErrors.confirmPassword}
+          required
+        />
 
-            <FormField
-              type="checkbox"
-              id="createLogin"
-              name="createLogin"
-              label="accounts.createLogin"
-              value={newAccountformData.createLogin}
-              onChange={handleNewAccountInputChange}
-              error={newAccountFormErrors.createLogin}
-              isChecked={newAccountformData.createLogin}
-            />
+        <FormField
+          type="checkbox"
+          id="createLogin"
+          name="createLogin"
+          label="accounts.createLogin"
+          value={newAccountformData.createLogin}
+          onChange={handleNewAccountInputChange}
+          error={newAccountFormErrors.createLogin}
+          isChecked={newAccountformData.createLogin}
+        />
 
-            <Button
-              type="submit"
-              variant="primary"
-              text="accounts.addAccount"
-            />
-          </form>
+        <Button
+          type="submit"
+          variant="primary"
+          text="accounts.addAccount"
+        />
+      </form>
+    </>
   );
   
   const DataTableAccounts = (
-            <DataTable
-            columns={columns}
-            data={accounts}
-            keyExtractor={(account) => account.mailbox}
-            isLoading={isLoading}
-            emptyMessage="accounts.noAccounts"
-            sortKeysInObject={sortKeysInObject}
-            />
+    <>
+      <DataTable
+      columns={columns}
+      data={accounts}
+      keyExtractor={(account) => account.mailbox}
+      isLoading={isLoading}
+      emptyMessage="accounts.noAccounts"
+      sortKeysInObject={sortKeysInObject}
+      />
+    </>
   );
   
+  // ░██████████           ░██                   
+  //   ░██               ░██                   
+  //   ░██     ░██████   ░████████   ░███████  
+  //   ░██          ░██  ░██    ░██ ░██        
+  //   ░██     ░███████  ░██    ░██  ░███████  
+  //   ░██    ░██   ░██  ░███   ░██        ░██ 
+  //   ░██     ░█████░██ ░██░█████   ░███████  
+
   const accountTabs = [
-    { id: 1, 
+    {
+      id: 1, 
       title: "accounts.existingAccounts",  
       titleExtra: `(${accounts.length})`, 
       icon: "inboxes-fill", 
       onClickRefresh: () => fetchAccounts(true), 
       titleRefresh: t('common.forceResync'), 
-      content: DataTableAccounts },
+      content: DataTableAccounts
+    },
   ];
-  if (user.isAdmin) accountTabs.push({ id: 2, title: "accounts.newAccount",        icon: "inbox", content: FormNewAccount });
+  if (user.isAdmin) accountTabs.push({
+    id: 2, 
+    title: "accounts.newAccount",
+    icon: "inbox",
+    content: FormNewAccount
+  });
+
 
   // BUG: passing defaultActiveKey to Accordion as string does not activate said key, while setting it up as "1" in Accordion also does not
   // icons: https://icons.getbootstrap.com/

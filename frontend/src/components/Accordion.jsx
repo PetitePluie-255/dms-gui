@@ -54,19 +54,20 @@ const Accordion = ({
     <RBAccordion className={className} defaultActiveKey={defaultActiveKey} {...rest}>
       {tabs.map(tab => (
         <RBAccordion.Item key={tab.id} eventKey={tab.id}>
-          <RBAccordion.Header>
-            {/* 1. Wrap the title text elements in a growing flex child block */}
-            <div className="d-flex align-items-center flex-grow-1 min-w-0">
+          {/* 1. Use a standard HTML h2 tag with Bootstrap's native header class instead of RBAccordion.Header because it will create a Button otherwise*/}
+          <h2 className="accordion-header d-flex align-items-center justify-content-between custom-accordion-header">
+            {/* 2. Wrap the text in the actual Accordion toggle button so it remains clickable */}
+            <RBAccordion.Button className="flex-grow-1 min-w-0 d-flex align-items-center">
               {(tab.icon) && <i className={`me-2 bi bi-${tab.icon}`}></i>} 
               <span className="text-truncate">
                 {Translate(tab.title, translate)} {Translate(tab.titleExtra, translate)}
               </span>
-            </div>
+            </RBAccordion.Button>
 
-            {/* 2. Inject the refresh button securely on the right side of the header wrapper */}
+            {/* 2. Inject the refresh button securely next to the RBAccordion.Button, not inside of it; display on the right side of the header wrapper */}
             {('onClickRefresh' in tab && typeof tab.onClickRefresh === "function") && (
               <div 
-                className="accordion-header-actions-wrapper"
+                className="accordion-header-actions-wrapper pe-3"
                 onClick={(e) => {
                   e.stopPropagation(); // STOPS the click from bubbling up to the header toggle action
                   e.preventDefault();  // PREVENTS the panel from collapsing
@@ -85,7 +86,7 @@ const Accordion = ({
                 />
               </div>
             )}
-          </RBAccordion.Header>
+          </h2>
           <RBAccordion.Body className={bodyClassName}>
             {tab.content}
           </RBAccordion.Body>
@@ -109,26 +110,39 @@ export default Accordion;
 //     <RBAccordion className={className} defaultActiveKey={defaultActiveKey} {...rest}>
 //       {tabs.map(tab => (
 //         <RBAccordion.Item key={tab.id} eventKey={tab.id}>
-//           <RBAccordion.Header>
-//             {(tab.icon) && <i className={`me-2 bi bi-${tab.icon}`}></i>} {Translate(tab.title, translate)} {Translate(tab.titleExtra, translate)}
-//           </RBAccordion.Header>
-//           <RBAccordion.Body className={bodyClassName}>
-//             { // the refresh button is activated per tab when onClickRefresh is passed
-//               ('onClickRefresh' in tab && typeof tab.onClickRefresh == "function") && (
-//               <div className="float-end position-sticky z-1">
+//           <RBAccordion.Header >
+//             {/* 1. Wrap the title text elements in a growing flex child block */}
+//             <div className="d-flex align-items-center flex-grow-1 min-w-0">
+//               {(tab.icon) && <i className={`me-2 bi bi-${tab.icon}`}></i>} 
+//               <span className="text-truncate">
+//                 {Translate(tab.title, translate)} {Translate(tab.titleExtra, translate)}
+//               </span>
+//             </div>
+
+//             {/* 2. Inject the refresh button securely on the right side of the header wrapper */}
+//             {('onClickRefresh' in tab && typeof tab.onClickRefresh === "function") && (
+//               <div 
+//                 className="accordion-header-actions-wrapper"
+//                 onClick={(e) => {
+//                   e.stopPropagation(); // STOPS the click from bubbling up to the header toggle action
+//                   e.preventDefault();  // PREVENTS the panel from collapsing
+//                 }}
+//               >
 //                 <Button
 //                   variant="warning"
 //                   size="sm"
 //                   icon="arrow-repeat"
 //                   title={(overrideTitleRefresh) ? titleRefresh : t('common.refresh')}
 //                   onClick={(e) => {
-//                     e.stopPropagation(); // 👈 Stops the click from bubbling up to the card
-//                     e.preventDefault();  // 👈 Prevents the card link from opening
-//                     tab.onClickRefresh(e);   // 👈 Calls your actual refresh function
+//                     e.stopPropagation(); // Safety backup stop
+//                     e.preventDefault();  // Safety backup prevent
+//                     tab.onClickRefresh(e);   
 //                   }}
 //                 />
 //               </div>
 //             )}
+//           </RBAccordion.Header>
+//           <RBAccordion.Body className={bodyClassName}>
 //             {tab.content}
 //           </RBAccordion.Body>
 //         </RBAccordion.Item>

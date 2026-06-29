@@ -187,7 +187,7 @@
     "loginsUpdated": "admin credentials saved!",
     "cannotSaveSettings": "Unable to save settings. Please try again.",
     "cannotSaveLogins": "Unable to save logins. Please try again.",
-    "isFirstRun": "WELCOME TO <a href=\"https://github.com/audioscavenger/dms-gui\">dms-gui</a>!<br />Please fill in the required fields: mailserver containerName, DMS_API_KEY, inject and test!",
+    "isFirstRun": "WELCOME TO <a href=\"https://github.com/audioscavenger/dms-gui\">dms-gui</a>!<br />Please fill in the required fields:<br />◽ mailserver<br />◽ containerName<br />◽ DMS_API_KEY<br /><br />Finally: Inject, Test and Save!",
     "DMSHelp": "Select the current mailserver container to handle",
     "DMS_API_KEY": "DMS API KEY",
     "DMS_API_KEYgen": "Generate new DMS_API_KEY",

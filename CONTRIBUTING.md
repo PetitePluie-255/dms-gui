@@ -171,12 +171,14 @@ docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/
 * [ ] 1.5.99 - index: we should remove updateDB from PATCH/logins and PATCH/accounts and create updateLogin and updateAccount modules
 * [ ] 1.5.99 - saveServerEnvs and changePassword do not use scope and schema anymore, why?
 
-* [ ] 1.5.78 - ServerInfos: use Toasts
-* [ ] 1.5.78 - Logins: use Toasts
-* [ ] 1.5.78 - Aliases: use Toasts
-* [ ] 1.5.78 - Accounts: use Toasts
-* [ ] 1.5.78 - bugfix: Toast: I wanted a lighter color but made them transparent
-* [ ] 1.5.78 - bugfix: isFirstRun welcome message is shown even when dms is set
+* [ ] 1.5.79 - ServerInfos: use Toasts
+* [ ] 1.5.79 - Logins: use Toasts
+* [ ] 1.5.79 - Aliases: use Toasts
+* [ ] 1.5.79 - Accounts: use Toasts
+* [ ] 1.5.79 - bugfix: Toast: I wanted a lighter color but made them transparent
+* [x] 1.5.78 - bugfix: isFirstRun welcome message is shown even when dms is set; fixed
+* [x] 1.5.78 - Accordion: refresh button being separated from the header, it needs the same background when active
+* [x] 1.5.78 - Settings: refresh button is     in the Accordion header because ServerInfos exports it
 * [-] 1.5.77 - Settings: refresh button is not in the Accordion header because it loads each page independently; unfixable
 * [x] 1.5.77 - Settings: About is part of the Accordion
 * [x] 1.5.77 - bugfix: body margin-bottom: 8px !important; - caused by bitwarden, not sure how or why, intermitent

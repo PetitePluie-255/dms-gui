@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// forwardRef, useImperativeHandle is used to export functions to the parent
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -42,7 +43,9 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useAuth } from '../hooks/useAuth';
 
 
-const ServerInfos = () => {
+// EXPORTED FUNCTIONS OPTION 1: Name the inner function "ServerInfos"
+const ServerInfos = forwardRef(function ServerInfos(props, ref) {
+// const ServerInfos = forwardRef((props, ref) => {
   const { t } = useTranslation();
   const [containerName] = useLocalStorage("containerName", '');
   const [mailservers] = useLocalStorage("mailservers", []);
@@ -67,6 +70,11 @@ const ServerInfos = () => {
     setLoading(false);
 
   };
+
+  // Expose the function to the parent ref
+  useImperativeHandle(ref, () => ({
+    onClickRefresh: () => fetchAll(true)
+  }));
 
   const fetchServerInfos = async () => {
     debugLog(`fetchServerInfos call getNodeInfos()`);
@@ -148,16 +156,6 @@ const ServerInfos = () => {
       <AlertMessage type="danger" message={errorMessage} />
       <AlertMessage type="success" message={successMessage} />
       
-      <div className="refresh-floater float-end">
-        <Button
-          variant="warning"
-          size="sm"
-          icon="arrow-repeat"
-          title={t('common.refresh')}
-          onClick={() => fetchAll(true)}
-        />
-      </div>
-
       {t('settings.serverInternalsDescription')}
       {!infos && t('api.errors.fetchServerInfos') ||
       <DataTable
@@ -182,6 +180,20 @@ const ServerInfos = () => {
       
     </>
   );
-}
+});
 
+// EXPORTED FUNCTION OPTION 2: satisfy ESLint and make debugging easier
+// ServerInfos.displayName = 'ServerInfos';
 export default ServerInfos;
+
+      // no need for that anymore
+      // <div className="refresh-floater float-end">
+      //   <Button
+      //     variant="warning"
+      //     size="sm"
+      //     icon="arrow-repeat"
+      //     title={t('common.refresh')}
+      //     onClick={() => fetchAll(true)}
+      //   />
+      // </div>
+

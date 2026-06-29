@@ -973,6 +973,7 @@ const Logins = () => {
 //                                                                                                                 ░███████                
 
   const FormNewLogin = (
+    <>
     <Form onSubmit={handleSubmitNewLogin} className="form-wrapper">
       <FormField
         type="checkbox"
@@ -1167,9 +1168,11 @@ const Logins = () => {
         disabled={submitDisabled}
       />
     </Form>
+    </>
   );
   
   const DataTableLogins = (
+    <>
           <DataTable
           columns={columns}
           data={logins}
@@ -1177,6 +1180,7 @@ const Logins = () => {
           isLoading={isLoading}
           emptyMessage="logins.noLogins"
           />
+    </>
   );
   
 
@@ -1196,7 +1200,7 @@ const Logins = () => {
       titleExtra: `(${logins.length})`, 
       icon: "person-lines-fill", 
       onClickRefresh: () => fetchAll(), 
-      content: DataTableLogins 
+      content: DataTableLogins
     },
     { id: 2, 
       title: "logins.newLogin",
@@ -1208,7 +1212,7 @@ const Logins = () => {
   // BUG: passing defaultActiveKey to Accordion as string does not activate said key, while setting it up as "1" in Accordion also does not
   // icons: https://icons.getbootstrap.com/
   return (
-    <div>
+    <>
       <h2 className="mb-4">{Translate('logins.title')}</h2>
       
       <AlertMessage type="danger" message={errorMessage} />
@@ -1306,7 +1310,7 @@ const Logins = () => {
         </Modal.Footer>
       </Modal>
 
-    </div>
+    </>
   );
 };
 
