@@ -72,12 +72,12 @@ const LeftSidebar = () => {
       <div className="leftsidebar-collapse-footer">
         <Button
           id="leftsidebar-collapse-btn"
-          variant="secondary w-100"
+          variant="secondary"
           size="lg"
           icon={(isSidebarCollapsed) ? "chevron-bar-right" : "chevron-bar-left"}
           title={"common.collapse"}
           onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
-          className="leftsidebar-collapse-btn"
+          className="leftsidebar-collapse-btn rounded-0"
         />
       </div>
 

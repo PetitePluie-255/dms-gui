@@ -176,7 +176,7 @@ docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/
 * [ ] 1.5.78 - Aliases: use Toasts
 * [ ] 1.5.78 - Accounts: use Toasts
 * [ ] 1.5.77 - frontend: Accordion headers should stick on top when scrolling
-* [ ] 1.5.76 - frontend: LeftSidebar collapse button should use full width
+* [x] 1.5.76 - frontend: LeftSidebar collapse button uses full width
 * [x] 1.5.75 - frontend: refactor LeftSidebar to be collapsible and extend main container
 * [x] 1.5.74 - bugfix: Translate won't display <undefined> when no key is passed
 * [x] 1.5.74 - bugfix: none of the Accordion titles resolve their {{values}}
