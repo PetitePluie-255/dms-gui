@@ -231,7 +231,7 @@ function FormContainerAdd() {
             // if (showMessages) setSuccessMessage(t('dashboard.status.alive'));
             triggerToast({
               type: 'success',
-              message: t('dashboard.status.alive'),
+              message: t('dashboard.status.alive', {containerName:container}),
             });
             setPingResult(true);
           }

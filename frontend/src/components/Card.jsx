@@ -57,7 +57,7 @@ const Card = ({
     <>
     <RBCard className={className} {...rest}>
       {(title || headerContent) && (
-        <RBCard.Header>
+        <RBCard.Header className="bg-light bg-opacity-100">
           {title && (
             <RBCard.Title as="h5" className="mb-0 d-flex align-items-center w-100">
               

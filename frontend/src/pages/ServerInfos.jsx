@@ -148,13 +148,12 @@ const ServerInfos = () => {
       <AlertMessage type="danger" message={errorMessage} />
       <AlertMessage type="success" message={successMessage} />
       
-      <div className="float-end">
+      <div className="refresh-floater float-end">
         <Button
           variant="warning"
           size="sm"
           icon="arrow-repeat"
           title={t('common.refresh')}
-          className="me-2"
           onClick={() => fetchAll(true)}
         />
       </div>

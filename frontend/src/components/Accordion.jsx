@@ -55,26 +55,38 @@ const Accordion = ({
       {tabs.map(tab => (
         <RBAccordion.Item key={tab.id} eventKey={tab.id}>
           <RBAccordion.Header>
-            {(tab.icon) && <i className={`me-2 bi bi-${tab.icon}`}></i>} {Translate(tab.title, translate)} {Translate(tab.titleExtra, translate)}
-          </RBAccordion.Header>
-          <RBAccordion.Body className={bodyClassName}>
-            { // the refresh button is activated per tab when onClickRefresh is passed
-              ('onClickRefresh' in tab && typeof tab.onClickRefresh == "function") && (
-              <div className="float-end position-sticky z-1">
+            {/* 1. Wrap the title text elements in a growing flex child block */}
+            <div className="d-flex align-items-center flex-grow-1 min-w-0">
+              {(tab.icon) && <i className={`me-2 bi bi-${tab.icon}`}></i>} 
+              <span className="text-truncate">
+                {Translate(tab.title, translate)} {Translate(tab.titleExtra, translate)}
+              </span>
+            </div>
+
+            {/* 2. Inject the refresh button securely on the right side of the header wrapper */}
+            {('onClickRefresh' in tab && typeof tab.onClickRefresh === "function") && (
+              <div 
+                className="accordion-header-actions-wrapper"
+                onClick={(e) => {
+                  e.stopPropagation(); // STOPS the click from bubbling up to the header toggle action
+                  e.preventDefault();  // PREVENTS the panel from collapsing
+                }}
+              >
                 <Button
                   variant="warning"
                   size="sm"
                   icon="arrow-repeat"
                   title={(overrideTitleRefresh) ? titleRefresh : t('common.refresh')}
-                  className="me-2"
                   onClick={(e) => {
-                    e.stopPropagation(); // 👈 Stops the click from bubbling up to the card
-                    e.preventDefault();  // 👈 Prevents the card link from opening
-                    tab.onClickRefresh(e);   // 👈 Calls your actual refresh function
+                    e.stopPropagation(); // Safety backup stop
+                    e.preventDefault();  // Safety backup prevent
+                    tab.onClickRefresh(e);   
                   }}
                 />
               </div>
             )}
+          </RBAccordion.Header>
+          <RBAccordion.Body className={bodyClassName}>
             {tab.content}
           </RBAccordion.Body>
         </RBAccordion.Item>
@@ -91,3 +103,37 @@ Accordion.Body = RBAccordion.Body;
 // Add others as needed
 
 export default Accordion;
+
+//   return (
+//     <>
+//     <RBAccordion className={className} defaultActiveKey={defaultActiveKey} {...rest}>
+//       {tabs.map(tab => (
+//         <RBAccordion.Item key={tab.id} eventKey={tab.id}>
+//           <RBAccordion.Header>
+//             {(tab.icon) && <i className={`me-2 bi bi-${tab.icon}`}></i>} {Translate(tab.title, translate)} {Translate(tab.titleExtra, translate)}
+//           </RBAccordion.Header>
+//           <RBAccordion.Body className={bodyClassName}>
+//             { // the refresh button is activated per tab when onClickRefresh is passed
+//               ('onClickRefresh' in tab && typeof tab.onClickRefresh == "function") && (
+//               <div className="float-end position-sticky z-1">
+//                 <Button
+//                   variant="warning"
+//                   size="sm"
+//                   icon="arrow-repeat"
+//                   title={(overrideTitleRefresh) ? titleRefresh : t('common.refresh')}
+//                   onClick={(e) => {
+//                     e.stopPropagation(); // 👈 Stops the click from bubbling up to the card
+//                     e.preventDefault();  // 👈 Prevents the card link from opening
+//                     tab.onClickRefresh(e);   // 👈 Calls your actual refresh function
+//                   }}
+//                 />
+//               </div>
+//             )}
+//             {tab.content}
+//           </RBAccordion.Body>
+//         </RBAccordion.Item>
+//       ))}
+//     </RBAccordion>
+//     </>
+//   );
+// };

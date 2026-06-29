@@ -31,7 +31,6 @@ tr .MuiChip-root  {
 }
 
 /* -------------------- leftsidebar -------------------- */
-/* -------------------- leftsidebar -------------------- */
 .app-viewport-wrapper {
   display: flex;
   flex-direction: column;
@@ -107,10 +106,10 @@ tr .MuiChip-root  {
 }
 
 .leftsidebar-collapse-footer {
-  padding: 15px;
   margin-top: auto;
   display: flex;
   justify-content: center; /* Centers the button neatly */
+  width: 100%;
 }
 
 .leftsidebar-collapse-btn {
@@ -128,6 +127,7 @@ tr .MuiChip-root  {
 
 /* -------------------- leftsidebar -------------------- */
 
+/* -------------------- pages -------------------- */
 .main-content {
   padding: 20px;
 }
@@ -158,6 +158,63 @@ tr .MuiChip-root  {
   top: 1rem;
   right: 1rem;
 }
+/* -------------------- pages -------------------- */
+
+/* -------------------- Accordion and Cards -------------------- */
+/* Custom Sticky Rules for React-Bootstrap Accordion Headers */
+.main-content .accordion-header {
+  position: sticky;
+  top: -20px;          /* Matches your .main-content padding (20px) perfectly to line up flush */
+  z-index: 10;         /* Keeps headers floating safely above the scrolling body text underneath */
+}
+
+/* Force Bootstrap's internal button style to inherit the layout cleanly */
+/* .main-content .accordion-button {
+  background-color: #e7f1ff;
+  --bs-accordion-active-bg: #e7f1ff; 
+} */
+
+/* Optional Polish: Keeps a tiny clean drop-shadow when the header is locked sticky */
+.main-content .accordion-item {
+  position: relative;
+}
+
+/* Custom utility alignments for Accordion Headers */
+.main-content .accordion-button {
+  display: flex !important;
+  align-items: center;
+  width: 100%;
+}
+
+/* Forces Bootstrap's default chevron arrow icon to have a right margin buffer */
+.main-content .accordion-button::after {
+  margin-left: 15px !important;
+  flex-shrink: 0;
+}
+
+/* Action wrapper element that sits on top of the native button layer surface */
+.accordion-header-actions-wrapper {
+  position: relative;
+  z-index: 9;                /* Ensures the button stays perfectly clickable */
+  margin-left: auto;         /* Dynamically pushes the button to the far right side */
+  padding-right: 5px;        /* Spacing buffer between the button and the chevron arrow */
+  display: flex;
+  align-items: center;
+}
+
+/* -------------------- Accordion -------------------- */
+
+/* -------------------- Card -------------------- */
+.main-content .card-body {
+  position: relative;
+}
+
+.main-content .card-header {
+  position: sticky;
+  top: -20px;          /* Matches your .main-content padding (20px) perfectly to line up flush */
+  z-index: 5;          /* Keeps headers floating safely above the scrolling body text underneath */
+}
+/* -------------------- Card -------------------- */
 
 /* -------------------- DataTable -------------------- */
 /* --- Highlight animation --- */
@@ -211,6 +268,12 @@ button:disabled:not(.btn-feedback),
 .btn:disabled:not(.btn-feedback),
 .btn.disabled:not(.btn-feedback) {
   opacity: 0.25 !important;
+}
+
+/* make it sticky */
+.refresh-floater {
+  top: 50px;
+  position: sticky;
 }
 /* -------------------- misc -------------------- */
 

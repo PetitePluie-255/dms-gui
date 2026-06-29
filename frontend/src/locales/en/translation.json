@@ -32,7 +32,7 @@
       "port_timout": "API port timeout",
       "port_unknown": "API port error",
       "loading": "Loading...",
-      "alive": "Server is alive",
+      "alive": "Container {{containerName}} is alive",
       "missing": "Name or DNS error",
       "running": "Running",
       "stopped": "Stopped",

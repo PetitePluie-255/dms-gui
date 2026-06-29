@@ -42,41 +42,32 @@ const Settings = () => {
   const { t } = useTranslation();
   const [containerName] = useLocalStorage("containerName", '');
 
-  // this is how to handle data coming from a child form
-  /*
-  const [receivedInfos, setReceivedServerInfos] = useState({});   // receivedInfos is then used in a DataTable in this page
-  const handleInfosReceived = (infos) => {
-    try {
-      setLoading(true);
-      
-      debugLog('handleInfosReceived infos=', infos);
-      debugLog('handleInfosReceived infos.internals=', infos.internals);
-      debugLog('handleInfosReceived infos.env=', infos.env);
-      
-      // first we reformat the environment object into an array of objects
-      infos['envTable'] = obj2ArrayOfObj(infos.env);
-      setReceivedServerInfos(infos);
-      setErrorMessage(null);
-      
-      debugLog('handleInfosReceived infos.envTable=', infos.envTable);
-      
-    } catch (error) {
-      errorLog(t('api.errors.fetchServerInfos'), error);
-      setErrorMessage('api.errors.fetchServerInfos');
-    } finally {
-      setLoading(false);
-    }
+// to handle data coming from the child form: <FormContainerAdd onInfosSubmit={handleInfosReceived} />
+  const About = () => {
+    return (
+      <>
+      {Translate('settings.aboutDescription')}
+      <br />
+      <Button
+        variant="outline-primary"
+        icon="github"
+        text="settings.githubLink"
+        href={t('common.DMS_GUIurl')}
+        target="_blank"
+        rel="noopener noreferrer"
+      />
+      </>
+    );
   };
-  */
 
   // https://icons.getbootstrap.com/
   const settingTabs = [
-    { id: 1, title: "settings.titleContainerAdd", icon: "house-add",  content: FormContainerAdd(),  },
-    { id: 2, title: "settings.titleServerInfos",  icon: "house-fill", content: ServerInfos(),       titleExtra:t('common.forWhat', {what:containerName}) },
-    { id: 3, title: "settings.titleContainers",   icon: "houses-fill",content: <></>,                  },
+    { id: 1, title: "settings.titleContainerAdd", icon: "house-add",      content: FormContainerAdd(),  },
+    { id: 2, title: "settings.titleServerInfos",  icon: "house-fill",     content: ServerInfos(), titleExtra: t('common.forWhat', {what:containerName}) },
+    { id: 3, title: "settings.titleContainers",   icon: "houses-fill",    content: <></>, },
+    { id: 4, title: "settings.aboutTitle",        icon: "question-circle",content: About(), },
   ];
 
-  // to handle data coming from the child form: <FormContainerAdd onInfosSubmit={handleInfosReceived} />
   return (
     <>
       <h2 className="mb-4">{Translate('settings.title')}</h2>
@@ -84,29 +75,32 @@ const Settings = () => {
       <Accordion tabs={settingTabs}>
       </Accordion>
 
-      <Card 
-        title="settings.aboutTitle"
-        icon="question-circle"
-        >
-        <Card.Text>
-          {' '}
-          {Translate('settings.aboutDescription')}
-        </Card.Text>{' '}
-          
-        <Card.Text>
-          {' '}
-          <Button
-            variant="outline-primary"
-            icon="github"
-            text="settings.githubLink"
-            href={t('common.DMS_GUIurl')}
-            target="_blank"
-            rel="noopener noreferrer"
-          />
-        </Card.Text>{' '}
-      </Card>
     </>
   );
+
 };
 
+
 export default Settings;
+
+      // <Card 
+      //   title="settings.aboutTitle"
+      //   icon="question-circle"
+      //   >
+      //   <Card.Text>
+      //     {' '}
+      //     {Translate('settings.aboutDescription')}
+      //   </Card.Text>{' '}
+          
+      //   <Card.Text>
+      //     {' '}
+      //     <Button
+      //       variant="outline-primary"
+      //       icon="github"
+      //       text="settings.githubLink"
+      //       href={t('common.DMS_GUIurl')}
+      //       target="_blank"
+      //       rel="noopener noreferrer"
+      //     />
+      //   </Card.Text>{' '}
+      // </Card>

@@ -175,7 +175,17 @@ docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/
 * [ ] 1.5.78 - Logins: use Toasts
 * [ ] 1.5.78 - Aliases: use Toasts
 * [ ] 1.5.78 - Accounts: use Toasts
-* [ ] 1.5.77 - frontend: Accordion headers should stick on top when scrolling
+* [ ] 1.5.78 - bugfix: Toast: I wanted a lighter color but made them transparent
+* [ ] 1.5.78 - bugfix: isFirstRun welcome message is shown even when dms is set
+* [-] 1.5.77 - Settings: refresh button is not in the Accordion header because it loads each page independently; unfixable
+* [x] 1.5.77 - Settings: About is part of the Accordion
+* [x] 1.5.77 - bugfix: body margin-bottom: 8px !important; - caused by bitwarden, not sure how or why, intermitent
+* [x] 1.5.77 - bugfix: Card headers has z-index=10, the same as the Accordion headers
+* [x] 1.5.77 - frontend: Card headers are now opaque
+* [x] 1.5.77 - frontend: Accordion: refresh botton moved into the header
+* [x] 1.5.77 - frontend: removed me-2 from onClickRefresh buttons
+* [x] 1.5.77 - frontend: sticky Card headers
+* [x] 1.5.77 - frontend: sticky Accordion headers
 * [x] 1.5.76 - frontend: LeftSidebar collapse button uses full width
 * [x] 1.5.75 - frontend: refactor LeftSidebar to be collapsible and extend main container
 * [x] 1.5.74 - bugfix: Translate won't display <undefined> when no key is passed

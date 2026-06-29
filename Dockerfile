@@ -3,7 +3,7 @@
 #   build:      alias buildup='docker-compose down --volumes; docker-compose up --build --force-recreate'
 #   release:    docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/arm64/v8 -t audioscavenger/dms-gui:latest -t audioscavenger/dms-gui:$(grep "^ARG DMSGUI_VERSION=v" Dockerfile | cut -d= -f2) -f Dockerfile --push .
 
-ARG DMSGUI_VERSION=1.5.76
+ARG DMSGUI_VERSION=1.5.77
 ARG DMSGUI_DESCRIPTION="A graphical user interface for managing all aspects of DMS including: email accounts, aliases, xapian indexes, and DNS entries."
 
 # -----------------------------------------------------
