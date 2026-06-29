@@ -23,22 +23,21 @@ import { AuthProvider } from './hooks/useAuth';   // must include any elements t
 // 1. Create a specialized layout wrapper strictly for Authenticated states
 const ProtectedLayout = () => {
   return (
-// Added 'app-viewport-wrapper' to constrain the entire view
     <div className="app-viewport-wrapper">
-      <div>
-        <Navbar />
-        <Container fluid className="app-content-container">
-          <Row>
-            <Col md={2} className="p-0 sidebar-col">
-              <LeftSidebar />
-            </Col>
-            <Col md={10} className="main-content">
-              {/* Outlet acts as a portal that swaps your sub-pages in dynamically */}
-              <Outlet /> 
-            </Col>
-          </Row>
-        </Container>
-      </div>
+      <Navbar />
+      {/* Container fluid holds our two side-by-side sections */}
+      <Container fluid className="app-content-container p-0">
+        <div className="app-layout-body">
+          {/* Sidebar controls its own width now */}
+          <div className="sidebar-col">
+            <LeftSidebar />
+          </div>
+          {/* Main content expands to fill all remaining horizontal space */}
+          <main className="main-content">
+            <Outlet /> 
+          </main>
+        </div>
+      </Container>
     </div>
   );
 };
@@ -121,3 +120,22 @@ export default App;
 //   );
 // }
 
+// const ProtectedLayout = () => {
+//   return (
+//     <div className="app-viewport-wrapper">
+//       <Navbar />
+//       {/* Container fluid holds two side-by-side sections */}
+//       <Container fluid className="app-content-container">
+//         <Row className="h-100 align-items-stretch">
+//           <Col md={2} className="p-0 sidebar-col position-sticky top-0 align-self-start">
+//             <LeftSidebar />
+//           </Col>
+//           <Col md={10} className="main-content">
+//             {/* Outlet acts as a portal that swaps your sub-pages in dynamically */}
+//             <Outlet /> 
+//           </Col>
+//         </Row>
+//       </Container>
+//     </div>
+//   );
+// };

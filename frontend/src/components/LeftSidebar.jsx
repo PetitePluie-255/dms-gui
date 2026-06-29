@@ -9,7 +9,7 @@ import {
   Button,
   Translate,
 } from './index.jsx';
-import { debugLog } from '../../frontend.mjs';
+// import { debugLog } from '../../frontend.mjs';
 
 // https://getbootstrap.com/docs/5.0/examples/sidebars/
 // https://stackoverflow.com/questions/60482018/make-a-sidebar-from-react-bootstrap
@@ -22,23 +22,8 @@ const LeftSidebar = () => {
   
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
   // const [isDropdownActive, setDropdownActive] = useState("false");  // we don't use it yet
-
-  // const [showMailMenus, setShowMailMenus] = useState(false);
-  // useEffect(() => {
-  //   if (containerName) setShowMailMenus(true);
-  // }, [containerName]);
-  // This calculates instantly on every render without an effect loop // eslint fix
   const showMailMenus = Boolean(containerName);
   
-  // Style function to apply styles directly based on isActive, a reserved word for bootstrap active links
-  // const getNavLinkStyle = ({ isActive }) => ({
-    // color: isActive ? '#fff' : '#ced4da',
-    // backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-    // textDecoration: 'none',
-    // display: 'block',
-    // padding: '10px 15px',
-    // transition: 'all 0.3s',
-  // });
   const getNavLinkStyle = ({ isActive }) => ({
     color: isActive ? '#fff' : '#ced4da',
     backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
@@ -48,99 +33,108 @@ const LeftSidebar = () => {
   // https://arkumari2000.medium.com/responsive-partially-opened-sidebar-in-ractjs-using-bootstrap-7b1ef5c7ea60
 
   return (
-    <>
-    <Nav id="leftsidebar" className={isSidebarCollapsed ? "flex-column leftsidebar collapsed" : "flex-column leftsidebar"}>
-      {user && (<>
-        {(showMailMenus) && (<>
-          <Nav.Link as={NavLink} to="/dashboard" style={getNavLinkStyle}>
-            <i className="bi bi-speedometer2 me-2"></i>
-            <span> {Translate('dashboard.sidebar')}</span>
-          </Nav.Link>
+    <div className={isSidebarCollapsed ? "sidebar-flex-wrapper is-collapsed-wrapper" : "sidebar-flex-wrapper"}>
+      <Nav id="leftsidebar" className="flex-column leftsidebar">
+        {user && (<>
+          {(showMailMenus) && (<>
+            <Nav.Link as={NavLink} to="/dashboard" style={getNavLinkStyle}>
+              <i className="bi bi-speedometer2 me-2"></i>
+              <span> {Translate('dashboard.sidebar')}</span>
+            </Nav.Link>
 
-          {(user.isAccount == 0) && (<>
-            <Nav.Link as={NavLink} to="/accounts" style={getNavLinkStyle}>
-              <i className="bi bi-inboxes-fill me-2"></i>
-              <span> {Translate('accounts.sidebar')}</span>
+            {(user.isAccount == 0) && (<>
+              <Nav.Link as={NavLink} to="/accounts" style={getNavLinkStyle}>
+                <i className="bi bi-inboxes-fill me-2"></i>
+                <span> {Translate('accounts.sidebar')}</span>
+              </Nav.Link>
+            </>)}
+        
+            <Nav.Link as={NavLink} to="/aliases" style={getNavLinkStyle}>
+              <i className="bi bi-arrow-left-right me-2"></i>
+              <span> {Translate('aliases.sidebar')}</span>
             </Nav.Link>
           </>)}
-      
-          <Nav.Link as={NavLink} to="/aliases" style={getNavLinkStyle}>
-            <i className="bi bi-arrow-left-right me-2"></i>
-            <span> {Translate('aliases.sidebar')}</span>
-          </Nav.Link>
+
+          {(user.isAdmin == 1) && (<>
+            <Nav.Link as={NavLink} to="/logins" style={getNavLinkStyle}>
+              <i className="bi bi-person-lock me-2"></i>
+              <span> {Translate('logins.sidebar')}</span>
+            </Nav.Link>
+
+            <Nav.Link as={NavLink} to="/settings" style={getNavLinkStyle}>
+              <i className="bi bi-gear-fill me-2"></i>
+              <span> {Translate('settings.sidebar')}</span>
+            </Nav.Link>
+          </>)}
         </>)}
+      </Nav>
 
-        {(user.isAdmin == 1) && (<>
-          <Nav.Link as={NavLink} to="/logins" style={getNavLinkStyle}>
-            <i className="bi bi-person-lock me-2"></i>
-            <span> {Translate('logins.sidebar')}</span>
-          </Nav.Link>
+      <div className="leftsidebar-collapse-footer">
+        <Button
+          id="leftsidebar-collapse-btn"
+          variant="secondary w-100"
+          size="lg"
+          icon={(isSidebarCollapsed) ? "chevron-bar-right" : "chevron-bar-left"}
+          title={"common.collapse"}
+          onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
+          className="leftsidebar-collapse-btn"
+        />
+      </div>
 
-          <Nav.Link as={NavLink} to="/settings" style={getNavLinkStyle}>
-            <i className="bi bi-gear-fill me-2"></i>
-            <span> {Translate('settings.sidebar')}</span>
-          </Nav.Link>
-        </>)}
-      </>)}
-    </Nav>
-
-    <div className="leftsidebar-collapse-footer">
-      <Button
-        id="leftsidebar-collapse-btn"
-        variant="outline-secondary"
-        size="lg"
-        icon="list"
-        title={"common.collapse"}
-        onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
-        className="leftsidebar-collapse-btn"
-      />
     </div>
-    </>
-
   );
 };
 
 export default LeftSidebar;
 
-            // <Nav.Link as={NavLink} to="/" style={getNavLinkStyle} end>
-              // <i className="bi bi-speedometer2 me-2"></i> {t('sidebar.dashboard')}
-            // </Nav.Link>
+  // return (
+  //   <div className="sidebar-flex-wrapper">
+  //     <Nav id="leftsidebar" className={isSidebarCollapsed ? "flex-column leftsidebar collapsed" : "flex-column leftsidebar"}>
+  //       {user && (<>
+  //         {(showMailMenus) && (<>
+  //           <Nav.Link as={NavLink} to="/dashboard" style={getNavLinkStyle}>
+  //             <i className="bi bi-speedometer2 me-2"></i>
+  //             <span> {Translate('dashboard.sidebar')}</span>
+  //           </Nav.Link>
 
+  //           {(user.isAccount == 0) && (<>
+  //             <Nav.Link as={NavLink} to="/accounts" style={getNavLinkStyle}>
+  //               <i className="bi bi-inboxes-fill me-2"></i>
+  //               <span> {Translate('accounts.sidebar')}</span>
+  //             </Nav.Link>
+  //           </>)}
+        
+  //           <Nav.Link as={NavLink} to="/aliases" style={getNavLinkStyle}>
+  //             <i className="bi bi-arrow-left-right me-2"></i>
+  //             <span> {Translate('aliases.sidebar')}</span>
+  //           </Nav.Link>
+  //         </>)}
 
-// https://arkumari2000.medium.com/responsive-partially-opened-sidebar-in-ractjs-using-bootstrap-7b1ef5c7ea60
-          // <div className="leftsidebar-header">
-            // <img
-              // src={image}
-              // className="rounded-circle usr-image"
-              // height={isNotActive ? "20" : "70"}
-              // width={isNotActive ? "20" : "70"}
-            // ></img>
-            // <h3>User Name</h3>
-          // </div>
-          
-          // <ul className="list-unstyled components">
-            // <li className="list-item">
-              // <i className="fas fa-sitemap icon-color"></i>
-              // <Link to="/organization-profile">Organization</Link>
-            // </li>
+  //         {(user.isAdmin == 1) && (<>
+  //           <Nav.Link as={NavLink} to="/logins" style={getNavLinkStyle}>
+  //             <i className="bi bi-person-lock me-2"></i>
+  //             <span> {Translate('logins.sidebar')}</span>
+  //           </Nav.Link>
 
-              // <ul
-                // className={
-                  // isDropdownActive ? "list-unstyled  dropdown-collapsed" : "list-unstyled"
-                // }
-                // id="homeSubmenu"
-              // >
-                // <li className="dropdown-item">
-                  // <Link to="/portfolio">Portfolio</Link>
-                  // <a href="#">Portfolio</a>
-                // </li>
-                // <li className="dropdown-item">
-                  // <Link to="/personal-details">Personal Details</Link>
-                // </li>
-                // <li className="dropdown-item">
-                  // <Link to="/additional-info">Additional Info</Link>
-                // </li>
-                // <li className="dropdown-item">
-                  // <Link to="/personal-background">Personal Background</Link>
-                // </li>
-              // </ul>
+  //           <Nav.Link as={NavLink} to="/settings" style={getNavLinkStyle}>
+  //             <i className="bi bi-gear-fill me-2"></i>
+  //             <span> {Translate('settings.sidebar')}</span>
+  //           </Nav.Link>
+  //         </>)}
+  //       </>)}
+  //     </Nav>
+
+  //     <div className="leftsidebar-collapse-footer">
+  //       <Button
+  //         id="leftsidebar-collapse-btn"
+  //         variant="secondary w-100"
+  //         size="lg"
+  //         icon={(isSidebarCollapsed) ? "chevron-bar-right" : "chevron-bar-right"}
+  //         title={"common.collapse"}
+  //         onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
+  //         className="leftsidebar-collapse-btn"
+  //       />
+  //     </div>
+  // 
+  //   </div>
+  // );

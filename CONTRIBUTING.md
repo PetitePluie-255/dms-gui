@@ -163,14 +163,21 @@ docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/
 * [ ] 1.5.99 - retested: create/delete/update login
 * [ ] 1.5.99 - retested: create/delete/update mailserver
 
+* [ ] 1.5.99 - frontend: still plenty of unnecessary/missing dependency; I had to Turn off missing dependency
 * [ ] 1.5.99 - frontend: replace some AlertMessage with Toasts where it makes sense
+* [ ] 1.5.99 - logins: loginUser: export all the various password errors to translation
 * [ ] 1.5.99 - logins: expand the lockoutCache to a broader Map as a logins table duplicate, to hold the tokens as well?
 * [ ] 1.5.99 - dms-gui global: we should offer site-wide profile like show actual login error, etc
 * [ ] 1.5.99 - index: we should remove updateDB from PATCH/logins and PATCH/accounts and create updateLogin and updateAccount modules
 * [ ] 1.5.99 - saveServerEnvs and changePassword do not use scope and schema anymore, why?
-* [ ] 1.5.99 - logins: loginUser: export all the various password errors to translation
-* [ ] 1.5.99 - frontend: still plenty of unnecessary/missing dependency; I had to Turn off missing dependency
 
+* [ ] 1.5.78 - ServerInfos: use Toasts
+* [ ] 1.5.78 - Logins: use Toasts
+* [ ] 1.5.78 - Aliases: use Toasts
+* [ ] 1.5.78 - Accounts: use Toasts
+* [ ] 1.5.77 - frontend: Accordion headers should stick on top when scrolling
+* [ ] 1.5.76 - frontend: LeftSidebar collapse button should use full width
+* [x] 1.5.75 - frontend: refactor LeftSidebar to be collapsible and extend main container
 * [x] 1.5.74 - bugfix: Translate won't display <undefined> when no key is passed
 * [x] 1.5.74 - bugfix: none of the Accordion titles resolve their {{values}}
 * [x] 1.5.74 - bugfix: accounts: will return formattedPass when results?.stdout is false or undefined
@@ -178,6 +185,7 @@ docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/
 * [x] 1.5.74 - bugfix: Accounts: AccountData circular loading
 * [x] 1.5.74 - frontend: Bitwarden causes NotFoundError: Node.insertBefore: Child to insert before is not a child of this node; can be ignored
 * [x] 1.5.74 - frontend: Toasts are now in ToastProvider, loaded as a hook Context and inside a ToastContainer so they can be stacked
+* [x] 1.5.74 - FormContainerAdd: use Toasts
 * [x] 1.5.74 - Profile: use Toasts
 * [x] 1.5.74 - Dashboard: use Toasts
 * [x] 1.5.74 - Login: use Toasts
