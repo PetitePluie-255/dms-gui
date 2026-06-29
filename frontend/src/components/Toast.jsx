@@ -60,13 +60,12 @@ const Toast = ({
     dark: '',
   };
   const textMap = {
-    primary: 'text-primary',
     warning: '',
     light: '',
-    dark: 'text-light',
+    dark: 'light',
   };
-  const bgClass = bgMap[type] || 'bg-opacity-25';
-  const textClass = textMap[type] || `text-${type}`;
+  const bgOpacity = bgMap[type] || 'bg-opacity-25';   // opacity for most colors
+  const textClass = textMap[type] || `${type}`;       // body text color for few bg colors
 
       // key={key}
       // show={showToast}
@@ -79,21 +78,24 @@ const Toast = ({
       delay={delay}
       autohide={shouldAutohide}
       animation={animation}
-      className={`${bgClass} shadow-sm`}
+      className={`overflow-hidden shadow-sm bg-white border-${type}`}
       {...rest}
     >
+    {/* This inner div applies the 25% tint directly over the solid white toast background */}
+    <div className={`w-100 h-100 bg-${type} ${bgOpacity} text-${textClass}`}>
       {/* Render a clean header line with a built-in dismissal action if onClose is enabled */}
-      <RBToast.Header closeButton={!!onClose} className="border-bottom-0 pb-1">
+      <RBToast.Header closeButton={!!onClose} className="border-0 pb-1">
         <strong className="me-auto text-capitalize">{t(title)}</strong>
         <small className="text-muted">{t(when)}</small>
       </RBToast.Header>
       
-      <RBToast.Body className={`${textClass} pt-1`}>
+      <RBToast.Body className={`pt-1`}>
         <span>
           {Translate(translationKey, translate, translationValues)}
           {!keyHasPlaceholder && translationValues?.error && ` : ${translationValues.error}`}
         </span>
       </RBToast.Body>
+    </div>
     </RBToast>
   );
 };
