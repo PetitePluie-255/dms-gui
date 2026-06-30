@@ -253,7 +253,7 @@ All is optional, as they will be superseeded by the ones defined and saved withi
 - `isDEMO`: set false to disable colors in backend logs (*false)
 The ones you should never alter unless you want to develop:
 
-- `PORT_FRONTEND`: Internal port for the Node.js server (*3001)
+- `PORT_FRONTEND`: development port for the frontend Node server (*3001), ONLY set that up if you can serve frontend on your local dev environment
 - `API_URL`: defaults to `/api`
 - `BACKEND_PROXY_URL`: defaults to `http://localhost:3000`
 - `ENV_MODE`: Node.js environment: (*production or development)
@@ -271,7 +271,7 @@ The ones you should never alter unless you want to develop:
 The application supports multiple languages throught i18n.js:
 
 - English
-- Polish
+- Polish (out of date)
 
 Languages can be switched using the language selector in the top navigation bar.
 

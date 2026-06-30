@@ -124,10 +124,21 @@ The TODO list rank is in order, as you naturally read from top to bottom and the
 - [wiki](https://github.com/audioscavenger/dms-gui)
 - [hub.docker](https://hub.docker.com/repositories/audioscavenger)
 
-alias buildup='docker-compose down --volumes; docker-compose up --build --force-recreate'            # normal rebuild
-docker-compose down --volumes; docker-compose build --no-cache; docker-compose up --force-recreate   # if you need to redetect changes and purge all caches
-docker-compose down --volumes; DATABASE_RESET=true  docker-compose up --build --force-recreate       # reset database
-run --rm --entrypoint ls audioscavenger/dms-gui:latest -la /app
+### Aliases
+- purge
+alias dpurge='docker buildx prune --builder multiarch --all -f; docker container prune -f && docker image prune -f && docker builder prune -a -f'
+
+- DEBUG rebuild
+alias buildup='BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build && DEBUG=true docker-compose up --force-recreate'
+
+- DEBUG rebuild + DATABASE_RESET
+alias buildup='BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build && DEBUG=true DATABASE_RESET=true docker-compose up --force-recreate'
+
+- DEBUG rebuild + DATABASE_RESET + NOCACHE
+alias buildup='BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build --no-cache && DEBUG=true DATABASE_RESET=true docker-compose up --force-recreate'
+
+- check inside the container without really running it
+docker-compose run --rm --entrypoint ls audioscavenger/dms-gui:latest -la /app
 <!--
 drwxr-xr-x    1 root     root          4096 Apr 19 17:01 .
 drwxr-xr-x    1 root     root          4096 Apr 19 17:01 ..
@@ -141,17 +152,48 @@ drwxr-xr-x    1 root     root          4096 Apr 19 16:35 frontend
 
 docker login -u audioscavenger
 <!-- https://medium.com/@life-is-short-so-enjoy-it/docker-how-to-build-and-push-multi-arch-docker-images-to-docker-hub-64dea4931df9 -->
-docker buildx create          --name multiarch --node multiarch --platform linux/arm64/v8 --driver=docker-container ssh://root@oracle01:22
-docker buildx create --append --name multiarch --node multiarch --platform linux/amd64          --driver=docker-container --bootstrap
 docker buildx ls
-<!-- NAME/NODE       DRIVER/ENDPOINT              STATUS    BUILDKIT   PLATFORMS
-multiarch*      docker-container
- \_ multiarch    \_ ssh://root@oracle01:22   running   v0.25.1    linux/amd64*, linux/arm64, linux/arm (+2)
-default         docker
- \_ default      \_ default                  running   v0.25.2    linux/amd64 (+3), linux/386 -->
-alias dpurge='docker container prune -f && docker image prune -f && docker builder prune -a -f'
+    NAME/NODE       DRIVER/ENDPOINT              STATUS    BUILDKIT   PLATFORMS
+    default*        docker
+    \_ default      \_ default                  running   v0.30.0    linux/amd64 (+3), linux/386 
+
+docker buildx stop multiarch
+docker buildx rm multiarch
+docker buildx create  --name multiarch          --driver=docker-container --node multiarch --platform linux/arm64 ssh://root@oracle01:22
+docker buildx create  --name multiarch --append --driver=docker-container --node multiarch --platform linux/amd64 --bootstrap
+docker buildx ls
+    NAME/NODE       DRIVER/ENDPOINT              STATUS    BUILDKIT   PLATFORMS
+    multiarch       docker-container
+    \_ multiarch    \_ ssh://root@oracle01:22   running   v0.25.1    linux/amd64*, linux/arm64, linux/arm (+2)
+
+
+// recreate remote buildx on local with 2 separate nodes because of better-sqlite3 latest:
+docker buildx stop multiarch
+docker buildx rm multiarch
+docker buildx create --name multiarch \
+  --node local_host \
+  --driver docker-container \
+  --driver-opt image=moby/buildkit:v0.30.0 \
+  --platform linux/amd64 \
+  --bootstrap \
+  --use
+docker buildx create --name multiarch \
+  --append \
+  --node oracle_arm \
+  --driver docker-container \
+  --driver-opt image=moby/buildkit:v0.30.0 \
+  --platform linux/arm64 \
+  --bootstrap \
+  ssh://root@oracle01:22
+docker buildx ls
+NAME/NODE        DRIVER/ENDPOINT                   STATUS    BUILDKIT   PLATFORMS
+    multiarch*       docker-container
+    \_ local_host    \_ unix:///var/run/docker.sock   running   v0.30.0    linux/amd64* (+3), linux/386
+    \_ oracle_arm    \_ ssh://root@oracle01:22        running   v0.30.0    linux/arm64*, linux/arm (+2)
+
+dpurge
 docker system df
-docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/arm64/v8 -t audioscavenger/dms-gui:latest -t audioscavenger/dms-gui:$(grep "^ARG DMSGUI_VERSION=v" Dockerfile | cut -d= -f2) -f Dockerfile --push .
+docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/arm64 -t audioscavenger/dms-gui:latest -t audioscavenger/dms-gui:$(grep "^ARG DMSGUI_VERSION=v" Dockerfile | cut -d= -f2) -f Dockerfile --push .
 
 
 ## history:
@@ -170,7 +212,10 @@ docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/
 * [ ] 1.5.99 - index: we should remove updateDB from PATCH/logins and PATCH/accounts and create updateLogin and updateAccount modules
 * [ ] 1.5.99 - saveServerEnvs and changePassword do not use scope and schema anymore, why?
 
-* [x] v1.6.0 - release
+* [x] v1.6.2 - release
+* [x] 1.6.1 - renamed build scripts in package.json to production and development instead of "build", easy as pie
+* [x] 1.6.1 - buildx now has 2 nodes: no more mixup of amd64 binaries on arm64
+* [x] 1.6.1 - release with gcc for better-sqlite3 or else buildx will poison the aarch64 cache
 * [x] 1.5.80 - frontend: replace some AlertMessage with Toasts where it makes sense; yeah it's done bro
 * [-] 1.5.80 - ServerInfos: use Toasts; no why? who cares
 * [-] 1.5.80 - Logins: use Toasts; no why? who cares

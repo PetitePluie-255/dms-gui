@@ -254,7 +254,7 @@ All is optional, as they will be superseeded by the ones defined and saved withi
 - `isDEMO`: set false to disable colors in backend logs (*false)
 The ones you should never alter unless you want to develop:
 
-- `PORT_FRONTEND`: Internal port for the Node.js server (*3001)
+- `PORT_FRONTEND`: development port for the frontend Node server (*3001), ONLY set that up if you can serve frontend on your local dev environment
 - `API_URL`: defaults to `/api`
 - `BACKEND_PROXY_URL`: defaults to `http://localhost:3000`
 - `ENV_MODE`: Node.js environment: (*production or development)
@@ -498,29 +498,6 @@ OAS description of all API endpoints is available at:
 -->
 
 
-### API call Example:
-
-```shell
-curl -sSL https://dms.domain.com/api/status
-```
-
-Result (likely outdated):
-
-```json
-{
-  "status": {
-    "status": "running",
-    "error": "",
-  },
-  "resources": {
-    "cpuUsage": 0.0051578073089701,
-    "memoryUsage": 200925184,
-    "diskUsage": "N/A"
-  }
-}
-```
-
-
 ## Behind the Scenes
 
 ### REST API
@@ -546,88 +523,6 @@ command=/usr/bin/python3 /tmp/docker-mailserver/dms-gui/rest-api.py
 
 This REST API logs what it does in `logs/supervisor/rest-api.log` like any other supervisor service, and I have found that `PYTHONUNBUFFERED=1` will not print the messages in the docker log when run as a daemon.
 
-To use it with a Node.js client, it's pretty basic and simple:
-
-```js
-const DMS_API_KEY = 'uuid';
-const jsonData = {
-  command: 'ls -l /some/folder',
-  timeout: 4,
-  };
-const response = await postJsonToApi(`http://dms:8888`, jsonData, DMS_API_KEY);
-
-export const postJsonToApi = async (apiUrl, jsonData, Authorization) => {
-  try {
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': Authorization
-      },
-      body: JSON.stringify(jsonData),
-    });
-    if (!response.ok) {
-      <your error handling here>
-    }
-    return await response.json(); // Parse the JSON response
-
-  } catch (error) {
-    <your error handling here>
-  }
-}
-```
-
-Sample of a response from the REST API: http:200 accepted
-
-```
-Response {
-  status: 200,
-  statusText: 'OK',
-  headers: Headers {
-    server: 'BaseHTTP/0.6 Python/3.11.2',
-    date: 'Sun, 21 Dec 2025 05:35:39 GMT',
-    'content-type': 'application/json'
-  },
-  body: ReadableStream { locked: false, state: 'readable', supportsBYOB: true },
-  bodyUsed: false,
-  ok: true,
-  redirected: false,
-  type: 'basic',
-  url: 'http://dms:8888/'
-}
-```
-
-Sample of a response from the REST API: http:200 rejected
-
-```
-Response {
-  status: 200,
-  statusText: 'OK',
-  headers: Headers {
-    server: 'BaseHTTP/0.6 Python/3.11.2',
-    date: 'Sun, 24 May 2026 01:02:58 GMT',
-    'content-type': 'application/json'
-  },
-  body: ReadableStream { locked: false, state: 'readable', supportsBYOB: true },
-  bodyUsed: false,
-  ok: true,
-  redirected: false,
-  type: 'basic',
-  url: 'http://dms:8888/'
-}
-```
-
-Format of the json returned from the response by `postJsonToApi`:
-
-```json
-{
-  error: <error>,
-  returncode: 0,
-  stdout: <stdout>,
-  stderr: <stderr>
-}
-```
-
 Cannot be simpler then that, and super secure since the script also controls the maximum size of the payload received in the POST request. The API key is added manually as an environment variable in DMS compose.
 
 ### Logging
@@ -643,40 +538,6 @@ Absolutely unnecessary, but this project uses [Prettier](https://prettier.io/) f
 
 Formatting was automatically applied to staged files before each commit using [Husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/okonet/lint-staged). This ensured that all committed code adheres to the defined style guide. I gave up using this as VScode does a fantastic job.
 
-### Manual Formatting
-
-You can also manually format the code using the npm scripts available in both the `backend` and `frontend` directories:
-
-```bash
-# Navigate to the respective directory (backend or frontend)
-cd backend # or cd frontend
-
-# Format all relevant files
-npm run format
-
-# Check if all relevant files are formatted correctly
-npm run format:check
-```
-
-### Backend
-
-```bash
-cd backend
-npx npm-check-updates -u
-npm install
-npm audit fix
-```
-
-### Frontend
-
-```bash
-cd frontend
-npx npm-check-updates -u
-npm install
-npm audit fix
-```
-
-After running both parts, the application will be available at http://localhost:3000
 
 ## License
 

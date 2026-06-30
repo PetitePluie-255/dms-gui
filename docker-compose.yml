@@ -15,10 +15,8 @@ services:
     build:                                              # comment me for official image
       context: .                                        # comment me for official image
       args:                                             # build: any ARG in Dockerfile must be there too; cannot use environment variables here
-        - ENV_MODE=production
-        - UPSTREAM_NGINX=try_files $$uri $$uri/ /index.html;
-      #   - ENV_MODE=development                          # comment me for production
-      #   - UPSTREAM_NGINX=proxy_pass ${FRONTEND_PROXY_URL}; proxy_http_version 1.1; proxy_set_header Upgrade $$http_upgrade; proxy_set_header Connection "upgrade";  # comment me for production
+        # - ENV_MODE=production
+        - ENV_MODE=development                          # is also used for DEBUG in production: webpack will enable eval-source-map
     image: audioscavenger/dms-gui:latest
     container_name: dms-gui
     hostname: dms-gui
@@ -34,10 +32,10 @@ services:
     env_file: ./config/dms-gui/.dms-gui.env
     environment:
       - TZ=${TZ:-UTC}
+      - ENV_MODE=development                            # comment me for production
       - isDEMO=${isDEMO:-false}                         # DEMO mode
       - DATABASE_RESET=${DATABASE_RESET:-false}         # to reset the database each time; used for DEMO
       - DEBUG=${DEBUG:-false}                           # enable debugging
-      # - ENV_MODE=development                          # comment me for production
 
     volumes:
       - /etc/timezone:/etc/timezone:ro

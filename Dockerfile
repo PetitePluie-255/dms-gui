@@ -1,9 +1,9 @@
-# Multi-stage build for Docker Mailserver GUI
-#   purge:      docker container prune -f && docker image prune -f && docker builder prune -a -f
-#   build:      alias buildup='docker-compose down --volumes; docker-compose up --build --force-recreate'
+# Multi-stage build for Docker Mailserver GUI https://docs.docker.com/build/building/variables/
+#   purge:      docker buildx prune --builder multiarch --all -f; docker container prune -f && docker image prune -f && docker builder prune -a -f
+#   build:      alias buildup='BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build && docker-compose up --force-recreate'            # normal rebuild
 #   release:    docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/arm64/v8 -t audioscavenger/dms-gui:latest -t audioscavenger/dms-gui:$(grep "^ARG DMSGUI_VERSION=v" Dockerfile | cut -d= -f2) -f Dockerfile --push .
 
-ARG DMSGUI_VERSION=v1.6.0
+ARG DMSGUI_VERSION=1.6.1
 ARG DMSGUI_DESCRIPTION="A graphical user interface for managing all aspects of DMS including: email accounts, aliases, xapian indexes, and DNS entries."
 
 # -----------------------------------------------------
@@ -32,7 +32,9 @@ COPY frontend/ ./
 # Run the linter first. If it finds a missing import, the Docker build fails here!
 RUN npm run lint
 
-RUN npm run build
+# package.json has ENV_MODE build scripts, as simple as that!
+ARG ENV_MODE=production
+RUN npm run ${ENV_MODE}
 
 # -----------------------------------------------------
 # Stage 2: Build backend
@@ -44,19 +46,26 @@ WORKDIR /app/backend
 
 # Copy backend package.json and install dependencies
 COPY backend/package*.json ./
+
+# Copy backend code
+COPY backend/ ./
 COPY common.*js* ../
+
+# OPTIONAL CRITICAL FAILSAFE: Forcefully delete any local node_modules leak 
+# that might have overwritten the clean compiled arm64/amd64 folder
+RUN rm -rf ./node_modules
+
+# Install temporary build essentials required ONLY for compiling native modules (like better-sqlite3)
+RUN apk add --no-cache python3 make g++ gcc libc-dev
+
+# Install Docker client inside the container for Docker API access - nope, not needed
+# RUN apk add --no-cache docker-cli
 
 # RUN npx npm-check-updates -u
 # RUN npm install
 # RUN npm audit fix
 # RUN npm ci --only=production    # https://stackoverflow.com/questions/74599681/npm-warn-config-only-use-omit-dev
 RUN npm ci --omit=dev
-
-# Copy backend code
-COPY backend/ ./
-
-# Install Docker client inside the container for Docker API access - nope, not needed
-# RUN apk add --no-cache docker-cli
 
 # -----------------------------------------------------
 # Stage 3: Final image with Nginx and Node.js
@@ -72,13 +81,10 @@ WORKDIR /app
 RUN mkdir -p /app/backend /app/frontend
 COPY common.*js* ./
 
-# Copy project packages so we can get its version and pretty from within - nope we don't do that anymore
-#COPY package*.json ./
-
-# Copy backend from backend-builder
+# CLEAN COPY: Bring over only the modules and backend code, leaving behind g++ and build artifacts
+COPY --from=backend-builder /app/backend/node_modules ./backend/node_modules
+COPY --from=backend-builder /app/backend/package.json ./backend/package.json
 COPY --from=backend-builder /app/backend ./backend
-# add frontend.json so the backend can detect React version // never works
-# COPY --from=frontend-builder /app/frontend/package.json ./package.frontend.json
 
 # Only copy the static production build folder
 COPY --from=frontend-builder /app/frontend/dist ./frontend

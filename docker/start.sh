@@ -23,8 +23,8 @@ fi
 
 sed -i "s|{{BACKEND_PROXY_URL}}|${BACKEND_PROXY_URL}|g" /etc/nginx/http.d/default.conf
 
-# Start the backend server in the background
-if [ "$ENV_MODE" = "development" ]; then
+# real local development mode requires you to start and not build, the frontend, on your local machine
+if [ "$ENV_MODE" = "development" -a ! -z "$PORT_FRONTEND" ]; then
 
   # nodemon only detects changes in /backend and does not recompile the frontend. useless
   # https://www.metered.ca/blog/how-to-restart-your-node-js-apps-automatically-with-nodemon/
@@ -37,22 +37,29 @@ if [ "$ENV_MODE" = "development" ]; then
   # Wait a moment to ensure apps are starting up
   sleep 2
 
+  # UPSTREAM_NGINX_PRODUTION and UPSTREAM_NGINX_DEVELOPMENT must be defined in .dms-gui.env
   sed -i "s|{{UPSTREAM_NGINX}}|${UPSTREAM_NGINX_DEVELOPMENT}|g" /etc/nginx/http.d/default.conf
-  [ "$DEBUG" = "true" ] && echo [DEBUG] ls -la /app/frontend && ls -la /app/frontend && echo [DEBUG] cat -n /etc/nginx/http.d/default.conf && cat -n /etc/nginx/http.d/default.conf
 
 else
+  # half-ass development mode: that means webpack builds the frontend as usual but with --mode development --devtool eval-source-map
   # Start Node in the BACKGROUND; /app/frontend/dist will be used
-  if [ "$DEBUG" = "true" ]; then
-    echo "$ENV_MODE: Starting backend:${PORT_BACKEND}..."
+  if [ "$ENV_MODE" = "development" ]; then
+    echo "$ENV_MODE: Starting backend:${PORT_BACKEND} with nodemon..."
     cd /app/backend && nodemon index.js &
   else
-    echo "$ENV_MODE: Starting backend:${PORT_BACKEND} with nodemon..."
+    echo "$ENV_MODE: Starting backend:${PORT_BACKEND} ..."
     cd /app/backend && node index.js &
   fi
 
+  # UPSTREAM_NGINX_PRODUTION and UPSTREAM_NGINX_DEVELOPMENT must be defined in .dms-gui.env
   sed -i "s|{{UPSTREAM_NGINX}}|${UPSTREAM_NGINX_PRODUTION}|g" /etc/nginx/http.d/default.conf
-  [ "$DEBUG" = "true" ] && echo [DEBUG] ls -la /app/frontend && ls -la /app/frontend && echo [DEBUG] cat -n /etc/nginx/http.d/default.conf && cat -n /etc/nginx/http.d/default.conf
+fi
 
+if [ "$DEBUG" = "true" ]; then
+  echo [DEBUG] ls -la /app/frontend
+  ls -la /app/frontend
+  echo [DEBUG] cat -n /etc/nginx/http.d/default.conf
+  cat -n /etc/nginx/http.d/default.conf
 fi
 
 # Start Nginx in the foreground (this keeps the container running)
