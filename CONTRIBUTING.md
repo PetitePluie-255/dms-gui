@@ -164,17 +164,17 @@ docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/
 * [ ] 1.5.99 - retested: create/delete/update mailserver
 
 * [ ] 1.5.99 - frontend: still plenty of unnecessary/missing dependency; I had to Turn off missing dependency
-* [ ] 1.5.99 - frontend: replace some AlertMessage with Toasts where it makes sense
 * [ ] 1.5.99 - logins: loginUser: export all the various password errors to translation
 * [ ] 1.5.99 - logins: expand the lockoutCache to a broader Map as a logins table duplicate, to hold the tokens as well?
 * [ ] 1.5.99 - dms-gui global: we should offer site-wide profile like show actual login error, etc
 * [ ] 1.5.99 - index: we should remove updateDB from PATCH/logins and PATCH/accounts and create updateLogin and updateAccount modules
 * [ ] 1.5.99 - saveServerEnvs and changePassword do not use scope and schema anymore, why?
 
-* [ ] 1.5.80 - ServerInfos: use Toasts
-* [ ] 1.5.80 - Logins: use Toasts
-* [ ] 1.5.80 - Aliases: use Toasts
-* [ ] 1.5.80 - Accounts: use Toasts
+* [x] 1.5.80 - frontend: replace some AlertMessage with Toasts where it makes sense; yeah it's done bro
+* [-] 1.5.80 - ServerInfos: use Toasts; no why? who cares
+* [-] 1.5.80 - Logins: use Toasts; no why? who cares
+* [-] 1.5.80 - Aliases: use Toasts; no why? who cares
+* [-] 1.5.80 - Accounts: use Toasts; no why? who cares
 * [x] 1.5.79 - bugfix: Toast: I wanted a lighter color but made them transparent; fixed with a bg-white background
 * [x] 1.5.78 - bugfix: isFirstRun welcome message is shown even when dms is set; fixed
 * [x] 1.5.78 - Accordion: refresh button being separated from the header, it needs the same background when active

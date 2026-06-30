@@ -271,7 +271,7 @@ function FormContainerAdd() {
           });
 
         } else {
-          setErrorMessage(t('settings.DMS_API_injectFailed') +": "+ result?.error);
+          setErrorMessage({key: 'api.errors.DMS_API_injectFailed', values: { error: result?.error }});
           // setWarningMessage(t('settings.DMS_API_injectFailedHelp'));
           triggerToast({
             type: 'warning',

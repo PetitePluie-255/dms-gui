@@ -34,9 +34,11 @@ import {
 } from '../components';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../hooks/useToast';
 
 const Aliases = () => {
   const { t } = useTranslation();
+  const triggerToast = useToast();
   const { user } = useAuth();
   const [containerName] = useLocalStorage("containerName", '');
   const [mailservers] = useLocalStorage("mailservers", []);
@@ -152,24 +154,28 @@ const Aliases = () => {
 
     if (!formData.source.trim()) {
       errors.source = 'aliases.sourceRequired';
-      setErrorMessage(errors.source);
+      // setErrorMessage(errors.source);
+      triggerToast({type: 'error', message: errors.source});
 
     // source can be an email or a regex
     } else if (!matchEmailStrict && !matchEmailRegex) {
       errors.source = 'aliases.invalidSource';
-      setErrorMessage(errors.source);
+      // setErrorMessage(errors.source);
+      triggerToast({type: 'error', message: errors.source});
     }
 
     if (!formData.destination.trim()) {
       errors.destination = 'aliases.destinationRequired';
-      setErrorMessage(errors.destination);
+      // setErrorMessage(errors.source);
+      triggerToast({type: 'error', message: errors.source});
     }
 
     // Also test if source domain exist in domains when it's a mailbox match
     // I can't see how to really test for regex as the domain part can be regex too but let's do our best
     if (matchEmailStrict && !plucks(accounts, 'domain').has(matchEmailStrict[2])) {
       errors.source = 'aliases.invalidSourceDomain';
-      setErrorMessage(errors.source);
+      // setErrorMessage(errors.source);
+      triggerToast({type: 'error', message: errors.source});
     }
 
     setFormErrors(errors);
