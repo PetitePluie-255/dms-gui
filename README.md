@@ -5,7 +5,7 @@ A graphical user interface for managing DMS ([Docker-Mailserver](https://github.
 
 It relies on a generic REST API written in python, that you have to mount in DMS compose.
 
-## Features
+## ✅ Features
 
 - 🌐 Multi-arch: x86_64 (amd64) + aarch64 (arm64)
 - 🔐 Login page, crypto-secure hashed passwords, HTTP-Only cookies
@@ -20,10 +20,17 @@ It relies on a generic REST API written in python, that you have to mount in DMS
 - 🛢️ better-sqlite3 database!
   - 🩹 database patch auto-upgrade
 - 🌐 Multilingual support (English, Polish)
-- 👌 Cutting edge Node.JS v24
+- 👌 Cutting edge Node.JS v24.18.0
 
 
-## Compatibility Chart
+## 🔥 Coming Soon
+
+- 🛢️ Mailbox import/export
+- 📊 Actual mailbox statistics like Poste.io
+- 🌐 DKIM and DNS domain management and injection
+
+
+## ✔️ Compatibility Chart
 
 | dms     | dms-gui | x86_64 | aarch64 | details |
 |---------|---------|--------|---------|---------|
@@ -31,7 +38,7 @@ It relies on a generic REST API written in python, that you have to mount in DMS
 | v16?    | ❌ | ❌ | ❌ | dovecot 2.4 |
 
 
-### FAQ
+### ⁉️ FAQ
 
 * [x] How does dms-gui interact with DMS?
 > Simply, by executing `system` and `doveadm` commands inside DMS, through a python REST API. 
@@ -80,19 +87,19 @@ It relies on a generic REST API written in python, that you have to mount in DMS
 * [x] Is this project affected by React2Shell Critical Vulnerability (CVE-2025-55182)[https://www.cmu.edu/iso/news/2025/react2shell-critical-vulnerability.html]?
 > No. This project has none of the React or 3rd party affected components like react-server-dom-turbopack, and is not even of the React versions affected. As I understand it, turbopack is another memory unsafe web bundler written in Rust, yet again.
 
-### Login page
+### 🔐 Login page
 
 As long as the default admin user (_admin_ / password=_changeme_) exist, you are greeted with this message:
 
 ![Login](/assets/dms-gui-Login.webp)
 
-### Profile page
+### 👤 Profile page
 
 There you can change your dms-gui / DMS Dovecot password. Users managers of multiple mailboxes cannot change individual mailboxes yet.
 
 ![Login](/assets/dms-gui-Profile.webp)
 
-### Logins Management
+### 👥 Logins Management
 
 Logins are 3 types:
 
@@ -112,7 +119,7 @@ Mailbox users are automatically created, based off the scan of DMS dovecot serve
 
 ![Logins](/assets/dms-gui-Logins-auto.webp)
 
-### Accounts
+### 📬 Accounts
 
 Also called "_emails_", as per the DMS setup command to create new email boxes, I prefer calling them _mailboxes_. They are _Accounts_, that can receive/store/send emails.
 
@@ -122,13 +129,13 @@ Creating accounts from here currently calls the DMS `setup` via `docker.sock`, b
 
 ![Accounts](/assets/dms-gui-Accounts.webp)
 
-### Aliases
+### 📧 Aliases
 
 Currently relying on DMS `setup` and a direct read of the `postfix-regexp.cf`file.
 
 ![Aliases](/assets/dms-gui-Aliases.webp)
 
-### Settings
+### ⚙️ Settings
 
 Multiple sections to save UI settings, DMS REST API access, and show some internals + DMS environment values.
 
@@ -140,13 +147,13 @@ Some environment values like FTS (Full Text Search) will enable some options on 
 
 ![Settings](/assets/dms-gui-ServerInfos.webp)
 
-### Dashboard
+### 📊 Dashboard
 
 A dumb dashboard, but now you can click the cards and navigate to the section selected.
 
 ![Dashboard](/assets/dms-gui-Dashboard.webp)
 
-## Requirements
+## ✔️ Requirements
 
 - [Docker-Mailserver](https://docker-mailserver.github.io/docker-mailserver/latest/) (installed and configured)
 - dms-gui definition in DMS compose, will extra port, volumes, and environment variables in DMS section
@@ -279,6 +286,7 @@ There are two ways to deploy using Docker:
 Sample extract from `docker-compose.yml`, rename `dms` to the actual name of your docker-Mailserver container!
 
 ```yaml
+---
 services:
   dms:
     <your dms compose here>
@@ -495,7 +503,7 @@ OAS description of all API endpoints is available at:
 curl -sSL https://dms.domain.com/api/status
 ```
 
-Result (outdated):
+Result (likely outdated):
 
 ```json
 {

@@ -14,8 +14,7 @@ services:
 
     build:                                              # comment me for official image
       context: .                                        # comment me for official image
-      # build: any ARG in Dockerfile must be there too; cannot use environment variables here
-      args:
+      args:                                             # build: any ARG in Dockerfile must be there too; cannot use environment variables here
         - ENV_MODE=production
         - UPSTREAM_NGINX=try_files $$uri $$uri/ /index.html;
       #   - ENV_MODE=development                          # comment me for production
@@ -24,6 +23,8 @@ services:
     container_name: dms-gui
     hostname: dms-gui
     restart: unless-stopped
+    # depends_on:
+    #   - dms
     
     expose:
       - 80      # frontend via internal nginx
@@ -35,12 +36,13 @@ services:
       - TZ=${TZ:-UTC}
       - isDEMO=${isDEMO:-false}                         # DEMO mode
       - DATABASE_RESET=${DATABASE_RESET:-false}         # to reset the database each time; used for DEMO
-      - DEBUG=${DEBUG:-true}                            # enable debugging
+      - DEBUG=${DEBUG:-false}                           # enable debugging
       # - ENV_MODE=development                          # comment me for production
 
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      # dms-gui config is mounted from DMS' own config folder: reason is, dms-gui will create an API file there
       - ./config/dms-gui/:/app/config/
 
       # If you want to develop locally... mount the backend with DEBUG=true and nodemon will reload your stuff immediately

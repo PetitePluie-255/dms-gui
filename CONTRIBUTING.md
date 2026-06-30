@@ -170,6 +170,7 @@ docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/
 * [ ] 1.5.99 - index: we should remove updateDB from PATCH/logins and PATCH/accounts and create updateLogin and updateAccount modules
 * [ ] 1.5.99 - saveServerEnvs and changePassword do not use scope and schema anymore, why?
 
+* [x] v1.6.0 - release
 * [x] 1.5.80 - frontend: replace some AlertMessage with Toasts where it makes sense; yeah it's done bro
 * [-] 1.5.80 - ServerInfos: use Toasts; no why? who cares
 * [-] 1.5.80 - Logins: use Toasts; no why? who cares

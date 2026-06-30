@@ -60,10 +60,12 @@ import {
 } from '../components';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../hooks/useToast';
 
 const Accounts = () => {
   const sortKeysInObject = ['percent'];
   const { t } = useTranslation();
+  const triggerToast = useToast();
   const { user } = useAuth();
   const [containerName] = useLocalStorage("containerName", '');
   const [mailservers] = useLocalStorage("mailservers", []);
