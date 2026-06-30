@@ -193,7 +193,7 @@ NAME/NODE        DRIVER/ENDPOINT                   STATUS    BUILDKIT   PLATFORM
 
 dpurge
 docker system df
-docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/arm64 -t audioscavenger/dms-gui:latest -t audioscavenger/dms-gui:$(grep "^ARG DMSGUI_VERSION=v" Dockerfile | cut -d= -f2) -f Dockerfile --push .
+ENV_MODE=production docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/arm64 -t audioscavenger/dms-gui:latest -t audioscavenger/dms-gui:$(grep "^ARG DMSGUI_VERSION=v" Dockerfile | cut -d= -f2) -f Dockerfile --push .
 
 
 ## history:
@@ -212,6 +212,7 @@ docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/
 * [ ] 1.5.99 - index: we should remove updateDB from PATCH/logins and PATCH/accounts and create updateLogin and updateAccount modules
 * [ ] 1.5.99 - saveServerEnvs and changePassword do not use scope and schema anymore, why?
 
+* [ ] 1.6.3 - 
 * [x] v1.6.2 - release
 * [x] 1.6.1 - renamed build scripts in package.json to production and development instead of "build", easy as pie
 * [x] 1.6.1 - buildx now has 2 nodes: no more mixup of amd64 binaries on arm64
