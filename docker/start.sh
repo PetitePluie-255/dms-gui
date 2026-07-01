@@ -24,7 +24,7 @@ fi
 sed -i "s|{{BACKEND_PROXY_URL}}|${BACKEND_PROXY_URL}|g" /etc/nginx/http.d/default.conf
 
 # real local development mode requires you to start and not build, the frontend, on your local machine
-if [ "$ENV_MODE" = "development" -a ! -z "$PORT_FRONTEND" ]; then
+if [ "$ENV_MODE" = "development" -a -n "$PORT_FRONTEND" ]; then
 
   # nodemon only detects changes in /backend and does not recompile the frontend. useless
   # https://www.metered.ca/blog/how-to-restart-your-node-js-apps-automatically-with-nodemon/

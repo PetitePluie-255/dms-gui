@@ -34,7 +34,7 @@ import {
  */
 const DataTable = ({
   columns,
-  data,                   // adding a color column will apply that class to each row tr
+  data = [],              // adding a color column will apply that class to each row tr
   keyExtractor,
   renderRow,
   sortKeysInObject = [],  // we will sort objects from data only by those keys
@@ -137,6 +137,8 @@ const DataTable = ({
 
   // BUG: crash when filtering objects: right-hand side of 'in' should be an object, got undefined
   const sortedAndFilteredData = useMemo(() => {
+    if (!Array.isArray(data) || !data.length) return [];
+    
     // Remap data to a new dataset with objects and booleans stringified
     let sanitizedData = data.map((row) => {
       const sanitizedRow = { ...row };
@@ -149,7 +151,7 @@ const DataTable = ({
           // Blank out null values
           sanitizedRow[col.key] = objects2blank.has(sanitizedValue) ? '' : sanitizedValue;
       });
-    return sanitizedRow;
+      return sanitizedRow;
     });
     // debugLog('data',data);
     // debugLog('sanitizedData',sanitizedData);

@@ -6,6 +6,8 @@
 // you do not need useState if you are using the useSyncExternalStore implementation for localStorage.
 // one of the primary reasons to use useSyncExternalStore in 2025 is to remove useState and useEffect duplication.
 
+// localStorage has a strict 5MB limit per domain
+
 import { useSyncExternalStore, useRef } from 'react';
 
 /**

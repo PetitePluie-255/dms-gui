@@ -945,10 +945,10 @@ export const dbAll = (sql, params={}, ...anonParams) => {
 export const dbInit = (DATABASE_RESET=false) => {
 
   if (DATABASE_RESET) {
-    infoLog(`${color.HIG}${color.REV}start ${color.r} RESET DATABASE`);
+    infoLog(`${color.HIG}${color.REV}start ${env.ENV_MODE}: ${color.r}${env.DATABASE} + RESET ${color.y}`, env.isDEMO ? '(DEMO)' : '');
     exec(`rm -f ${env.DATABASE}`);
   } else {
-    infoLog(`${color.REV}start ${color.g} production`);
+                infoLog(`${color.REV}start ${env.ENV_MODE}: ${color.g}${env.DATABASE} ${color.y}`, env.isDEMO ? '(DEMO)' : '');
   }
   dbOpen();
   let result;

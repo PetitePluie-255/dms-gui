@@ -162,21 +162,19 @@ export const getAccounts = async (containerName=null, refresh=false, roles=[]) =
         infoLog(`Found ${accounts.message.length} entries in accounts`);
         
         // JSON.parse storage and managers for the UI as it's stored or returned stringified by better-sqlite3
-        accounts = accounts.message.map(account => { return { 
+        accounts.message = accounts.message.map(account => { return { 
           ...account, 
           storage:  JSON.parse(account?.storage), 
           managers: JSON.parse(account?.managers).filter(Boolean), 
           }; 
         });
 
-      } else warnLog(`db accounts seems empty:`, accounts.message);
-
-      return {success: true, message: accounts};
-      // [ { mailbox: 'a@b.com', domain:'b.com', storage: {} }, .. ]
+      } else warnLog(`db accounts is empty`);
 
     // unknown error
     } else errorLog(accounts?.error);
     
+    // [ { mailbox: 'a@b.com', domain:'b.com', storage: {} }, .. ]
     return accounts;
     
   } catch (error) {

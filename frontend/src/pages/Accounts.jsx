@@ -70,7 +70,7 @@ const Accounts = () => {
   const [containerName] = useLocalStorage("containerName", '');
   const [mailservers] = useLocalStorage("mailservers", []);
 
-  const [accounts, setAccounts] = useLocalStorage("accounts", []);
+  const [accounts, setAccounts] = useState("accounts", []);
   // [
     // { domain: "aaa.com", mailbox: "eric@aaa.com", username: "eric@aaa.com", storage: { used: "565M", total: "5.2G", percent: "10" } }
     // { domain: "bbb.com", mailbox: "admin@bbb.com", username: "admin@bbb.com", storage: { used: "0M", total: "5.2G", percent: "0" } }

@@ -14,9 +14,8 @@ services:
 
     build:                                              # comment me for official image
       context: .                                        # comment me for official image
-      args:                                             # build: any ARG in Dockerfile must be there too; cannot use environment variables here
-        - ENV_MODE=production
-        # - ENV_MODE=development                          # is also used for DEBUG in production: webpack will enable eval-source-map
+      args:                                             # comment me for official image
+        - ENV_MODE=${ENV_MODE:-production}              # comment me for official image
     image: audioscavenger/dms-gui:latest
     container_name: dms-gui
     hostname: dms-gui
@@ -32,7 +31,7 @@ services:
     env_file: ./config/dms-gui/.dms-gui.env
     environment:
       - TZ=${TZ:-UTC}
-      - ENV_MODE={ENV_MODE:-production}                 # production or development
+      - ENV_MODE=${ENV_MODE:-production}
       - isDEMO=${isDEMO:-false}                         # DEMO mode
       - DATABASE_RESET=${DATABASE_RESET:-false}         # to reset the database each time; used for DEMO
       - DEBUG=${DEBUG:-false}                           # enable debugging

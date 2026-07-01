@@ -44,11 +44,13 @@ import {
 } from '../components';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../hooks/useToast';
 
 
 const Logins = () => {
   // const sortKeysInObject = ['email', 'username'];   // not needed as they are not objects, just rendered FormControl
   const { t } = useTranslation();
+  const triggerToast = useToast();
   const { user } = useAuth();   // {"id":1,"username":"adminn","email":"admin@dms-gui.com","isAdmin":1,"isActive":1,"isAccount":0,"mailserver":"dms","roles":[],"mailbox":"admin@dms-gui.com"}
   const navigate = useNavigate();
   const [containerName] = useLocalStorage("containerName", '');
@@ -237,7 +239,7 @@ const Logins = () => {
       } else setErrorMessage(accountsData?.error);
 
     } catch (error) {
-      errorLog(t('api.errors.fetchAccounts'), error);
+      errorLog(t('api.errors.fetchAccounts', {error:error.message}));
       // setErrorMessage('api.errors.fetchAccounts');
       setErrorMessage({key: 'api.errors.fetchAccounts', values: { error: error.message }});
       

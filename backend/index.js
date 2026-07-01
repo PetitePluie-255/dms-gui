@@ -1955,12 +1955,15 @@ app.use((err, req, res, next) => {
 // BACKEND APP LISTEN
 // ============================================
 app.listen(env.PORT_BACKEND, async () => {
-  infoLog(`dms-gui-backend ${env.DMSGUI_VERSION} NodeJS ${process.version} running on port ${env.PORT_BACKEND}`);
-  debugLog('🐞 debug mode is ENABLED');
+  infoLog(`DMSGUI_VERSION=${env.DMSGUI_VERSION} NodeJS=${process.version} running on PORT_BACKEND=${env.PORT_BACKEND}`);
+  infoLog(`DEBUG=${env.debug}`);
+  infoLog(`isDEMO=${env.isDEMO}`);
+  infoLog(`DATABASE=${env.DATABASE}`);
+  infoLog(`DATABASE_RESET=${env.DATABASE_RESET}`);
 
   // https://github.com/ncb000gt/node-cron    // internal crontan
-  debugLog('DMSGUI_CRON',env.DMSGUI_CRON)
   if (env.DMSGUI_CRON) {
+    infoLog('DMSGUI_CRON',env.DMSGUI_CRON)
     cron.schedule(env.DMSGUI_CRON, () => {
         delay(60000); // wait until next minute or the container will reboot 60 times
         killContainer('dms-gui', 'dms-gui', 'dms-gui');    // no await

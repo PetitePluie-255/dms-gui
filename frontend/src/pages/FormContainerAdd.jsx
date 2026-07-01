@@ -50,12 +50,6 @@ function FormContainerAdd() {
   // const [containerName, setContainerName] = useState(useLocalStorage("containerName", ''););   // best of both worlds, deprecated
   // const [mailservers, setMailservers] = useState(useLocalStorage("mailservers", []));                // best of both worlds, deprecated
   
-  // moved to dashboard
-  // const [envs, setServerEnvs] = useState([]);
-  // const [aliases, setAliases] = useLocalStorage("aliases", []);
-  // const [accounts, setAccounts] = useLocalStorage("accounts", []);
-  // const [DOVECOT_FTS, setDOVECOT_FTS] = useState(0);
-
   const [isLoading, setLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState(null);
   const [warningMessage, setWarningMessage] = useState(null);
@@ -653,9 +647,10 @@ function FormContainerAdd() {
           //   setLoading(false);
           // }
           debugLog(`Success! navigate to /dashboard`);
-          setTimeout(() => {
-            navigate("/dashboard");
-          }, 2000);
+          // setTimeout(() => {
+          //   navigate("/dashboard");
+          // }, 2000);
+          navigate("/dashboard");
 
         } else {
           // reminder to setup DMS compose after a submit

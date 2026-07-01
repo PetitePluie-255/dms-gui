@@ -193,11 +193,12 @@ Rename `./config/dms-gui/.dms-gui.env.example` as `./config/dms-gui/.dms-gui.env
 ###############################################################################
 
 ## Optional: Dev Environment
-# ENV_MODE=development
-ENV_MODE=production
-
-## Debugging
-# DEBUG=true
+# PORT_FRONTEND=3001          # ONLY set that up if you can serve the frontend locally and not inside the container
+PORT_BACKEND=3000
+BACKEND_PROXY_URL=http://localhost:${PORT_BACKEND}
+FRONTEND_PROXY_URL=http://localhost:${PORT_FRONTEND}
+UPSTREAM_NGINX_PRODUTION=try_files $$uri $$uri/ /index.html;
+UPSTREAM_NGINX_DEVELOPMENT=proxy_pass ${FRONTEND_PROXY_URL}; proxy_http_version 1.1; proxy_set_header Upgrade $$http_upgrade; proxy_set_header Connection "upgrade";
 
 ## how long before rotation of the secrets:
 ACCESS_TOKEN_EXPIRY=1h
@@ -208,11 +209,13 @@ REFRESH_TOKEN_EXPIRY=1d
 IV_LEN=16
 ## HASH_LEN is the length of the hashed keys for passwords
 HASH_LEN=64
+#############################################################################
 ## AES_SECRET = encrypted data secret key, that one is set in the environment as well but must never change or you won;t be able to read your encrypted data anymore
 ## generate it once and for all with node or openssl:
 ##   openssl rand -hex 32
 ##   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 AES_SECRET=replaceme
+#############################################################################
 ## encrypted data algorithm
 AES_ALGO=aes-256-cbc
 ## AES_HASH is the used to hash the secret key
@@ -235,8 +238,14 @@ DATABASE=${DMSGUI_CONFIG_PATH}/dms-gui.sqlite3
 ##           * * *  * * *
 DMSGUI_CRON="* 1 23 * * *"
 
-# make this a demo server
+# enable fronted maps and debugging; define in compose is a better choice
+# DEBUG=true
+
+# make this a demo server; define in compose is a better choice
 # isDEMO=true
+
+# reset database during each restart; define in compose is a better choice
+# DATABASE_RESET=true
 
 # disable colors in backend logs, some terminals can't handle them
 # LOG_COLORS=false

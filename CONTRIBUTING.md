@@ -127,15 +127,17 @@ The TODO list rank is in order, as you naturally read from top to bottom and the
 ### Aliases
 - purge
 alias dpurge='docker buildx prune --builder multiarch --all -f; docker container prune -f && docker image prune -f && docker builder prune -a -f'
+alias npurge='rm -rf /docker/dms/dms-gui/backend/node_modules /docker/dms/dms-gui/frontend/node_modules'
 
 - DEBUG rebuild
-alias buildup='BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build && DEBUG=true docker-compose up --force-recreate'
+alias buildup='ENV_MODE=development BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build && ENV_MODE=development DEBUG=true docker-compose up --force-recreate'
+alias buildupp='BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build && docker-compose up --force-recreate'
 
 - DEBUG rebuild + DATABASE_RESET
-alias buildup='BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build && DEBUG=true DATABASE_RESET=true docker-compose up --force-recreate'
+alias buildupr='ENV_MODE=development BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build && ENV_MODE=development DEBUG=true DATABASE_RESET=true docker-compose up --force-recreate'
 
 - DEBUG rebuild + DATABASE_RESET + NOCACHE
-alias buildup='BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build --no-cache && DEBUG=true DATABASE_RESET=true docker-compose up --force-recreate'
+ENV_MODE=development BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build --no-cache && ENV_MODE=development DEBUG=true DATABASE_RESET=true docker-compose up --force-recreate
 
 - check inside the container without really running it
 docker-compose run --rm --entrypoint ls audioscavenger/dms-gui:latest -la /app
@@ -191,9 +193,30 @@ NAME/NODE        DRIVER/ENDPOINT                   STATUS    BUILDKIT   PLATFORM
     \_ local_host    \_ unix:///var/run/docker.sock   running   v0.30.0    linux/amd64* (+3), linux/386
     \_ oracle_arm    \_ ssh://root@oracle01:22        running   v0.30.0    linux/arm64*, linux/arm (+2)
 
+### 1. Build and Load Locally (AMD)
 dpurge
 docker system df
-ENV_MODE=production docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/arm64 -t audioscavenger/dms-gui:latest -t audioscavenger/dms-gui:$(grep "^ARG DMSGUI_VERSION=v" Dockerfile | cut -d= -f2) -f Dockerfile --push .
+docker buildx build --no-cache \
+  --builder=multiarch \
+  --platform linux/amd64 \
+  -t audioscavenger/dms-gui:latest \
+  -f Dockerfile --load .
+
+### 2. Build and Push Remotely (ARM)
+docker buildx build --no-cache \
+  --builder=multiarch \
+  --platform linux/arm64 \
+  -t audioscavenger/dms-gui:latest \
+  -f Dockerfile \
+  --output type=docker,context=ssh://root@oracle01:22 .
+
+### 3. Push to Docker Hub When Ready
+docker buildx build \
+  --builder=multiarch \
+  --platform linux/amd64,linux/arm64 \
+  -t audioscavenger/dms-gui:latest \
+  -t audioscavenger/dms-gui:$(grep "^ARG DMSGUI_VERSION=v" Dockerfile | cut -d= -f2) \
+  -f Dockerfile --push .
 
 
 ## history:
@@ -212,7 +235,13 @@ ENV_MODE=production docker buildx build --no-cache --builder=multiarch --platfor
 * [ ] 1.5.99 - index: we should remove updateDB from PATCH/logins and PATCH/accounts and create updateLogin and updateAccount modules
 * [ ] 1.5.99 - saveServerEnvs and changePassword do not use scope and schema anymore, why?
 
-* [ ] 1.6.3 - 
+* [x] 1.6.3 - Aliases: setAccountOptions is done by fetchAliases once we get accountsData
+* [x] 1.6.3 - backend: index displays critical variables on start
+* [x] 1.6.3 - dbInit show env.DATABASE path
+* [x] 1.6.3 - Accounts and Aliases are back in useState
+* [x] 1.6.3 - bugfix: accounts returned an object in an object instead of an array
+* [x] 1.6.3 - bugfix: when discovery has not run yet after adding a container, DataTable and Aliases all fail; removed the 2s delay
+* [x] 1.6.3 - build: fixed webpack yet again
 * [x] v1.6.2 - release
 * [x] 1.6.1 - renamed build scripts in package.json to production and development instead of "build", easy as pie
 * [x] 1.6.1 - buildx now has 2 nodes: no more mixup of amd64 binaries on arm64
