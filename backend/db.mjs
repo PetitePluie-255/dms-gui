@@ -944,14 +944,14 @@ export const dbAll = (sql, params={}, ...anonParams) => {
 // dbInit is not async, hell no
 export const dbInit = (DATABASE_RESET=false) => {
 
-  if (env.isDEMO) exec(`cp -f ${env.DATABASE_SAMPLE} ${env.DATABASE_SAMPLE_LIVE}`); // DEMO MODE: DATABASE_RESET is implied
-  
   if (DATABASE_RESET) {
     infoLog(`${color.HIG}${color.REV}start ${env.ENV_MODE}: ${color.g}${env.DATABASE} ${color.g}+RESET ${color.y}`, env.isDEMO ? '+DEMO' : '');
     exec(`rm -f ${env.DATABASE}`);
   } else {
                 infoLog(`${color.REV}start ${env.ENV_MODE}: ${color.g}${env.DATABASE} ${color.y}`, env.isDEMO ? '+DEMO' : '');
   }
+  if (env.isDEMO) exec(`cp -f ${env.DATABASE_SAMPLE} ${env.DATABASE_SAMPLE_LIVE}`); // DEMO MODE: DATABASE_RESET is implied
+
   dbOpen();
   let result;
 
