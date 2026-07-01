@@ -125,19 +125,21 @@ The TODO list rank is in order, as you naturally read from top to bottom and the
 - [hub.docker](https://hub.docker.com/repositories/audioscavenger)
 
 ### Aliases
+export BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" 
+
 - purge
 alias dpurge='docker buildx prune --builder multiarch --all -f; docker container prune -f && docker image prune -f && docker builder prune -a -f'
 alias npurge='rm -rf /docker/dms/dms-gui/backend/node_modules /docker/dms/dms-gui/frontend/node_modules'
 
 - DEBUG rebuild
-alias buildup='ENV_MODE=development BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build && ENV_MODE=development DEBUG=true docker-compose up --force-recreate'
-alias buildupp='BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build && docker-compose up --force-recreate'
+alias buildup='ENV_MODE=development docker-compose build && ENV_MODE=development DEBUG=true docker-compose up --force-recreate'
+alias buildupp='docker-compose build && docker-compose up --force-recreate'
 
 - DEBUG rebuild + DATABASE_RESET
-alias buildupr='ENV_MODE=development BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build && ENV_MODE=development DEBUG=true DATABASE_RESET=true docker-compose up --force-recreate'
+alias buildupr='ENV_MODE=development docker-compose build && ENV_MODE=development DEBUG=true DATABASE_RESET=true docker-compose up --force-recreate'
 
 - DEBUG rebuild + DATABASE_RESET + NOCACHE
-ENV_MODE=development BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build --no-cache && ENV_MODE=development DEBUG=true DATABASE_RESET=true docker-compose up --force-recreate
+ENV_MODE=development docker-compose build --no-cache && ENV_MODE=development DEBUG=true DATABASE_RESET=true docker-compose up --force-recreate
 
 - check inside the container without really running it
 docker-compose run --rm --entrypoint ls audioscavenger/dms-gui:latest -la /app
@@ -194,8 +196,8 @@ NAME/NODE        DRIVER/ENDPOINT                   STATUS    BUILDKIT   PLATFORM
     \_ oracle_arm    \_ ssh://root@oracle01:22        running   v0.30.0    linux/arm64*, linux/arm (+2)
 
 ### 1. Build and Load Locally (AMD)
-dpurge
 docker system df
+dpurge
 docker buildx build --no-cache \
   --builder=multiarch \
   --platform linux/amd64 \
@@ -235,6 +237,7 @@ docker buildx build \
 * [ ] 1.5.99 - index: we should remove updateDB from PATCH/logins and PATCH/accounts and create updateLogin and updateAccount modules
 * [ ] 1.5.99 - saveServerEnvs and changePassword do not use scope and schema anymore, why?
 
+* [x] 1.6.4 - bugfix: db: DEMO would not reset database from the sample
 * [x] 1.6.3 - Aliases: setAccountOptions is done by fetchAliases once we get accountsData
 * [x] 1.6.3 - backend: index displays critical variables on start
 * [x] 1.6.3 - dbInit show env.DATABASE path

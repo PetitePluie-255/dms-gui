@@ -3,7 +3,7 @@
 #   build:      alias buildup='BUILDKIT_COLORS="run=cyan:error=light-red:cancel=light-cyan:warning=yellow" docker-compose build && docker-compose up --force-recreate'            # normal rebuild
 #   release:    docker buildx build --no-cache --builder=multiarch --platform linux/amd64,linux/arm64/v8 -t audioscavenger/dms-gui:latest -t audioscavenger/dms-gui:$(grep "^ARG DMSGUI_VERSION=v" Dockerfile | cut -d= -f2) -f Dockerfile --push .
 
-ARG DMSGUI_VERSION=v1.6.3
+ARG DMSGUI_VERSION=1.6.4
 ARG DMSGUI_DESCRIPTION="A graphical user interface for managing all aspects of DMS including: email accounts, aliases, xapian indexes, and DNS entries."
 
 # -----------------------------------------------------
@@ -109,9 +109,6 @@ RUN touch /app/DMSGUI_VERSION.${DMSGUI_VERSION}.txt
 # Grab just the string value during image build and drop it into a text file
 RUN node -e "console.log(require('./frontend/package.json').dependencies?.react || require('./frontend/package.json').devDependencies?.react)" | sed 's/^[~^]//' > /app/REACT_VERSION.txt
 RUN busybox dos2unix /app/*.sh
-
-# Expose port for the application
-# EXPOSE 3001
 
 # Start just node itself when slim is used for main stage: however JWT_SECRET regen will be missing
 # CMD ["node", "/app/backend/index.js"]
