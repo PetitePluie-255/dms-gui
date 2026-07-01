@@ -237,6 +237,7 @@ docker buildx build \
 * [ ] 1.5.99 - index: we should remove updateDB from PATCH/logins and PATCH/accounts and create updateLogin and updateAccount modules
 * [ ] 1.5.99 - saveServerEnvs and changePassword do not use scope and schema anymore, why?
 
+* [x] v1.6.5 - release
 * [x] 1.6.4 - bugfix: db: DEMO would not reset database from the sample
 * [x] 1.6.3 - Aliases: setAccountOptions is done by fetchAliases once we get accountsData
 * [x] 1.6.3 - backend: index displays critical variables on start
