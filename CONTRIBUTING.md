@@ -237,6 +237,7 @@ docker buildx build \
 * [ ] 1.5.99 - index: we should remove updateDB from PATCH/logins and PATCH/accounts and create updateLogin and updateAccount modules
 * [ ] 1.5.99 - saveServerEnvs and changePassword do not use scope and schema anymore, why?
 
+* [ ] v1.6.6 - delete login does not seem to delete the mailbox
 * [x] v1.6.5 - release
 * [x] 1.6.4 - bugfix: db: DEMO would not reset database from the sample
 * [x] 1.6.3 - Aliases: setAccountOptions is done by fetchAliases once we get accountsData
@@ -246,10 +247,11 @@ docker buildx build \
 * [x] 1.6.3 - bugfix: accounts returned an object in an object instead of an array
 * [x] 1.6.3 - bugfix: when discovery has not run yet after adding a container, DataTable and Aliases all fail; removed the 2s delay
 * [x] 1.6.3 - build: fixed webpack yet again
-* [x] v1.6.2 - release
+* [x] 1.6.2 - release cancelled
 * [x] 1.6.1 - renamed build scripts in package.json to production and development instead of "build", easy as pie
 * [x] 1.6.1 - buildx now has 2 nodes: no more mixup of amd64 binaries on arm64
 * [x] 1.6.1 - release with gcc for better-sqlite3 or else buildx will poison the aarch64 cache
+* [x] 1.6.0 - release cancelled
 * [x] 1.5.80 - frontend: replace some AlertMessage with Toasts where it makes sense; yeah it's done bro
 * [-] 1.5.80 - ServerInfos: use Toasts; no why? who cares
 * [-] 1.5.80 - Logins: use Toasts; no why? who cares

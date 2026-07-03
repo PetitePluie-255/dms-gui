@@ -8,12 +8,12 @@ It relies on a generic REST API written in python, that you have to mount in DMS
 ## ✅ Features
 
 - 🌐 Multi-arch: x86_64 (amd64) + aarch64 (arm64)
-- 🔐 Login page, crypto-secure hashed passwords, HTTP-Only cookies
+- 🔐 Login page, crypto-secure hashed passwords, HTTP-Only cookies, lockout attempts
 - 📊 Dashboard with server status information
 - 👥 User management with roles for their mailboxes
   - 👤 Profile page
-  - 📬 Mailbox account management
-  - 📧 Email alias management (includes regex)
+  - 📬 Mailbox account management and auto-discovery
+  - 📧 Email alias management (includes regex) and auto-discovery
 - 🐋 DMS (Docker-Mailserver) connection configuration
   - 🗃️ Multiple-DMS ready!
   - 🔑 REST API Key management for direct access
@@ -334,13 +334,15 @@ services:
     
     environment:
       - TZ=${TZ:-UTC}
-      
-      # Debugging
-      # - DEBUG=true
+      - ENV_MODE=${ENV_MODE:-production}
+      - isDEMO=${isDEMO:-false}                         # DEMO mode
+      - DATABASE_RESET=${DATABASE_RESET:-false}         # to reset the database each time; used for DEMO
+      - DEBUG=${DEBUG:-false}                           # enable debugging
 
     expose:
-      - 80                      # frontend
-      - 3001                    # /docs
+      - 80      # frontend via internal nginx
+      - 3001    # frontend: webpack-dev-server if you can get it to run inside the container... good luck
+      - 3000    # backend and docs
     
     volumes:
       - /etc/timezone:/etc/timezone:ro

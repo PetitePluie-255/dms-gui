@@ -8,12 +8,12 @@ It relies on a generic REST API written in python, that you have to mount in DMS
 ## ✅ Features
 
 - 🌐 Multi-arch: x86_64 (amd64) + aarch64 (arm64)
-- 🔐 Login page, crypto-secure hashed passwords, HTTP-Only cookies
+- 🔐 Login page, crypto-secure hashed passwords, HTTP-Only cookies, lockout attempts
 - 📊 Dashboard with server status information
 - 👥 User management with roles for their mailboxes
   - 👤 Profile page
-  - 📬 Mailbox account management
-  - 📧 Email alias management (includes regex)
+  - 📬 Mailbox account management and auto-discovery
+  - 📧 Email alias management (includes regex) and auto-discovery
 - 🐋 DMS (Docker-Mailserver) connection configuration
   - 🗃️ Multiple-DMS ready!
   - 🔑 REST API Key management for direct access
@@ -27,7 +27,7 @@ It relies on a generic REST API written in python, that you have to mount in DMS
 
 - 🛢️ Mailbox import/export
 - 📊 Actual mailbox statistics like Poste.io
-- 🌐 DKIM and DNS domain management and injection
+- 🌐 DKIM and DNS domain management with CloudFlare injection
 
 
 ## ✔️ Compatibility Chart
