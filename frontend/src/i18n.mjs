@@ -3,9 +3,10 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Import translations
-const supportedLngs = ['en', 'pl'];
+const supportedLngs = ['en', 'pl', 'zh'];
 import en from './locales/en/translation.json';
 import pl from './locales/pl/translation.json';
+import zh from './locales/zh/translation.json';
 
 const resources = {
   en: {
@@ -13,6 +14,9 @@ const resources = {
   },
   pl: {
     translation: pl,
+  },
+  zh: {
+    translation: zh,
   },
 };
 

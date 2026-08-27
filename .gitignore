@@ -4,10 +4,12 @@
 commit.*.txt
 *.code-workspace
 config/dms-gui/*
+reasonix.toml
 
 # Dependencies
 node_modules/
-
+.pnpm-store
+.reasonix
 # Environment variables
 !config/dms-gui/.dms-gui.env.example
 !config/dms-gui/dms-gui-demo.sqlite3

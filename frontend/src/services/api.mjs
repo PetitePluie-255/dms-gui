@@ -614,5 +614,15 @@ export const killContainer = async (plugin, schema, containerName) => {
   });
 };
 
+// Update DNS records for a domain
+export const updateDNS = async (domain, password) => {
+  if (!domain) return {success: false, error: 'domain is required'};
+  
+  return await cacheWrap(async () => {
+    const response = await api.post(`/updateDNS/${domain}`, { password });
+    return response.data;
+  });
+};
+
 
 export default api;
