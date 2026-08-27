@@ -4,6 +4,7 @@
 commit.*.txt
 *.code-workspace
 config/dms-gui/*
+config/dms-gui.sqlite3*
 reasonix.toml
 
 # Dependencies
