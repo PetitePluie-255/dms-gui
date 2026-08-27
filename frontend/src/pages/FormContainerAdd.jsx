@@ -4,13 +4,9 @@ import { useTranslation } from 'react-i18next';
 import Row from 'react-bootstrap/Row'; // Import Row
 import Col from 'react-bootstrap/Col'; // Import Col
 
+import { debug, debugLog, errorLog } from '../../frontend.mjs';
 import {
-  debug,
-  debugLog,
-  errorLog,
-} from '../../frontend.mjs';
-import {
-  getValueFromArrayOfObj, 
+  getValueFromArrayOfObj,
   isNonEmptyDict,
   mergeArrayOfObj,
 } from '../../../common.mjs';
@@ -27,7 +23,7 @@ import {
   initAPI,
 } from '../services/api.mjs';
 
-import { 
+import {
   AlertMessage,
   Button,
   Card,
@@ -44,22 +40,25 @@ function FormContainerAdd() {
   const triggerToast = useToast();
   const { user, login } = useAuth();
   const navigate = useNavigate();
-  const [containerName, setContainerName] = useLocalStorage("containerName", '');
-  const [mailservers, setMailservers] = useLocalStorage("mailservers", []);
-  const [firstRun] = useLocalStorage("firstRun", false); // this is obviously used in Login, Profile and Settings
+  const [containerName, setContainerName] = useLocalStorage(
+    'containerName',
+    ''
+  );
+  const [mailservers, setMailservers] = useLocalStorage('mailservers', []);
+  const [firstRun] = useLocalStorage('firstRun', false); // this is obviously used in Login, Profile and Settings
   // const [containerName, setContainerName] = useState(useLocalStorage("containerName", ''););   // best of both worlds, deprecated
   // const [mailservers, setMailservers] = useState(useLocalStorage("mailservers", []));                // best of both worlds, deprecated
-  
+
   const [isLoading, setLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState(null);
   const [warningMessage, setWarningMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   // const [toastMessage, triggerToast] = useState(null);
-  
-  const [pingResult, setPingResult] = useState(false);        // enables API gen, and all 3 buttons
-  const [APIInjected, setAPIInjected] = useState(false);      // also enables the Test API button
-  const [APIValidated, setAPIValidated] = useState(false);    // only used to make the Test API button green, you can save the settings regardless
-  const [formValidated, setFormValidated] = useState(false);  // enables all 3 buttons
+
+  const [pingResult, setPingResult] = useState(false); // enables API gen, and all 3 buttons
+  const [APIInjected, setAPIInjected] = useState(false); // also enables the Test API button
+  const [APIValidated, setAPIValidated] = useState(false); // only used to make the Test API button green, you can save the settings regardless
+  const [formValidated, setFormValidated] = useState(false); // enables all 3 buttons
   const [formErrors, setFormErrors] = useState({});
   const [formValuesSubmitted, setFormValuesSubmitted] = useState(false); // 'idle', 'submitting', 'success', 'error'
   const makeFavoriteRef = useRef(null);
@@ -67,26 +66,26 @@ function FormContainerAdd() {
   // selector fields
   // TODO: no actual data or names should ever be there, those should be in emv..mjs and pulled by an API call
   const [protocols, setProtocols] = useState([
-    {value: 'http', label: 'http'},
-    {value: 'https', label: 'https'},
+    { value: 'http', label: 'http' },
+    { value: 'https', label: 'https' },
   ]);
 
   // TODO: no actual data or names should ever be there, those should be in emv..mjs and pulled by an API call
   const [schemas, setSchemas] = useState([
-    {value: 'dms', label: 'DMS'},
-    {value: 'poste', label: 'Poste.io'},
+    { value: 'dms', label: 'DMS' },
+    { value: 'poste', label: 'Poste.io' },
   ]);
 
   // TODO: no actual data or names should ever be there, those should be in emv..mjs and pulled by an API call
   const [formValues, setFormValues] = useState([
-        {name: 'schema', value: schemas[0].value},
-        {name: 'containerName', value: containerName},
-        {name: 'protocol', value: protocols[0].value},
-        {name: 'DMS_API_PORT', value: '8888'},
-        {name: 'DMS_API_KEY', value: ''},
-        {name: 'timeout', value: '4'},
-        {name: 'setupPath', value: '/usr/local/bin/setup'},
-      ]);
+    { name: 'schema', value: schemas[0].value },
+    { name: 'containerName', value: containerName },
+    { name: 'protocol', value: protocols[0].value },
+    { name: 'DMS_API_PORT', value: '8888' },
+    { name: 'DMS_API_KEY', value: '' },
+    { name: 'timeout', value: '4' },
+    { name: 'setupPath', value: '/usr/local/bin/setup' },
+  ]);
 
   // const [dnsProviders, setDnsProviders] = useState([
   //   {value: 'cloudflare', label: 'Cloudflare'},
@@ -105,167 +104,189 @@ function FormContainerAdd() {
 
   // };
 
-
   /////////////////////////////////////////////////////////////////////////////////////////////////// stopped using async
   /////////////////////////////////////////////////////////////////////////////////////////////////// stopped using async
   /////////////////////////////////////////////////////////////////////////////////////////////////// stopped using async
   /////////////////////////////////////////////////////////////////////////////////////////////////// stopped using async
-
 
   const fetchAll = async () => {
-
     try {
       setLoading(true);
       setErrorMessage(null);
       setWarningMessage(null);
       setSuccessMessage(null);
-      
+
       // this normally is pulled after successful login, may also call initFormValues
       // if (!mailservers.length) await fetchMailservers();
       // this preloads container settings
       if (containerName) await fetchContainerSettings(containerName);
-
     } catch (error) {
       // each fetch has its own error handling
-
     } finally {
       setLoading(false);
     }
   };
 
   const fetchMailservers = async () => {
-    
     try {
-      const [mailserversData] = await Promise.all([
-        getConfigs('mailserver'),
-      ]);
+      const [mailserversData] = await Promise.all([getConfigs('mailserver')]);
 
       if (mailserversData?.success) {
         // this will be all containers in db except dms-gui
         debugLog('fetchMailservers: mailserversData', mailserversData); // [ {value:containerName', plugin:'mailserver', schema:'dms', scope:'dms-gui'}, ..]
 
         // update selector list
-        debugLog(`FormContainerAdd 4 setMailservers:`, mailserversData.message.map(mailserver => { return { ...mailserver, label:mailserver.value } }));
-        setMailservers(mailserversData.message.map(mailserver => { return { ...mailserver, label:mailserver.value } }));   // duplicate value as label for the select field
-
+        debugLog(
+          `FormContainerAdd 4 setMailservers:`,
+          mailserversData.message.map((mailserver) => {
+            return { ...mailserver, label: mailserver.value };
+          })
+        );
+        setMailservers(
+          mailserversData.message.map((mailserver) => {
+            return { ...mailserver, label: mailserver.value };
+          })
+        ); // duplicate value as label for the select field
       } else setErrorMessage(mailserversData?.error);
-
     } catch (error) {
       errorLog(t('api.errors.fetchConfigs'), error);
       // setErrorMessage('api.errors.fetchConfigs');
-      setErrorMessage({key: 'api.errors.fetchConfigs', values: { error: error.message }});
+      setErrorMessage({
+        key: 'api.errors.fetchConfigs',
+        values: { error: error.message },
+      });
     }
   };
-
 
   const fetchContainerSettings = async (container) => {
     if (container && mailservers.length) {
       setLoading(true);
       // setWarningMessage(null);   // if API KEY is not ready yet on DMS side, we want to keep the warning
       setErrorMessage(null);
-      
+
       try {
-          const [settingsData] = await Promise.all([
-          getSettings(
-            'mailserver',
-            container,
-          ),
+        const [settingsData] = await Promise.all([
+          getSettings('mailserver', container),
         ]);
         // debugLog(`FormContainerAdd mergeArrayOfObj settingsData`,settingsData);
 
         if (settingsData?.success) {
           // this will be formValues for that container only
-          debugLog(`FormContainerAdd: got ${settingsData.message.length} settingsData for ${container}:`, settingsData.message);
-  
-          setFormValues(mergeArrayOfObj(formValues, settingsData.message, 'name'));
+          debugLog(
+            `FormContainerAdd: got ${settingsData.message.length} settingsData for ${container}:`,
+            settingsData.message
+          );
+
+          setFormValues(
+            mergeArrayOfObj(formValues, settingsData.message, 'name')
+          );
 
           // applying values to the form will not trigger the container ping test so we force that here
           handlePingTest(false, container);
-
         } else setErrorMessage(settingsData?.error);
-
       } catch (error) {
         errorLog(t('api.errors.fetchSettings'), error);
         // setErrorMessage('api.errors.fetchSettings');
-        setErrorMessage({key: 'api.errors.fetchSettings', values: { error: error.message }});
+        setErrorMessage({
+          key: 'api.errors.fetchSettings',
+          values: { error: error.message },
+        });
       }
       setLoading(false);
     }
   };
 
-
-  const handlePingTest = async (showMessages=true, container=null) => {
+  const handlePingTest = async (showMessages = true, container = null) => {
     setWarningMessage(null);
     setErrorMessage(null);
     setSuccessMessage(null);
     setPingResult(false);
 
-    if (!container) container = getValueFromArrayOfObj(formValues, 'containerName');
+    if (!container)
+      container = getValueFromArrayOfObj(formValues, 'containerName');
     if (container.length) {
       try {
-        
         const result = await getServerStatus('mailserver', container, 'ping');
         if (result.success) {
           // if (result.message.status.status === 'unknown' && showMessages) setErrorMessage(t('dashboard.status.unknown') +": "+ result.message.status.error);
           // if (result.message.status.status === 'missing' && showMessages) setErrorMessage(t('dashboard.status.missing') +": "+ result.message.status.error);
           // if (result.message.status.status === 'stopped' && showMessages) setWarningMessage(t('dashboard.status.stopped') +": "+ result.message.status.error);
-          if (result.message.status.status === 'unknown' && showMessages) triggerToast({
+          if (result.message.status.status === 'unknown' && showMessages)
+            triggerToast({
               type: 'error',
-              message: t('dashboard.status.unknown') +": "+ result.message.status.error,
+              message:
+                t('dashboard.status.unknown') +
+                ': ' +
+                result.message.status.error,
             });
-          if (result.message.status.status === 'missing' && showMessages) triggerToast({
+          if (result.message.status.status === 'missing' && showMessages)
+            triggerToast({
               type: 'error',
-              message: t('dashboard.status.missing') +": "+ result.message.status.error,
+              message:
+                t('dashboard.status.missing') +
+                ': ' +
+                result.message.status.error,
             });
-          if (result.message.status.status === 'stopped' && showMessages) triggerToast({
+          if (result.message.status.status === 'stopped' && showMessages)
+            triggerToast({
               type: 'warning',
-              message: t('dashboard.status.stopped') +": "+ result.message.status.error,
+              message:
+                t('dashboard.status.stopped') +
+                ': ' +
+                result.message.status.error,
             });
           if (result.message.status.status === 'alive') {
             // if (showMessages) setSuccessMessage(t('dashboard.status.alive'));
             triggerToast({
               type: 'success',
-              message: t('dashboard.status.alive', {containerName:container}),
+              message: t('dashboard.status.alive', {
+                containerName: container,
+              }),
             });
             setPingResult(true);
           }
-
-        } else setErrorMessage(result?.error);  // super unknown error
+        } else setErrorMessage(result?.error); // super unknown error
         return result;
-
       } catch (error) {
         errorLog(t('api.errors.ping'), error.message);
         // setErrorMessage('api.errors.ping', error.message);
         // setErrorMessage({key: 'api.errors.ping', values: { error: error.message }});
         triggerToast({
-              type: 'error',
-              message: {key: 'api.errors.ping', values: { error: error.message }},
-            });
+          type: 'error',
+          message: { key: 'api.errors.ping', values: { error: error.message } },
+        });
       }
     }
   };
 
-
-  const handleInjectAPI = async (showMessages=true, container=null) => {
-
-    if (!container) container = getValueFromArrayOfObj(formValues, 'containerName');
+  const handleInjectAPI = async (showMessages = true, container = null) => {
+    if (!container)
+      container = getValueFromArrayOfObj(formValues, 'containerName');
     if (container.length) {
       try {
-        
         // saveSettings saves the DMS_API_KEY but initAPI+inject also since we need it in the local db to perform the handleAPITest
         debugLog('handleInjectAPI files to containerName=', container);
-        const result = await initAPI('mailserver', getValueFromArrayOfObj(formValues, 'schema'), container, 'inject', getValueFromArrayOfObj(formValues, 'schema'));
+        const result = await initAPI(
+          'mailserver',
+          getValueFromArrayOfObj(formValues, 'schema'),
+          container,
+          'inject',
+          getValueFromArrayOfObj(formValues, 'schema')
+        );
 
         if (result.success) {
           setAPIInjected(true);
           // if (showMessages) setSuccessMessage(t('settings.DMS_API_injectSuccess'));
-          if (showMessages) triggerToast({
-            type: 'success',
-            message: t('settings.DMS_API_injectSuccess'),
-          });
-
+          if (showMessages)
+            triggerToast({
+              type: 'success',
+              message: t('settings.DMS_API_injectSuccess'),
+            });
         } else {
-          setErrorMessage({key: 'api.errors.DMS_API_injectFailed', values: { error: result?.error }});
+          setErrorMessage({
+            key: 'api.errors.DMS_API_injectFailed',
+            values: { error: result?.error },
+          });
           // setWarningMessage(t('settings.DMS_API_injectFailedHelp'));
           triggerToast({
             type: 'warning',
@@ -274,15 +295,16 @@ function FormContainerAdd() {
         }
 
         // return result;
-
       } catch (error) {
         // setErrorMessage(t('api.errors.DMS_API_injectFailed') +": "+ result?.error);
-        setErrorMessage({key: 'api.errors.DMS_API_injectFailed', values: { error: error.message }});
-        return {success: false, error: error.message};
+        setErrorMessage({
+          key: 'api.errors.DMS_API_injectFailed',
+          values: { error: error.message },
+        });
+        return { success: false, error: error.message };
       }
     }
   };
-
 
   const handleAPITest = async (e) => {
     // e.preventDefault();
@@ -293,94 +315,181 @@ function FormContainerAdd() {
 
     if (APIInjected) {
       try {
-      
         // the backend does not have this new dms in db yet, so we must send also the formValues to help getTargetDict
         // const result = await getServerStatus('mailserver', getValueFromArrayOfObj(formValues, 'containerName'), 'execDMS', formValues);
-        
+
         // initAPI will call getServerStatus by itself internally instead of passing formValue directly to the getServerStatus api, only admins can do that now
-        debugLog('initAPI:', 'mailserver', getValueFromArrayOfObj(formValues, 'schema'), getValueFromArrayOfObj(formValues, 'containerName'), 'test', formValues)
-        const result = await initAPI('mailserver', getValueFromArrayOfObj(formValues, 'schema'), getValueFromArrayOfObj(formValues, 'containerName'), 'test', formValues);
+        debugLog(
+          'initAPI:',
+          'mailserver',
+          getValueFromArrayOfObj(formValues, 'schema'),
+          getValueFromArrayOfObj(formValues, 'containerName'),
+          'test',
+          formValues
+        );
+        const result = await initAPI(
+          'mailserver',
+          getValueFromArrayOfObj(formValues, 'schema'),
+          getValueFromArrayOfObj(formValues, 'containerName'),
+          'test',
+          formValues
+        );
         // debugLog('ddebug initAPI result:', result)
 
-          // { success: false, message: "Injection refused when dms_api_key_param is missing" }
-          // { success: true,
-          //   message: {
-          //     db: { logins: 0, accounts: 0, aliases: 0, … }
-          //     resources: { cpuUsage: 0, memoryUsage: 0, diskUsage: 0, … }
-          //     status: { status: "api_match", error: "Invalid api_key: api_match: xxx-2f43-40c6-8104-yyy" }
-          //       error: "Invalid api_key: api_match: xxx-2f43-40c6-8104-yyy"
-          //       status: "api_match"
-          //     }
-          //   }
-          // }
+        // { success: false, message: "Injection refused when dms_api_key_param is missing" }
+        // { success: true,
+        //   message: {
+        //     db: { logins: 0, accounts: 0, aliases: 0, … }
+        //     resources: { cpuUsage: 0, memoryUsage: 0, diskUsage: 0, … }
+        //     status: { status: "api_match", error: "Invalid api_key: api_match: xxx-2f43-40c6-8104-yyy" }
+        //       error: "Invalid api_key: api_match: xxx-2f43-40c6-8104-yyy"
+        //       status: "api_match"
+        //     }
+        //   }
+        // }
 
         if (result.success) {
-
           // SUCCESS
           if (result.message.status.status === 'running') {
             setAPIValidated(true);
-            setSuccessMessage( t('settings.running', {
-              containerName: getValueFromArrayOfObj(formValues, 'containerName'), 
-              DMS_API_PORT: getValueFromArrayOfObj(formValues, 'DMS_API_PORT')}),
+            setSuccessMessage(
+              t('settings.running', {
+                containerName: getValueFromArrayOfObj(
+                  formValues,
+                  'containerName'
+                ),
+                DMS_API_PORT: getValueFromArrayOfObj(
+                  formValues,
+                  'DMS_API_PORT'
+                ),
+              })
             );
           }
 
           // WARNING: more setup needed to finish the linking but let user save settings nonetheless
-          if (['port_closed','api_unset'].includes(result.message.status.status)) {
+          if (
+            ['port_closed', 'api_unset'].includes(result.message.status.status)
+          ) {
             // setErrorMessage(t(result.message.status.error));  // not sure we want to show that
             errorLog(t(result.message.status.error));
-            setWarningMessage(t(`dashboard.errors.${result.message.status.status}`) +"<br />" + t(`settings.saveAdvice`));
-            setSuccessMessage(t('settings.DMS_API_KEYinit', {
-              containerName:getValueFromArrayOfObj(formValues, 'containerName'),
-              DMS_API_KEY:getValueFromArrayOfObj(formValues, 'DMS_API_KEY'),
-              DMS_API_PORT:getValueFromArrayOfObj(formValues, 'DMS_API_PORT'),
-            }));
+            setWarningMessage(
+              t(`dashboard.errors.${result.message.status.status}`) +
+                '<br />' +
+                t(`settings.saveAdvice`)
+            );
+            setSuccessMessage(
+              t('settings.DMS_API_KEYinit', {
+                containerName: getValueFromArrayOfObj(
+                  formValues,
+                  'containerName'
+                ),
+                DMS_API_KEY: getValueFromArrayOfObj(formValues, 'DMS_API_KEY'),
+                DMS_API_PORT: getValueFromArrayOfObj(
+                  formValues,
+                  'DMS_API_PORT'
+                ),
+              })
+            );
           }
 
           if (['api_match'].includes(result.message.status.status)) {
             // setErrorMessage(t(result.message.status.error));  // not sure we want to show that
             errorLog(t(result.message.status.error));
-            setWarningMessage(t(`dashboard.errors.${result.message.status.status}`));
-            setSuccessMessage(t('settings.DMS_API_KEYmatch', {
-              containerName:getValueFromArrayOfObj(formValues, 'containerName'),
-              DMS_API_KEY:getValueFromArrayOfObj(formValues, 'DMS_API_KEY'),
-              DMS_API_PORT:getValueFromArrayOfObj(formValues, 'DMS_API_PORT'),
-            }));
+            setWarningMessage(
+              t(`dashboard.errors.${result.message.status.status}`)
+            );
+            setSuccessMessage(
+              t('settings.DMS_API_KEYmatch', {
+                containerName: getValueFromArrayOfObj(
+                  formValues,
+                  'containerName'
+                ),
+                DMS_API_KEY: getValueFromArrayOfObj(formValues, 'DMS_API_KEY'),
+                DMS_API_PORT: getValueFromArrayOfObj(
+                  formValues,
+                  'DMS_API_PORT'
+                ),
+              })
+            );
           }
 
-          // ERRORS: unrecoverable errors because DMS is down, wrong name, etc. Should never happen since 
-          if (result.message.status.status === 'port_timeout')  setErrorMessage(t('dashboard.errors.port_timeout')  +": "+ t(result.message.status.error));
-          if (result.message.status.status === 'api_error')     setErrorMessage(t('dashboard.errors.api_error')     +": "+ t(result.message.status.error));
-          if (result.message.status.status === 'port_unknown')  setErrorMessage(t('dashboard.errors.port_unknown')  +": "+ t(result.message.status.error));
-          if (result.message.status.status === 'missing')       setErrorMessage(t('dashboard.errors.missing')       +": "+ t(result.message.status.error));
-          if (result.message.status.status === 'unknown')       setErrorMessage(t('dashboard.errors.unknown')       +": "+ t(result.message.status.error));
+          // ERRORS: unrecoverable errors because DMS is down, wrong name, etc. Should never happen since
+          if (result.message.status.status === 'port_timeout')
+            setErrorMessage(
+              t('dashboard.errors.port_timeout') +
+                ': ' +
+                t(result.message.status.error)
+            );
+          if (result.message.status.status === 'api_error')
+            setErrorMessage(
+              t('dashboard.errors.api_error') +
+                ': ' +
+                t(result.message.status.error)
+            );
+          if (result.message.status.status === 'port_unknown')
+            setErrorMessage(
+              t('dashboard.errors.port_unknown') +
+                ': ' +
+                t(result.message.status.error)
+            );
+          if (result.message.status.status === 'missing')
+            setErrorMessage(
+              t('dashboard.errors.missing') +
+                ': ' +
+                t(result.message.status.error)
+            );
+          if (result.message.status.status === 'unknown')
+            setErrorMessage(
+              t('dashboard.errors.unknown') +
+                ': ' +
+                t(result.message.status.error)
+            );
 
           // HACKERS: errors below should never happen since we prevent user from testing with incomplete values
-          if (result.message.status.status === 'stopped')       setErrorMessage(t('dashboard.status.stopped')       +": "+ t(result.message.status.error));
-          if (result.message.status.status === 'api_gen')       setErrorMessage(t('dashboard.status.api_gen')       +": "+ t(result.message.status.error));
-          if (result.message.status.status === 'api_miss')      setErrorMessage(t('dashboard.status.api_miss')      +": "+ t(result.message.status.error));
-
+          if (result.message.status.status === 'stopped')
+            setErrorMessage(
+              t('dashboard.status.stopped') +
+                ': ' +
+                t(result.message.status.error)
+            );
+          if (result.message.status.status === 'api_gen')
+            setErrorMessage(
+              t('dashboard.status.api_gen') +
+                ': ' +
+                t(result.message.status.error)
+            );
+          if (result.message.status.status === 'api_miss')
+            setErrorMessage(
+              t('dashboard.status.api_miss') +
+                ': ' +
+                t(result.message.status.error)
+            );
         } else setErrorMessage(result?.error);
-
       } catch (error) {
         // setErrorMessage(t('api.errors.fetchServerStatus') +": "+ error.message);
-        setErrorMessage({key: 'api.errors.fetchServerStatus', values: { error: error.message }});
+        setErrorMessage({
+          key: 'api.errors.fetchServerStatus',
+          values: { error: error.message },
+        });
       }
     }
   };
-
 
   const handleDMS_API_KEYgen = async (e) => {
     // e.preventDefault();
     setWarningMessage(null);
     setErrorMessage(null);
     setSuccessMessage(null);
-    setAPIInjected(false);    // user must inject API again
+    setAPIInjected(false); // user must inject API again
 
     const DMS_API_KEY = crypto.randomUUID();
-    
+
     // 1. Calculate the exact new array snapshot instantly
-    const updatedFormValues = mergeArrayOfObj(formValues, [{ name: 'DMS_API_KEY', value: DMS_API_KEY }], 'name');
+    const updatedFormValues = mergeArrayOfObj(
+      formValues,
+      [{ name: 'DMS_API_KEY', value: DMS_API_KEY }],
+      'name'
+    );
 
     // 2. Set the state for rendering in the background
     setFormValues(updatedFormValues);
@@ -392,22 +501,20 @@ function FormContainerAdd() {
     setFormValidated(!hasErrors);
 
     // try {
-      
-      // debugLog('FormContainerAdd gen API key for containerName=', getValueFromArrayOfObj(formValues, 'containerName'))
-      // const result = await initAPI('mailserver', getValueFromArrayOfObj(formValues, 'schema'), getValueFromArrayOfObj(formValues, 'containerName'), 'gen');
 
-      // if (result.success) {
-      //   const DMS_API_KEY = result.message;
-      //   setFormValues(mergeArrayOfObj(formValues, [{name: 'DMS_API_KEY', value: DMS_API_KEY}], 'name'));
-        
-      // } else setErrorMessage(result?.error);
-      
+    // debugLog('FormContainerAdd gen API key for containerName=', getValueFromArrayOfObj(formValues, 'containerName'))
+    // const result = await initAPI('mailserver', getValueFromArrayOfObj(formValues, 'schema'), getValueFromArrayOfObj(formValues, 'containerName'), 'gen');
+
+    // if (result.success) {
+    //   const DMS_API_KEY = result.message;
+    //   setFormValues(mergeArrayOfObj(formValues, [{name: 'DMS_API_KEY', value: DMS_API_KEY}], 'name'));
+
+    // } else setErrorMessage(result?.error);
+
     // } catch (error) {
     //   setErrorMessage(t('api.errors.DMS_API_KEYgen') +": "+ error.message);
     // }
-
   };
-
 
   const handleInputChange = async (e) => {
     const { name, value, type, checked } = e.target;
@@ -424,12 +531,16 @@ function FormContainerAdd() {
     // debugLog(`handleInputChange formValues:`, mergeArrayOfObj(formValues, [{name: name, value:value}], 'name'));
 
     // Calculate the exact next state
-    const updatedFormData = mergeArrayOfObj(formValues, [{name: name, value:value}], 'name');
+    const updatedFormData = mergeArrayOfObj(
+      formValues,
+      [{ name: name, value: value }],
+      'name'
+    );
     setFormValues(updatedFormData);
     debugLog('handleInputChange formValues:', updatedFormData);
 
     if (name === 'containerName' && value.length) {
-      handlePingTest(false, value);  // autoping with actual form value because all is async, there is a delay in content of formValues
+      handlePingTest(false, value); // autoping with actual form value because all is async, there is a delay in content of formValues
     }
     if (type !== 'checkbox') {
       setAPIInjected(false);
@@ -448,66 +559,94 @@ function FormContainerAdd() {
     const freshErrors = validateFormContainerAdd(updatedFormData);
     const hasErrors = !!isNonEmptyDict(freshErrors);
     setFormValidated(!hasErrors);
-
   };
 
-  const validateFormContainerAdd = (currentFormData, setErrors=false) => {
+  const validateFormContainerAdd = (currentFormData, setErrors = false) => {
     const errors = {};
     // setFormValidated(false);
 
-    if (!currentFormData.find(item => item['name'] == 'containerName') || !currentFormData.find(item => item['name'] == 'containerName').value.length) {
+    if (
+      !currentFormData.find((item) => item['name'] == 'containerName') ||
+      !currentFormData.find((item) => item['name'] == 'containerName').value
+        .length
+    ) {
       errors.containerName = 'settings.containerNameRequired';
     }
 
-    if (!currentFormData.find(item => item['name'] == 'schema') || !currentFormData.find(item => item['name'] == 'schema').value.length) {
+    if (
+      !currentFormData.find((item) => item['name'] == 'schema') ||
+      !currentFormData.find((item) => item['name'] == 'schema').value.length
+    ) {
       errors.schema = 'settings.schemaRequired';
     }
 
-    if (!currentFormData.find(item => item['name'] == 'protocol') || !currentFormData.find(item => item['name'] == 'protocol').value.length) {
+    if (
+      !currentFormData.find((item) => item['name'] == 'protocol') ||
+      !currentFormData.find((item) => item['name'] == 'protocol').value.length
+    ) {
       errors.protocol = 'settings.protocolRequired';
     }
 
-    if (!currentFormData.find(item => item['name'] == 'DMS_API_PORT') 
-        || !Number(currentFormData.find(item => item['name'] == 'DMS_API_PORT').value)
-        || (Number(currentFormData.find(item => item['name'] == 'DMS_API_PORT').value) < 1)
-        || (Number(currentFormData.find(item => item['name'] == 'DMS_API_PORT').value) > 65535)
-      ) {
+    if (
+      !currentFormData.find((item) => item['name'] == 'DMS_API_PORT') ||
+      !Number(
+        currentFormData.find((item) => item['name'] == 'DMS_API_PORT').value
+      ) ||
+      Number(
+        currentFormData.find((item) => item['name'] == 'DMS_API_PORT').value
+      ) < 1 ||
+      Number(
+        currentFormData.find((item) => item['name'] == 'DMS_API_PORT').value
+      ) > 65535
+    ) {
       errors.DMS_API_PORT = 'settings.DMS_API_PORTRequired';
     }
 
-    if (!currentFormData.find(item => item['name'] == 'DMS_API_KEY') || !currentFormData.find(item => item['name'] == 'DMS_API_KEY').value.length) {
+    if (
+      !currentFormData.find((item) => item['name'] == 'DMS_API_KEY') ||
+      !currentFormData.find((item) => item['name'] == 'DMS_API_KEY').value
+        .length
+    ) {
       errors.DMS_API_KEY = 'settings.DMS_API_KEYRequired';
     }
 
-    if (!currentFormData.find(item => item['name'] == 'setupPath') || !currentFormData.find(item => item['name'] == 'setupPath').value.length) {
+    if (
+      !currentFormData.find((item) => item['name'] == 'setupPath') ||
+      !currentFormData.find((item) => item['name'] == 'setupPath').value.length
+    ) {
       errors.setupPath = 'settings.setupPathRequired';
     }
 
-    if (!currentFormData.find(item => item['name'] == 'timeout') 
-        || !Number(currentFormData.find(item => item['name'] == 'timeout').value)
-        || (Number(currentFormData.find(item => item['name'] == 'timeout').value) < 1)
-        || (Number(currentFormData.find(item => item['name'] == 'timeout').value) > 60)
-      ) {
+    if (
+      !currentFormData.find((item) => item['name'] == 'timeout') ||
+      !Number(
+        currentFormData.find((item) => item['name'] == 'timeout').value
+      ) ||
+      Number(currentFormData.find((item) => item['name'] == 'timeout').value) <
+        1 ||
+      Number(currentFormData.find((item) => item['name'] == 'timeout').value) >
+        60
+    ) {
       errors.timeout = 'settings.timeoutRequired';
     }
 
     // once the checkbox is rendered...
     if (makeFavoriteRef.current) {
       // pre-check the container as favorite when user has none, also pre-check if current container is already the favorite
-      if (!user?.mailserver || user?.mailserver == containerName) makeFavoriteRef.current.checked = true;
+      if (!user?.mailserver || user?.mailserver == containerName)
+        makeFavoriteRef.current.checked = true;
     }
 
-    if (setErrors) setFormErrors(errors);   // we don't show alerts as the user types
+    if (setErrors) setFormErrors(errors); // we don't show alerts as the user types
     debugLog('ddebug setFormErrors errors', errors);
 
     return errors;
   };
 
-
   const handleSubmitSettings = async (e) => {
     e.preventDefault();
     debugLog('FormContainerAdd formValues Submitted:', formValues);
-    
+
     setErrorMessage(null);
     setWarningMessage(null);
     setSuccessMessage(null);
@@ -515,58 +654,59 @@ function FormContainerAdd() {
 
     // no need anymore since validateFormContainerAdd is done after each change
     // if (!validateFormContainerAdd(true)) {
-      // return;
+    // return;
     // }
 
     try {
-
-      debugLog(`FormContainerAdd saveSettings( mailserver, ${getValueFromArrayOfObj(formValues, 'schema')}, dms-gui, ${getValueFromArrayOfObj(formValues, 'containerName')})`, formValues);
+      debugLog(
+        `FormContainerAdd saveSettings( mailserver, ${getValueFromArrayOfObj(formValues, 'schema')}, dms-gui, ${getValueFromArrayOfObj(formValues, 'containerName')})`,
+        formValues
+      );
       const result = await saveSettings(
         'mailserver',
         getValueFromArrayOfObj(formValues, 'schema'),
         'dms-gui',
         getValueFromArrayOfObj(formValues, 'containerName'),
-        formValues,
+        formValues
       );
       debugLog('ddebug result:', result);
       if (result.success) {
         setFormValuesSubmitted(true); // this will trigger all sorts of fetches
-
       } else setErrorMessage(result?.error);
-      
     } catch (error) {
       setFormValuesSubmitted(false);
       errorLog(t('api.errors.saveSettings'), error);
       // setErrorMessage('api.errors.saveSettings');
-      setErrorMessage({key: 'api.errors.saveSettings', values: { error: error.message }});
+      setErrorMessage({
+        key: 'api.errors.saveSettings',
+        values: { error: error.message },
+      });
     }
   };
 
-
   const handleLoginSave = (containerName) => {
-
     try {
       debugLog(`FormContainerAdd handleLoginSave mailservers:`, mailservers); // mailservers should be set at this point
-      const result = updateLogin(
-        user.id,
-        {mailserver:containerName},
-      );
+      const result = updateLogin(user.id, { mailserver: containerName });
       if (result.success) {
-        login({
-          ...user,
-          mailserver:containerName
-        }, null); // reset new values for that user in frontend state and stay here; login is only updated when user makes container their favorite
+        login(
+          {
+            ...user,
+            mailserver: containerName,
+          },
+          null
+        ); // reset new values for that user in frontend state and stay here; login is only updated when user makes container their favorite
         // }, APIValidated && '/dashboard' || null); // reset new values for that user in frontend state and move to dashboard or not
-        
       } // fails silently
-      
     } catch (error) {
       errorLog(error.message || error);
       // setErrorMessage('api.errors.updateLogin', error.message);
-      setErrorMessage({key: 'api.errors.updateLogin', values: { error: error.message }});
+      setErrorMessage({
+        key: 'api.errors.updateLogin',
+        values: { error: error.message },
+      });
     }
   };
-
 
   const handleChangeDMS = (e) => {
     // e.preventDefault();
@@ -575,30 +715,27 @@ function FormContainerAdd() {
     setErrorMessage(null);
     setSuccessMessage(null);
     debugLog(`FormContainerAdd Switching to ${name}=${value}`);
-    
-    if (value) {
 
+    if (value) {
       setContainerName(value);
       // fetchContainerSettings(value); // Refresh the formValues is done by useEffect on containerName change
       // setSchema(getValueFromArrayOfObj(formValues, 'schema'));  // that should be done during fetchContainerSettings and also dependent on useEffect
 
       // only reset errors, we still want to see the successful saved formValues message as this change will be triggered when saving a new container
       setErrorMessage(null);
-        
     }
   };
-
 
   // https://www.w3schools.com/react/react_useeffect.asp
   useEffect(() => {
     fetchAll();
-    if (firstRun && !containerName) triggerToast({
-      type: 'success',
-      message: 'settings.isFirstRun',
-      delay: 0
+    if (firstRun && !containerName)
+      triggerToast({
+        type: 'success',
+        message: 'settings.isFirstRun',
+        delay: 0,
       });
   }, [containerName]);
-
 
   useEffect(() => {
     if (formValuesSubmitted) {
@@ -610,30 +747,36 @@ function FormContainerAdd() {
       // UNLESS containerName is already set, indeed
       // containerName shall always be set, even if user doesn't want it as a favorite
       if (!containerName) {
-        // this will trigger a form refresh with this container's data 
-        debugLog('FormContainerAdd call setContainerName:', getValueFromArrayOfObj(formValues, 'containerName'));
+        // this will trigger a form refresh with this container's data
+        debugLog(
+          'FormContainerAdd call setContainerName:',
+          getValueFromArrayOfObj(formValues, 'containerName')
+        );
         setContainerName(getValueFromArrayOfObj(formValues, 'containerName'));
 
-      // containerName was already set, do nothing
-      // } else {
+        // containerName was already set, do nothing
+        // } else {
         // fetchContainerSettings(getValueFromArrayOfObj(formValues, 'containerName'));
       }
 
       if (makeFavoriteRef.current.checked) {
-        debugLog('FormContainerAdd call handleLoginSave:', getValueFromArrayOfObj(formValues, 'containerName'));
+        debugLog(
+          'FormContainerAdd call handleLoginSave:',
+          getValueFromArrayOfObj(formValues, 'containerName')
+        );
         handleLoginSave(getValueFromArrayOfObj(formValues, 'containerName'));
       }
 
       // Normally you should not be here if APIInjected is false as the button is disabled
       if (APIInjected) {
-
         debugLog('FormContainerAdd APIValidated:', APIValidated);
         // API installed and valid, success!
         if (APIValidated) {
-
-          setSuccessMessage(t('settings.DMS_API_KEYSaved', {
-            DMS_API_KEY:getValueFromArrayOfObj(formValues, 'DMS_API_KEY'),
-          }));
+          setSuccessMessage(
+            t('settings.DMS_API_KEYSaved', {
+              DMS_API_KEY: getValueFromArrayOfObj(formValues, 'DMS_API_KEY'),
+            })
+          );
 
           // pull all data since API is working
           // this causes a problem the first time as the containerName is still unset or in queue. Also those fetches shall be done in sequence not in parallel
@@ -650,32 +793,38 @@ function FormContainerAdd() {
           // setTimeout(() => {
           //   navigate("/dashboard");
           // }, 2000);
-          navigate("/dashboard");
-
+          navigate('/dashboard');
         } else {
           // reminder to setup DMS compose after a submit
-          debugLog(`FormContainerAdd 5 fetchMailservers failed: show setup reminder`);
-          setSuccessMessage(t('settings.DMS_API_KEYinit', {
-            containerName:getValueFromArrayOfObj(formValues, 'containerName'),
-            DMS_API_KEY:getValueFromArrayOfObj(formValues, 'DMS_API_KEY'),
-            DMS_API_PORT:getValueFromArrayOfObj(formValues, 'DMS_API_PORT'),
-          }));
+          debugLog(
+            `FormContainerAdd 5 fetchMailservers failed: show setup reminder`
+          );
+          setSuccessMessage(
+            t('settings.DMS_API_KEYinit', {
+              containerName: getValueFromArrayOfObj(
+                formValues,
+                'containerName'
+              ),
+              DMS_API_KEY: getValueFromArrayOfObj(formValues, 'DMS_API_KEY'),
+              DMS_API_PORT: getValueFromArrayOfObj(formValues, 'DMS_API_PORT'),
+            })
+          );
         }
       }
-
     }
   }, [formValuesSubmitted]);
-
 
   if (isLoading || !user.isAdmin) {
     return <LoadingSpinner />;
   }
-  
+
   return (
     <>
       <Row className="align-items-center justify-content-center">
-        <Col md={6}>{' '}
-          <Card title="settings.containerNameSwitch" icon="house-heart-fill">{' '}
+        <Col md={6}>
+          {' '}
+          <Card title="settings.containerNameSwitch" icon="house-heart-fill">
+            {' '}
             <SelectField
               id="DMS_CONTAINER"
               name="DMS_CONTAINER"
@@ -696,7 +845,9 @@ function FormContainerAdd() {
             id="schema"
             name="schema"
             label="settings.schema"
-            value={getValueFromArrayOfObj(formValues, 'schema') || schemas[0].value}
+            value={
+              getValueFromArrayOfObj(formValues, 'schema') || schemas[0].value
+            }
             onChange={handleInputChange}
             options={schemas}
             placeholder="settings.schema"
@@ -717,10 +868,10 @@ function FormContainerAdd() {
             required
           >
             <Button
-              variant={pingResult && "success" || "danger"}
-              icon={pingResult && "check" || "x"}
-              title={pingResult && t('common.pingUp') || t('common.pingDown')}
-              className='btn-feedback'
+              variant={(pingResult && 'success') || 'danger'}
+              icon={(pingResult && 'check') || 'x'}
+              title={(pingResult && t('common.pingUp')) || t('common.pingDown')}
+              className="btn-feedback"
               disabled
             />
             <Button
@@ -736,7 +887,10 @@ function FormContainerAdd() {
             id="protocol"
             name="protocol"
             label="settings.protocol"
-            value={getValueFromArrayOfObj(formValues, 'protocol') || protocols[0].value}
+            value={
+              getValueFromArrayOfObj(formValues, 'protocol') ||
+              protocols[0].value
+            }
             onChange={handleInputChange}
             options={protocols}
             placeholder="common.protocol"
@@ -756,7 +910,7 @@ function FormContainerAdd() {
             helpText="settings.DMS_API_PORTHelp"
             required
           />
-        
+
           <FormField
             type="text"
             id="DMS_API_KEY"
@@ -780,20 +934,37 @@ function FormContainerAdd() {
               variant="outline-secondary"
               icon="question-circle"
               title={t('settings.DMS_API_KEYinitHelp')}
-              onClick={() => setSuccessMessage(t('settings.DMS_API_KEYinit', {
-                containerName:getValueFromArrayOfObj(formValues, 'containerName'),
-                DMS_API_KEY:getValueFromArrayOfObj(formValues, 'DMS_API_KEY'),
-                DMS_API_PORT:getValueFromArrayOfObj(formValues, 'DMS_API_PORT'),
-              })) }
+              onClick={() =>
+                setSuccessMessage(
+                  t('settings.DMS_API_KEYinit', {
+                    containerName: getValueFromArrayOfObj(
+                      formValues,
+                      'containerName'
+                    ),
+                    DMS_API_KEY: getValueFromArrayOfObj(
+                      formValues,
+                      'DMS_API_KEY'
+                    ),
+                    DMS_API_PORT: getValueFromArrayOfObj(
+                      formValues,
+                      'DMS_API_PORT'
+                    ),
+                  })
+                )
+              }
             />
             <Button
               variant="outline-secondary"
               icon="clipboard-plus"
               title={t('common.copy')}
-              onClick={() => navigator.clipboard.writeText(getValueFromArrayOfObj(formValues, 'DMS_API_KEY')) }
+              onClick={() =>
+                navigator.clipboard.writeText(
+                  getValueFromArrayOfObj(formValues, 'DMS_API_KEY')
+                )
+              }
             />
           </FormField>
-        
+
           <FormField
             type="number"
             id="timeout"
@@ -806,7 +977,7 @@ function FormContainerAdd() {
             helpText="settings.timeoutHelp"
             required
           />
-        
+
           <FormField
             type="text"
             id="setupPath"
@@ -818,24 +989,29 @@ function FormContainerAdd() {
             error={formErrors.setupPath}
             helpText="settings.setupPathHelp"
             required
-          >
-          </FormField>
-        
+          ></FormField>
+
           <div className="d-flex align-items-center">
             <Button
-              variant={APIInjected && "success" || "info"}
+              variant={(APIInjected && 'success') || 'info'}
               icon="box-arrow-in-up-right"
               text="settings.DMS_API_inject"
-              title={APIInjected && t('settings.DMS_API_injectSuccess') || t('settings.DMS_API_injectFailed')}
+              title={
+                (APIInjected && t('settings.DMS_API_injectSuccess')) ||
+                t('settings.DMS_API_injectFailed')
+              }
               className="me-2"
               onClick={() => handleInjectAPI()}
               disabled={!(pingResult && formValidated)}
             />
             <Button
-              variant={APIValidated && "success" || "info"}
+              variant={(APIValidated && 'success') || 'info'}
               icon="hdd-network"
               text="settings.apiTest"
-              title={APIValidated && t('settings.DMS_API_ValidatedSuccess') || t('settings.DMS_API_ValidatedFailed')}
+              title={
+                (APIValidated && t('settings.DMS_API_ValidatedSuccess')) ||
+                t('settings.DMS_API_ValidatedFailed')
+              }
               className="me-2"
               onClick={() => handleAPITest()}
               disabled={!pingResult || !APIInjected || !formValidated}
@@ -862,20 +1038,18 @@ function FormContainerAdd() {
       <AlertMessage type="danger" message={errorMessage} />
       <AlertMessage type="warning" message={warningMessage} />
       <AlertMessage type="success" message={successMessage} />
-      
     </>
   );
-
 }
 
 export default FormContainerAdd;
 
-      // {toastMessage && (
-      //   <Toast 
-      //     type={toastMessage?.type}
-      //     message={toastMessage?.message} 
-      //     position={toastMessage?.position || "bottom-right"}
-      //     onClose={() => triggerToast(null)} // Clears the state when closed or when it fades out
-      //     delay={toastMessage?.delay || 9000} // Clears the state when closed or when it fades out
-      //   />
-      // )}
+// {toastMessage && (
+//   <Toast
+//     type={toastMessage?.type}
+//     message={toastMessage?.message}
+//     position={toastMessage?.position || "bottom-right"}
+//     onClose={() => triggerToast(null)} // Clears the state when closed or when it fades out
+//     delay={toastMessage?.delay || 9000} // Clears the state when closed or when it fades out
+//   />
+// )}

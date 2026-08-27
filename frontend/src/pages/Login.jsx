@@ -6,9 +6,7 @@ import { useTranslation } from 'react-i18next';
 import Row from 'react-bootstrap/Row'; // Import Row
 import Col from 'react-bootstrap/Col'; // Import Col
 
-import {
-  debugLog,
-} from '../../frontend.mjs';
+import { debugLog } from '../../frontend.mjs';
 // import {
 //   regexColors,
 //   regexPrintOnly,
@@ -32,17 +30,9 @@ import {
 //   moveKeyToLast,
 // } from '../../../common.mjs';
 
-import {
-  getConfigs,
-  loginUser,
-} from '../services/api.mjs';
+import { getConfigs, loginUser } from '../services/api.mjs';
 
-import { 
-  AlertMessage,
-  Button,
-  FormField,
-  Card,
-} from '../components';
+import { AlertMessage, Button, FormField, Card } from '../components';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
@@ -52,35 +42,33 @@ export const Login = () => {
   const { t } = useTranslation();
   const triggerToast = useToast();
 
-  const [credential, setCredential] = useState("");
-  const [password, setPassword] = useState("");
-  const [firstRun, setFirstRun] = useLocalStorage("firstRun", false); // this is obviously used in Login, Profile and Settings
-  const [isDEMO, setIsDEMO] = useLocalStorage("isDEMO", false);
-  
+  const [credential, setCredential] = useState('');
+  const [password, setPassword] = useState('');
+  const [firstRun, setFirstRun] = useLocalStorage('firstRun', false); // this is obviously used in Login, Profile and Settings
+  const [isDEMO, setIsDEMO] = useLocalStorage('isDEMO', false);
+
   // const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
   const { user, login, logout } = useAuth();
-  
+
   // const [containerName, setContainerName] = useLocalStorage("containerName", '');
-  const [mailservers, setMailservers] = useLocalStorage("mailservers", []);
-  
+  const [mailservers, setMailservers] = useLocalStorage('mailservers', []);
+
   // redirect to /settings if no users in db
   const isFirstRun = async () => {
-
     // /login will act as /logout
     if (user) logout();
 
     setFirstRun(false);
     const result = await loginUser('admin', 'changeme', true);
     // debugLog('ddebug isFirstRun result', result);
-    
+
     // DEMO mode is always happy
     if (result?.isDEMO || isDEMO) {
       setIsDEMO(true);
       setFirstRun(true);
       setSuccessMessage('logins.isDEMO');
-
     } else {
       setIsDEMO(false);
 
@@ -93,42 +81,44 @@ export const Login = () => {
   };
 
   const fetchMailservers = async () => {
-    
     try {
-      const [mailserversData] = await Promise.all([
-        getConfigs('mailserver'),
-      ]);
+      const [mailserversData] = await Promise.all([getConfigs('mailserver')]);
 
       if (mailserversData?.success) {
         // this will be all containers in db except dms-gui
         debugLog('fetchMailservers: mailserversData', mailserversData); // [ {value:containerName', plugin:'mailserver', schema:'dms', scope:'dms-gui'}, ..]
-  
-        // update selector list
-        setMailservers(mailserversData.message.map(mailserver => { return { ...mailserver, label:mailserver.value } }));   // duplicate value as label for the select field
-        
-      } // else setErrorMessage(mailserversData?.error);
 
+        // update selector list
+        setMailservers(
+          mailserversData.message.map((mailserver) => {
+            return { ...mailserver, label: mailserver.value };
+          })
+        ); // duplicate value as label for the select field
+      } // else setErrorMessage(mailserversData?.error);
     } catch (error) {
       // errorLog(t('api.errors.fetchConfigs'), error);
       // setErrorMessage('api.errors.fetchConfigs');
       // setErrorMessage({key: 'api.errors.fetchConfigs', values: { error: error.message }});
       triggerToast({
         type: 'error',
-        message: {key: 'api.errors.fetchConfigs', values: { error: error.message }},
+        message: {
+          key: 'api.errors.fetchConfigs',
+          values: { error: error.message },
+        },
       });
     }
   };
-    
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    
+
     try {
       // Here you would usually send a request to your backend to authenticate the user
       // For the sake of this example, we're using a mock authentication
       const result = await loginUser(credential, password);
       // without JWT: {"mailbox":"eric@domain.com","username":"eric","email":"","isAdmin":0,"isActive":1,"isAccount":0,"roles":["eric@domain.com"]}
       // with    JWT: { accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxx" }
-      
+
       if (result.success) {
         // now we can pull and setState for available mailservers; await a little so the Settings page don't pull it twice
         await fetchMailservers();
@@ -137,13 +127,14 @@ export const Login = () => {
         if (firstRun) {
           // no default mailserver? /settings
           //    default mailserver but default password? /profile
-          (!result.message.mailserver) ? await login(result.message, "/settings") : await login(result.message, "/profile");
-
+          !result.message.mailserver
+            ? await login(result.message, '/settings')
+            : await login(result.message, '/profile');
         } else {
           await login(result.message);
         }
 
-      // this will never happen with a 401 login denied unless the backend returns 200, which it won't. HTTP error codes exist for a reason and we will use them.
+        // this will never happen with a 401 login denied unless the backend returns 200, which it won't. HTTP error codes exist for a reason and we will use them.
       } else {
         // setErrorMessage('logins.denied');
         // setErrorMessage(result.message || 'logins.denied');
@@ -152,10 +143,9 @@ export const Login = () => {
           title: 'logins.denied',
           message: result.error || result.message,
         });
-
       }
 
-    // react refuses to handle 401 login denied and will actually fall here
+      // react refuses to handle 401 login denied and will actually fall here
     } catch (error) {
       debugLog('error:', error.message);
       // setErrorMessage('logins.denied');
@@ -166,84 +156,86 @@ export const Login = () => {
       });
     }
   };
-  
-  
+
   // https://www.w3schools.com/react/react_useeffect.asp
   useEffect(() => {
     isFirstRun();
   }, []);
 
-
   return (
     <>
-    <Row className="align-items-center justify-content-center vh-100">
-      <Col md={6}>{' '}
+      <Row className="align-items-center justify-content-center vh-100">
+        <Col md={6}>
+          {' '}
+          <Card
+            title={isDEMO ? 'logins.welcomeDEMO' : 'logins.welcome'}
+            icon="person-lock"
+            collapsible={false}
+            iconExtra={isDEMO ? 'common.dmsIcon' : 'common.dmsIcon'}
+            titleExtra={
+              <a
+                href={t('common.dmsUrl')}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('common.dmsName')}
+              </a>
+            }
+          >
+            {' '}
+            <AlertMessage
+              type="success"
+              message={successMessage}
+              onClose={false}
+            />
+            <form onSubmit={handleLogin}>
+              <FormField
+                type="text"
+                id="credential"
+                name="credential"
+                label="logins.credential"
+                value={credential}
+                onChange={(e) => setCredential(e.target.value)}
+                required
+              />
 
-        <Card 
-          title={isDEMO ? 'logins.welcomeDEMO' : 'logins.welcome'} 
-          icon="person-lock" 
-          collapsible={false}
-          iconExtra={isDEMO ? 'common.dmsIcon' : 'common.dmsIcon'} 
-          titleExtra={
-            <a href={t('common.dmsUrl')} target="_blank" rel="noopener noreferrer">
-              {t('common.dmsName')}
+              <FormField
+                type="password"
+                id="password"
+                name="password"
+                label="logins.password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
+              <Button
+                type="submit"
+                variant="primary"
+                icon="box-arrow-in-right"
+                text="logins.login"
+              />
+            </form>
+            <a href="#" className="float-end">
+              {t('logins.forgotPassword')}
             </a>
-          } 
-          >{' '}
-          <AlertMessage type="success" message={successMessage} onClose={false} />
-
-          <form onSubmit={handleLogin}>
-
-            <FormField
-              type="text"
-              id="credential"
-              name="credential"
-              label="logins.credential"
-              value={credential}
-              onChange={(e) => setCredential(e.target.value)}
-              required
-            />
-
-            <FormField
-              type="password"
-              id="password"
-              name="password"
-              label="logins.password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-
-            <Button
-              type="submit"
-              variant="primary"
-              icon="box-arrow-in-right"
-              text="logins.login"
-            />
-            
-          </form>
-
-          <a href="#" className="float-end">{t("logins.forgotPassword")}</a>
-          
-        </Card>
-        
-      </Col>
-    </Row>
-
+          </Card>
+        </Col>
+      </Row>
     </>
   );
 };
 
 export default Login;
 
-          // <br />
-          // <AlertMessage type="danger" message={errorMessage} />
+// <br />
+// <AlertMessage type="danger" message={errorMessage} />
 
-    // {errorMessage && (
-    //   <Toast 
-    //     type="danger" 
-    //     message={errorMessage} 
-    //     position="bottom-right"
-    //     onClose={() => setErrorMessage(null)} // Clears the state when closed or when it fades out
-    //   />
-    // )}
+// {errorMessage && (
+//   <Toast
+//     type="danger"
+//     message={errorMessage}
+//     position="bottom-right"
+//     onClose={() => setErrorMessage(null)} // Clears the state when closed or when it fades out
+//   />
+// )}

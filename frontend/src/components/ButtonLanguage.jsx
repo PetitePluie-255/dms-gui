@@ -12,10 +12,10 @@ const ButtonLanguage = () => {
   const currentLang = i18n.language || 'en';
 
   const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng)
-      // .then(() => {
-      // setCurrentLang(lng);
-      // });
+    i18n.changeLanguage(lng);
+    // .then(() => {
+    // setCurrentLang(lng);
+    // });
   };
 
   return (
@@ -31,17 +31,15 @@ const ButtonLanguage = () => {
       </Dropdown.Toggle>
 
       <Dropdown.Menu align="end">
-      
         {Object.keys(i18n.options.resources).map((lng) => (
-        <Dropdown.Item
-          key={lng}
-          active={currentLang === lng}
-          onClick={() => changeLanguage(lng)}
-        >
-          {t(`language.${lng}`)}
-        </Dropdown.Item>
+          <Dropdown.Item
+            key={lng}
+            active={currentLang === lng}
+            onClick={() => changeLanguage(lng)}
+          >
+            {t(`language.${lng}`)}
+          </Dropdown.Item>
         ))}
-        
       </Dropdown.Menu>
     </Dropdown>
   );

@@ -8,31 +8,34 @@ import Container from 'react-bootstrap/Container';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import {
-  ButtonDropdown,
-  ButtonLanguage,
-  Button,
-  Translate,
-} from './index.jsx';
+import { ButtonDropdown, ButtonLanguage, Button, Translate } from './index.jsx';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useAuth } from '../hooks/useAuth';
 
-const Navbar = ({
-  translate = true,
-  ...rest
-}) => {
+const Navbar = ({ translate = true, ...rest }) => {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();                                             // { id: 1, mailbox: "admin@dms-gui.com", email: "admin@dms-gui.com", username: "admin", isAdmin: 1, isActive: 1, isAccount: 0, roles: "[]" }
-  const [isDEMO] = useLocalStorage("isDEMO", false);
-  const [containerName, setContainerName] = useLocalStorage("containerName", ''); // "dms"
-  const [mailservers] = useLocalStorage("mailservers", []);                       // [{ value: "dms", plugin: "mailserver", schema: "dms", scope: "dms-gui"}, ..]
+  const { user, logout } = useAuth(); // { id: 1, mailbox: "admin@dms-gui.com", email: "admin@dms-gui.com", username: "admin", isAdmin: 1, isActive: 1, isAccount: 0, roles: "[]" }
+  const [isDEMO] = useLocalStorage('isDEMO', false);
+  const [containerName, setContainerName] = useLocalStorage(
+    'containerName',
+    ''
+  ); // "dms"
+  const [mailservers] = useLocalStorage('mailservers', []); // [{ value: "dms", plugin: "mailserver", schema: "dms", scope: "dms-gui"}, ..]
 
   const navigate = useNavigate();
 
   const formatTime = (time) => String(time).padStart(2, '0');
   const calculateTimeLeft = () => {
     const now = new Date();
-    const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 6, 7, 0); // Next full hour:6m:7s
+    const nextHour = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      now.getHours() + 1,
+      6,
+      7,
+      0
+    ); // Next full hour:6m:7s
     const difference = nextHour.getTime() - now.getTime();
 
     let remainingTime = {};
@@ -54,10 +57,19 @@ const Navbar = ({
   };
 
   const profileItems = [
-    { id: 1, title: "logins.profileLink", icon: "person-bounding-box",  onClick: () => navigate("/profile") },
-    { id: 2, title: "logins.logout",      icon: "box-arrow-right",      onClick: () => handleLogout() },
+    {
+      id: 1,
+      title: 'logins.profileLink',
+      icon: 'person-bounding-box',
+      onClick: () => navigate('/profile'),
+    },
+    {
+      id: 2,
+      title: 'logins.logout',
+      icon: 'box-arrow-right',
+      onClick: () => handleLogout(),
+    },
   ];
-
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -66,10 +78,9 @@ const Navbar = ({
 
     // Initial calculation
     // setTimeLeft(calculateTimeLeft());  // eslint fix
-    return () => clearInterval(timer);    // Cleanup on unmount
+    return () => clearInterval(timer); // Cleanup on unmount
   }, []);
 
-  
   return (
     <RBNavbar bg="dark" variant="dark" expand="lg">
       <Container fluid>
@@ -82,17 +93,21 @@ const Navbar = ({
               items={mailservers.map((mailserver, index) => ({
                 id: index,
                 title: mailserver.value,
-                onClick: () => setContainerName(mailserver.value)
+                onClick: () => setContainerName(mailserver.value),
               }))}
             />
           </div>
         ) : (
           <RBNavbar.Brand as={Link} to="/">
             <i className="bi bi-envelope-fill me-2"></i>
-            {Translate( isDEMO ? 'navbar.titleDemo' : 'navbar.titleMailserver', true, {mailserver:containerName} )}{' '}
+            {Translate(
+              isDEMO ? 'navbar.titleDemo' : 'navbar.titleMailserver',
+              true,
+              { mailserver: containerName }
+            )}{' '}
           </RBNavbar.Brand>
         )}
-        {isDEMO && 
+        {isDEMO && (
           <Button
             variant="primary"
             icon="download"
@@ -101,28 +116,27 @@ const Navbar = ({
             target="_blank"
             rel="noopener noreferrer"
           />
-        }
+        )}
         <RBNavbar.Toggle aria-controls="navbarNav" />
         <RBNavbar.Collapse id="navbarNav">
           <Nav className="ms-auto align-items-center">
-
             {isDEMO && (
               <Nav.Link>
                 {t('navbar.rebootIn')} {formatTime(timeLeft.minutes)} mn
               </Nav.Link>
             )}
 
-            {user && 
-            <ButtonDropdown
-              variant="secondary"
-              icon={user?.isAdmin ? "person-circle": "person-fill"}
-              text={user?.username}
-              items={profileItems}
-              size="sm"
-              className="me-2"
-            />
-            }
-            
+            {user && (
+              <ButtonDropdown
+                variant="secondary"
+                icon={user?.isAdmin ? 'person-circle' : 'person-fill'}
+                text={user?.username}
+                items={profileItems}
+                size="sm"
+                className="me-2"
+              />
+            )}
+
             <Nav.Link
               href={t('common.dmsUrl')}
               target="_blank"
@@ -130,11 +144,10 @@ const Navbar = ({
             >
               {t('navbar.documentation')}
             </Nav.Link>
-            
+
             <div className="nav-item mx-2">
               <ButtonLanguage />
             </div>
-            
           </Nav>
         </RBNavbar.Collapse>
       </Container>

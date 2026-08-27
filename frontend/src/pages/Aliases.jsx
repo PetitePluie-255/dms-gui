@@ -3,10 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Row from 'react-bootstrap/Row'; // Import Row
 import Col from 'react-bootstrap/Col'; // Import Col
 
-import {
-  debugLog,
-  errorLog,
-} from '../../frontend.mjs';
+import { debugLog, errorLog } from '../../frontend.mjs';
 import {
   isNonEmptyDict,
   regexEmailRegex,
@@ -40,14 +37,14 @@ const Aliases = () => {
   const { t } = useTranslation();
   const triggerToast = useToast();
   const { user } = useAuth();
-  const [containerName] = useLocalStorage("containerName", '');
-  const [mailservers] = useLocalStorage("mailservers", []);
-  const [aliases, setAliases] = useState("aliases", []);
-  const [accounts, setAccounts] = useState("accounts", []);
+  const [containerName] = useLocalStorage('containerName', '');
+  const [mailservers] = useLocalStorage('mailservers', []);
+  const [aliases, setAliases] = useState('aliases', []);
+  const [accounts, setAccounts] = useState('accounts', []);
   const [accountOptions, setAccountOptions] = useState({});
 
   const [isLoading, setLoading] = useState(true);
-  const [isSource, setIsSource] = useState({valid:true, alias:true});
+  const [isSource, setIsSource] = useState({ valid: true, alias: true });
 
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -72,19 +69,21 @@ const Aliases = () => {
   }, [parentObject]);
   */
 
-  const fetchAliases = async (refresh=false) => {
+  const fetchAliases = async (refresh = false) => {
     refresh = !user.isAdmin ? false : refresh;
-    debugLog(`fetchAliases call getAliases(${refresh}) and getAccounts(${containerName}, ${refresh})`);
-    
+    debugLog(
+      `fetchAliases call getAliases(${refresh}) and getAccounts(${containerName}, ${refresh})`
+    );
+
     try {
       setLoading(true);
       setErrorMessage(null);
       setSuccessMessage(null);
-      
+
       const [aliasesData, accountsData] = await Promise.all([
         // getAliases(getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'), containerName, refresh),
         getAliases(containerName, refresh),
-        getAccounts(containerName),           // refresh accounts is done on first load or in Accounts page
+        getAccounts(containerName), // refresh accounts is done on first load or in Accounts page
       ]);
 
       if (accountsData?.success) {
@@ -96,29 +95,29 @@ const Aliases = () => {
           }))
         );
 
-        debugLog('accountsData', accountsData);                 // [ { mailbox: 'a@a.com', domain:'a.com', storage: {} },{ mailbox: 'b@b.com', domain:'b.com', storage: {} }, .. ]
+        debugLog('accountsData', accountsData); // [ { mailbox: 'a@a.com', domain:'a.com', storage: {} },{ mailbox: 'b@b.com', domain:'b.com', storage: {} }, .. ]
         setAccounts(accountsData.message);
-
       } else setErrorMessage(accountsData?.error);
-      
+
       if (aliasesData?.success) {
         debugLog('aliasesData', aliasesData);
         // add color column for regex aliases
-        let aliasesDataFormatted = aliasesData.message.map(alias => { return { 
-          ...alias, 
-          color:  (alias.regex) ? "text-info" : "",
-          }; });
+        let aliasesDataFormatted = aliasesData.message.map((alias) => {
+          return {
+            ...alias,
+            color: alias.regex ? 'text-info' : '',
+          };
+        });
         setAliases(aliasesDataFormatted);
         debugLog('aliasesDataFormatted', aliasesDataFormatted); // [ { source: 'a@b.com', destination:'b@b.com', regex: 0, color: '' }, .. ]
-        
       } else setErrorMessage(aliasesData?.error);
-      
-
     } catch (error) {
       errorLog(t('api.errors.fetchAliases'), error);
       // setErrorMessage('api.errors.fetchAliases');
-      setErrorMessage({key: 'api.errors.fetchAliases', values: { error: error.message }});
-      
+      setErrorMessage({
+        key: 'api.errors.fetchAliases',
+        values: { error: error.message },
+      });
     } finally {
       setLoading(false);
     }
@@ -130,14 +129,22 @@ const Aliases = () => {
       ...formData,
       [name]: type === 'number' ? Number(value) : value,
     });
-    
+
     // source can be an email or a regex
     if (name == 'source') {
-      console.debug('value.match(regexEmailStrict)',value.match(regexEmailStrict));
-      console.debug('value.match(regexEmailRegex)',value.match(regexEmailRegex));
+      console.debug(
+        'value.match(regexEmailStrict)',
+        value.match(regexEmailStrict)
+      );
+      console.debug(
+        'value.match(regexEmailRegex)',
+        value.match(regexEmailRegex)
+      );
       setIsSource({
         alias: value.trim().match(regexEmailStrict),
-        valid: value.trim().match(regexEmailStrict) || value.trim().match(regexEmailRegex),
+        valid:
+          value.trim().match(regexEmailStrict) ||
+          value.trim().match(regexEmailRegex),
       });
     }
 
@@ -150,41 +157,43 @@ const Aliases = () => {
     }
   };
 
-
   const validateForm = () => {
     const errors = {};
-    
+
     // with FormField type="text" we don't need any of that, but since we deal with regex...
-    
+
     let matchEmailStrict = formData.source.trim().match(regexFindEmailStrict);
     let matchEmailRegex = formData.source.trim().match(regexEmailRegex);
-    console.debug('matchEmailStrict',matchEmailStrict)
-    console.debug('matchEmailRegex',matchEmailRegex)
+    console.debug('matchEmailStrict', matchEmailStrict);
+    console.debug('matchEmailRegex', matchEmailRegex);
 
     if (!formData.source.trim()) {
       errors.source = 'aliases.sourceRequired';
       // setErrorMessage(errors.source);
-      triggerToast({type: 'error', message: errors.source});
+      triggerToast({ type: 'error', message: errors.source });
 
-    // source can be an email or a regex
+      // source can be an email or a regex
     } else if (!matchEmailStrict && !matchEmailRegex) {
       errors.source = 'aliases.invalidSource';
       // setErrorMessage(errors.source);
-      triggerToast({type: 'error', message: errors.source});
+      triggerToast({ type: 'error', message: errors.source });
     }
 
     if (!formData.destination.trim()) {
       errors.destination = 'aliases.destinationRequired';
       // setErrorMessage(errors.source);
-      triggerToast({type: 'error', message: errors.source});
+      triggerToast({ type: 'error', message: errors.source });
     }
 
     // Also test if source domain exist in domains when it's a mailbox match
     // I can't see how to really test for regex as the domain part can be regex too but let's do our best
-    if (matchEmailStrict && !plucks(accounts, 'domain').has(matchEmailStrict[2])) {
+    if (
+      matchEmailStrict &&
+      !plucks(accounts, 'domain').has(matchEmailStrict[2])
+    ) {
       errors.source = 'aliases.invalidSourceDomain';
       // setErrorMessage(errors.source);
-      triggerToast({type: 'error', message: errors.source});
+      triggerToast({ type: 'error', message: errors.source });
     }
 
     setFormErrors(errors);
@@ -202,7 +211,11 @@ const Aliases = () => {
 
     try {
       // const result = await addAlias(getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'), containerName, formData.source.trim(), formData.destination.trim());
-      const result = await addAlias(containerName, formData.source.trim(), formData.destination.trim());
+      const result = await addAlias(
+        containerName,
+        formData.source.trim(),
+        formData.destination.trim()
+      );
       if (result.success) {
         setFormData({
           source: '',
@@ -210,34 +223,36 @@ const Aliases = () => {
         });
         fetchAliases(true); // Refresh the aliases list
         setSuccessMessage('aliases.aliasCreated');
-        
       } else setErrorMessage(result?.error);
-      
     } catch (error) {
       errorLog(t('api.errors.addAlias'), error.message);
       // setErrorMessage('api.errors.addAlias', error.message);
-      setErrorMessage({key: 'api.errors.addAlias', values: { error: error.message }});
+      setErrorMessage({
+        key: 'api.errors.addAlias',
+        values: { error: error.message },
+      });
     }
   };
 
   const handleDelete = async (source, destination) => {
-    if (window.confirm(t('aliases.confirmDelete', { source:source }))) {
+    if (window.confirm(t('aliases.confirmDelete', { source: source }))) {
       setErrorMessage(null);
       setSuccessMessage(null);
-      
+
       try {
         // const result = await deleteAlias(getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'), containerName, source, destination);
         const result = await deleteAlias(containerName, source, destination);
         if (result.success) {
           fetchAliases(true); // Refresh the aliases list
           setSuccessMessage('aliases.aliasDeleted');
-          
         } else setErrorMessage(result?.error);
-        
       } catch (error) {
         errorLog(t('api.errors.deleteAlias'), error.message);
         // setErrorMessage('api.errors.deleteAlias', error.message);
-        setErrorMessage({key: 'api.errors.deleteAlias', values: { error: error.message }});
+        setErrorMessage({
+          key: 'api.errors.deleteAlias',
+          values: { error: error.message },
+        });
       }
     }
   };
@@ -267,35 +282,45 @@ const Aliases = () => {
     fetchAliases(false);
   }, [mailservers, containerName]);
 
-
   // if (isLoading && !aliases && !aliases.length) {
   if (isLoading) {
     return <LoadingSpinner />;
   }
-  
-  
+
   return (
     <div>
-      <h2 className="mb-4">{Translate('aliases.title')} {t('common.for', {what:containerName})}</h2>
-      
+      <h2 className="mb-4">
+        {Translate('aliases.title')} {t('common.for', { what: containerName })}
+      </h2>
       <AlertMessage type="danger" message={errorMessage} />
       <AlertMessage type="success" message={successMessage} />
-      
       <Row>
         {' '}
-        
         <Col md={5} className="mb-4">
           {' '}
           {/* Use Col component */}
-          <Card title="aliases.newAlias" icon="person-plus-fill">{' '}
+          <Card title="aliases.newAlias" icon="person-plus-fill">
+            {' '}
             {/* Removed mb-4 from Card, added to Col */}
             <form onSubmit={handleSubmit} className="form-wrapper">
               <FormField
                 type="text"
                 id="source"
                 name="source"
-                label={isSource?.valid ? (isSource?.alias ? "aliases.sourceAlias" : "aliases.sourceRegex") : "aliases.sourceRequired"}
-                labelColor={isSource?.valid ? (isSource?.alias ? "" : "text-info") : "text-danger"}
+                label={
+                  isSource?.valid
+                    ? isSource?.alias
+                      ? 'aliases.sourceAlias'
+                      : 'aliases.sourceRegex'
+                    : 'aliases.sourceRequired'
+                }
+                labelColor={
+                  isSource?.valid
+                    ? isSource?.alias
+                      ? ''
+                      : 'text-info'
+                    : 'text-danger'
+                }
                 value={formData.source}
                 onChange={handleInputChange}
                 placeholder="alias@domain.com"
@@ -321,18 +346,16 @@ const Aliases = () => {
             </form>
           </Card>
         </Col>{' '}
-        
         <Col md={7}>
           {' '}
           {/* Use Col component */}
-          <Card 
-            title="aliases.existingAliases" 
-            titleExtra={`(${aliases.length})`} 
-            icon="person-lines-fill" 
+          <Card
+            title="aliases.existingAliases"
+            titleExtra={`(${aliases.length})`}
+            icon="person-lines-fill"
             isLoading={isLoading}
             onClickRefresh={() => fetchAliases(true)}
             titleRefresh={t('common.forceResync')}
-
           >
             <DataTable
               columns={columns}

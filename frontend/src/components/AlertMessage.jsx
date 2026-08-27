@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import RBAlert from 'react-bootstrap/Alert'; // Import react-bootstrap Alert
 import { useTranslation } from 'react-i18next';
-import {
-  Translate,
-} from './index.jsx';
+import { Translate } from './index.jsx';
 
 /**
  * Reusable alert component using react-bootstrap
@@ -29,7 +27,7 @@ const AlertMessage = ({
   // Extract key and dynamic values if message is an object
   const translationKey = typeof message === 'object' ? message.key : message;
   const translationValues = typeof message === 'object' ? message.values : {};
-  const actualTranslatedString = t(translationKey); 
+  const actualTranslatedString = t(translationKey);
   const keyHasPlaceholder = actualTranslatedString.includes('{{error}}');
   // console.debug('ddebug translationKey',translationKey)
   // console.debug('ddebug translationValues',translationValues)
@@ -37,18 +35,20 @@ const AlertMessage = ({
   // console.debug('ddebug keyHasPlaceholder',keyHasPlaceholder)
 
   return (
-    <RBAlert 
+    <RBAlert
       variant={type}
-      dismissible={!!onClose}               // Make dismissible if onClose is provided
-      show={showAlert}                      // Tells the alert when to render
-      onClose={() => setShowAlert(false)}   // Changes state to false on 'X'
+      dismissible={!!onClose} // Make dismissible if onClose is provided
+      show={showAlert} // Tells the alert when to render
+      onClose={() => setShowAlert(false)} // Changes state to false on 'X'
       {...rest}
     >
       {/* Wrapper ensures i18n props do not bleed onto the Bootstrap Alert DOM node */}
       <span>
         {Translate(translationKey, translate, translationValues)}
         {/* If dynamic error values exist but the key codes don't have {{error}}, safely append them separated by a space or colon */}
-        {!keyHasPlaceholder && translationValues?.error && ` : ${translationValues.error}`}
+        {!keyHasPlaceholder &&
+          translationValues?.error &&
+          ` : ${translationValues.error}`}
       </span>
     </RBAlert>
   );
@@ -57,5 +57,5 @@ const AlertMessage = ({
 export default AlertMessage;
 
 // using <Trans> inside a bootstrap alert causes this error:
-// React does not recognize the `i18nIsDynamicList` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `i18nisdynamiclist` instead. If you accidentally passed it from a parent component, remove it from the DOM element. Component Stack: 
+// React does not recognize the `i18nIsDynamicList` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `i18nisdynamiclist` instead. If you accidentally passed it from a parent component, remove it from the DOM element. Component Stack:
 // The warning happens because the react-bootstrap component (<RBAlert>) scans its direct children and attempts to pass down its internal animation/state props to them via cloning. Because your custom Translate helper is returning a <Trans> component directly as the root child, the props from React-Bootstrap mix with the internal properties of react-i18next and bleed onto the final DOM element.To fix this while keeping your HTML formatting, you simply need to wrap the output of your Translate() helper inside a plain HTML tag like a <span> or a <div>. This creates a boundary that prevents react-bootstrap and react-i18next from passing conflicting props to each other.

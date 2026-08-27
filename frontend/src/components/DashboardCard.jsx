@@ -3,11 +3,7 @@ import { useTranslation } from 'react-i18next';
 import RBCard from 'react-bootstrap/Card'; // Import react-bootstrap Card
 import RBBadge from 'react-bootstrap/Badge'; // Import react-bootstrap Badge
 import { useNavigate } from 'react-router-dom';
-import {
-  LoadingSpinner,
-  Translate,
-  Button,
-} from './index.jsx';
+import { LoadingSpinner, Translate, Button } from './index.jsx';
 
 /**
  * Dashboard card component using react-bootstrap
@@ -29,7 +25,7 @@ const DashboardCard = ({
   titleRefresh,
   icon,
   value,
-  isLoading= true,
+  isLoading = true,
   iconColor = 'primary',
   badgeColor,
   badgeText,
@@ -41,18 +37,18 @@ const DashboardCard = ({
   ...rest
 }) => {
   const { t } = useTranslation();
-  const showRefresher   = (typeof onClickRefresh  == "function") ? true : false;
-  const overrideTitleRefresh   = (typeof titleRefresh  == "string") ? true : false;
+  const showRefresher = typeof onClickRefresh == 'function' ? true : false;
+  const overrideTitleRefresh = typeof titleRefresh == 'string' ? true : false;
   const navigate = useNavigate();
 
   function handleNavigate(to) {
     to && navigate(to);
   }
-  
+
   // text loading spinner
   return (
     <RBCard
-      className={`dashboard-card ${className} ${isLoading ? "opacity-25" : ""} ${href ? "card-clickable" : ""}`}
+      className={`dashboard-card ${className} ${isLoading ? 'opacity-25' : ''} ${href ? 'card-clickable' : ''}`}
       onClick={() => handleNavigate(href)}
       {...rest}
     >
@@ -60,32 +56,34 @@ const DashboardCard = ({
         <div className={`dashboard-icon text-${iconColor}`}>
           <i className={`bi bi-${icon}`}></i>
         </div>
-        {(showRefresher) && (
+        {showRefresher && (
           <div className="float-end position-sticky z-1">
-          {showRefresher && (
-            <Button
-              variant="warning"
-              size="sm"
-              icon="arrow-repeat"
-              title={(overrideTitleRefresh) ? titleRefresh : t('common.refresh')}
-              onClick={(e) => {
-                e.stopPropagation(); // 👈 Stops the click from bubbling up to the card
-                e.preventDefault();  // 👈 Prevents the card link from opening
-                onClickRefresh(e);   // 👈 Calls your actual refresh function
-              }}
-            />
-          )}
+            {showRefresher && (
+              <Button
+                variant="warning"
+                size="sm"
+                icon="arrow-repeat"
+                title={
+                  overrideTitleRefresh ? titleRefresh : t('common.refresh')
+                }
+                onClick={(e) => {
+                  e.stopPropagation(); // 👈 Stops the click from bubbling up to the card
+                  e.preventDefault(); // 👈 Prevents the card link from opening
+                  onClickRefresh(e); // 👈 Calls your actual refresh function
+                }}
+              />
+            )}
           </div>
         )}
-        <RBCard.Title as="h5">
-          {Translate(title, translate)}
-        </RBCard.Title>
-        {badgeColor
-          ? <RBBadge bg={badgeColor}>{badgeText ? Translate(badgeText, translate) : value}</RBBadge>
-          : (isLoading
-            ? <LoadingSpinner size="sm"/>
-            : <p className="card-text">{value}</p>
-          
+        <RBCard.Title as="h5">{Translate(title, translate)}</RBCard.Title>
+        {badgeColor ? (
+          <RBBadge bg={badgeColor}>
+            {badgeText ? Translate(badgeText, translate) : value}
+          </RBBadge>
+        ) : isLoading ? (
+          <LoadingSpinner size="sm" />
+        ) : (
+          <p className="card-text">{value}</p>
         )}
         {children}
       </RBCard.Body>
@@ -94,20 +92,20 @@ const DashboardCard = ({
 };
 
 export default DashboardCard;
-    // icon loading spinner
-    // <RBCard className={`dashboard-card ${className}`} {...rest}>
-      // <RBCard.Body>
-        // <div className={`dashboard-icon text-${iconColor}`}>
-        // {(isLoading) ?
-          // <LoadingSpinner /> :
-          // <i className={`bi bi-${icon}`}></i>
-        // }
-        // </div>
-        // <RBCard.Title as="h5">{t(title)}</RBCard.Title>
-        // {badgeColor ? (
-          // <RBBadge bg={badgeColor}>{badgeText ? t(badgeText) : value}</RBBadge>
-        // ) : (
-          // <p className="card-text">{value}</p>
-        // )}
-      // </RBCard.Body>
-    // </RBCard>
+// icon loading spinner
+// <RBCard className={`dashboard-card ${className}`} {...rest}>
+// <RBCard.Body>
+// <div className={`dashboard-icon text-${iconColor}`}>
+// {(isLoading) ?
+// <LoadingSpinner /> :
+// <i className={`bi bi-${icon}`}></i>
+// }
+// </div>
+// <RBCard.Title as="h5">{t(title)}</RBCard.Title>
+// {badgeColor ? (
+// <RBBadge bg={badgeColor}>{badgeText ? t(badgeText) : value}</RBBadge>
+// ) : (
+// <p className="card-text">{value}</p>
+// )}
+// </RBCard.Body>
+// </RBCard>

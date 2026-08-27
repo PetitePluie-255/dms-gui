@@ -3,9 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import InputGroup from 'react-bootstrap/InputGroup';
-import {
-  Translate,
-} from './index.jsx';
+import { Translate } from './index.jsx';
 
 /**
  * Reusable form field component using react-bootstrap
@@ -38,7 +36,7 @@ const FormField = ({
   placeholder,
   error,
   helpText,
-  groupClass="mb-3",
+  groupClass = 'mb-3',
   required = false,
   isChecked = false,
   defaultChecked = false,
@@ -48,50 +46,49 @@ const FormField = ({
 }) => {
   const { t } = useTranslation();
 
-  // You provided a `checked` prop to a form field without an `onChange` handler. 
-  // This will render a read-only field. If the field should be mutable use `defaultChecked`. 
+  // You provided a `checked` prop to a form field without an `onChange` handler.
+  // This will render a read-only field. If the field should be mutable use `defaultChecked`.
   // Otherwise, set either `onChange` or `readOnly`
 
   return (
     <Form.Group className={groupClass} controlId={id} as={as}>
       {!['checkbox', 'radio'].includes(type) && label && (
-      <Form.Label className={labelColor}>
-        {Translate(label, translate)}
-        {required && <span className="text-danger ms-1">*</span>}
-      </Form.Label>
+        <Form.Label className={labelColor}>
+          {Translate(label, translate)}
+          {required && <span className="text-danger ms-1">*</span>}
+        </Form.Label>
       )}
-      
+
       <InputGroup>
-        {['checkbox', 'radio'].includes(type) && (
-          (onChange !== undefined) && (
+        {(['checkbox', 'radio'].includes(type) &&
+          ((onChange !== undefined && (
             <Form.Check
               type={type}
               name={name}
               label={Translate(label, translate)}
               onChange={onChange}
-              placeholder={(translate) && t(placeholder) || placeholder}
+              placeholder={(translate && t(placeholder)) || placeholder}
               isInvalid={!!error} // Set isInvalid based on error presence
               checked={!!isChecked}
               {...rest} // Spread remaining props
             />
-          ) || (
+          )) || (
             <Form.Check
               type={type}
               name={name}
               label={Translate(label, translate)}
-              placeholder={(translate) && t(placeholder) || placeholder}
+              placeholder={(translate && t(placeholder)) || placeholder}
               isInvalid={!!error} // Set isInvalid based on error presence
               defaultChecked={!!defaultChecked}
               {...rest} // Spread remaining props
             />
-          )
-        ) || (
+          ))) || (
           <Form.Control
             type={type}
             name={name}
             value={value}
             onChange={onChange}
-            placeholder={(translate) && t(placeholder) || placeholder}
+            placeholder={(translate && t(placeholder)) || placeholder}
             isInvalid={!!error} // Set isInvalid based on error presence
             required={!!required} // Pass required prop
             {...rest} // Spread remaining props
@@ -101,13 +98,11 @@ const FormField = ({
       </InputGroup>
       {error && (
         <Form.Control.Feedback type="invalid">
-        {Translate(error, translate)}
+          {Translate(error, translate)}
         </Form.Control.Feedback>
       )}
       {helpText && (
-        <Form.Text muted>
-        {Translate(helpText, translate)}
-        </Form.Text>
+        <Form.Text muted>{Translate(helpText, translate)}</Form.Text>
       )}
     </Form.Group>
   );

@@ -8,11 +8,12 @@ body {
   background-color: #f8f9fa;
 }
 
-.btn-group-xs > .btn, .btn-xs {
+.btn-group-xs > .btn,
+.btn-xs {
   --bs-btn-padding-y: 0.25rem;
-  --bs-btn-padding-x: 0.10rem;
+  --bs-btn-padding-x: 0.1rem;
   --bs-btn-font-size: 0.875rem;
-  --bs-btn-border-radius: .25rem;
+  --bs-btn-border-radius: 0.25rem;
 }
 
 .card-clickable {
@@ -25,8 +26,8 @@ body {
   width: 0;
 }
 
-tr .form-control, 
-tr .MuiChip-root  {
+tr .form-control,
+tr .MuiChip-root {
   color: inherit;
 }
 
@@ -34,8 +35,8 @@ tr .MuiChip-root  {
 .app-viewport-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100vh;           /* Forces the app wrapper to lock to the viewport height */
-  overflow: hidden;        /* Prevents the main window scrollbar entirely */
+  height: 100vh; /* Forces the app wrapper to lock to the viewport height */
+  overflow: hidden; /* Prevents the main window scrollbar entirely */
 }
 
 /* Side-by-side flex layout block below the Navbar */
@@ -74,14 +75,14 @@ tr .MuiChip-root  {
 
 #leftsidebar {
   flex: 1;
-  overflow-y: auto;        /* Allows sidebar links to scroll internally if they overflow */
+  overflow-y: auto; /* Allows sidebar links to scroll internally if they overflow */
   overflow-x: hidden;
   padding-top: 20px;
 }
 
 .leftsidebar .nav-link {
   text-decoration: none;
-  white-space: nowrap;     /* Stops text from wrapping to a new line during transition */
+  white-space: nowrap; /* Stops text from wrapping to a new line during transition */
   padding: 12px 20px;
   display: flex;
   align-items: center;
@@ -96,7 +97,7 @@ tr .MuiChip-root  {
 
 .leftsidebar .nav-link i {
   font-size: 1.25rem;
-  min-width: 25px;         /* Keeps icons aligned perfectly when text collapses */
+  min-width: 25px; /* Keeps icons aligned perfectly when text collapses */
   margin-right: 15px;
 }
 
@@ -113,14 +114,14 @@ tr .MuiChip-root  {
 }
 
 .leftsidebar-collapse-btn {
-  width: 100%;             /* Fills container when wide, shrinks when collapsed */
+  width: 100%; /* Fills container when wide, shrinks when collapsed */
 }
 
 /* THE MAGIC FIX FOR SCROLLING: This keeps the page scrollable while sidebar stays locked */
 .main-content {
-  flex: 1;                 /* Dynamically fills 100% of remaining width */
-  height: 100%;            /* Fills 100% of layout height */
-  overflow-y: auto;        /* Adds a clean scrollbar ONLY to your dashboard content */
+  flex: 1; /* Dynamically fills 100% of remaining width */
+  height: 100%; /* Fills 100% of layout height */
+  overflow-y: auto; /* Adds a clean scrollbar ONLY to your dashboard content */
   padding: 20px;
   background-color: #f8f9fa;
 }
@@ -152,7 +153,9 @@ tr .MuiChip-root  {
   margin: 0 auto;
 }
 
-.cursor-pointer {cursor: pointer;}
+.cursor-pointer {
+  cursor: pointer;
+}
 
 .top-right {
   top: 1rem;
@@ -164,8 +167,8 @@ tr .MuiChip-root  {
 /* Custom Sticky Rules for React-Bootstrap Accordion Headers */
 .main-content .accordion-header {
   position: sticky;
-  top: -20px;          /* Matches your .main-content padding (20px) perfectly to line up flush */
-  z-index: 10;         /* Keeps headers floating safely above the scrolling body text underneath */
+  top: -20px; /* Matches your .main-content padding (20px) perfectly to line up flush */
+  z-index: 10; /* Keeps headers floating safely above the scrolling body text underneath */
 }
 
 /* Force Bootstrap's internal button style to inherit the layout cleanly */
@@ -195,9 +198,9 @@ tr .MuiChip-root  {
 /* Action wrapper element that sits on top of the native button layer surface */
 .accordion-header-actions-wrapper {
   position: relative;
-  z-index: 9;                /* Ensures the button stays perfectly clickable */
-  margin-left: auto;         /* Dynamically pushes the button to the far right side */
-  padding-right: 5px;        /* Spacing buffer between the button and the chevron arrow */
+  z-index: 9; /* Ensures the button stays perfectly clickable */
+  margin-left: auto; /* Dynamically pushes the button to the far right side */
+  padding-right: 5px; /* Spacing buffer between the button and the chevron arrow */
   display: flex;
   align-items: center;
 }
@@ -210,7 +213,7 @@ tr .MuiChip-root  {
 /* separate refresh button trick: Automatically grab the active tint background when the sibling button expands! */
 .custom-accordion-header:has(.accordion-button:not(.collapsed)) {
   /* Maps to that solid opaque light blue layer we calculated (#e7f1ff) */
-  background-color: #cfe2ff !important; 
+  background-color: #cfe2ff !important;
 }
 
 /* separate refresh button trick: Optional: Align the flex block to fill the entire header height so the color is seamless */
@@ -218,7 +221,6 @@ tr .MuiChip-root  {
   background-color: transparent;
   align-self: stretch;
 }
-
 
 /* -------------------- Accordion -------------------- */
 
@@ -229,20 +231,32 @@ tr .MuiChip-root  {
 
 .main-content .card-header {
   position: sticky;
-  top: -20px;          /* Matches your .main-content padding (20px) perfectly to line up flush */
-  z-index: 5;          /* Keeps headers floating safely above the scrolling body text underneath */
+  top: -20px; /* Matches your .main-content padding (20px) perfectly to line up flush */
+  z-index: 5; /* Keeps headers floating safely above the scrolling body text underneath */
 }
 /* -------------------- Card -------------------- */
 
 /* -------------------- DataTable -------------------- */
 /* --- Highlight animation --- */
 @keyframes highlight {
-  0%    { background-color: yellow; }
-  4%    { background-color: transparent; }
-  5%    { background-color: yellow; }
-  9%    { background-color: transparent; }
-  10%   { background-color: yellow; }
-  100%  { background-color: transparent; }
+  0% {
+    background-color: yellow;
+  }
+  4% {
+    background-color: transparent;
+  }
+  5% {
+    background-color: yellow;
+  }
+  9% {
+    background-color: transparent;
+  }
+  10% {
+    background-color: yellow;
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 .highlight-change {
@@ -252,7 +266,7 @@ tr .MuiChip-root  {
 
 /* opacity for text in td only, not the buttons or icons */
 .td-opacity-25 td span {
-  opacity: .25;
+  opacity: 0.25;
 }
 
 /* text-danger or any text color applied at row lever is superseeded by the below, from table class */
@@ -260,7 +274,6 @@ tr .MuiChip-root  {
   color: inherit;
 }
 /* -------------------- DataTable -------------------- */
-
 
 /* -------------------- Autocomplete -------------------- */
 /* do not hold a minimum width to avoid unnecessary larger boxes */
@@ -297,6 +310,8 @@ button:disabled:not(.btn-feedback),
 
 /* -------------------- Toasts -------------------- */
 .toast-body {
-  color: var(--bs-toast-header-color);  /* lighter than text-dark, does not apply to white or light text  */
+  color: var(
+    --bs-toast-header-color
+  ); /* lighter than text-dark, does not apply to white or light text  */
 }
 /* -------------------- Toasts -------------------- */

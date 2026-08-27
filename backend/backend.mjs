@@ -12,70 +12,69 @@ import {
   funcName,
   reduxPropertiesOfObj,
   regexColors,
-  regexPrintOnly
+  regexPrintOnly,
 } from '../common.mjs';
-import {
-  getTargetDict
-} from './db.mjs';
-import {
-  env
-} from './env.mjs';
-
+import { getTargetDict } from './db.mjs';
+import { env } from './env.mjs';
 
 // const log = require('log-utils');   // https://www.npmjs.com/package/log-utils
-export const color = (env.LOG_COLORS) ? {
-  end: '\x1B[0m',
-  k: '\x1B[30m',
-  r: '\x1B[31m',
-  g: '\x1B[32m',
-  y: '\x1B[33m',
-  b: '\x1B[34m',
-  m: '\x1B[35m',
-  c: '\x1B[36m',
-  w: '\x1B[37m',
-  HIG: '\x1B[1m',
-  LOW: '\x1B[2m',
-  REV: '\x1B[3m',
-  UND: '\x1B[4m',
-  HGL: '\x1B[5m',
-  kLOW: '\x1B[90m',
-} : {
-  end: '',
-  k: '',
-  r: '',
-  g: '',
-  y: '',
-  b: '',
-  m: '',
-  c: '',
-  w: '',
-  HIG: '',
-  LOW: '',
-  REV: '',
-  UND: '',
-  HGL: '',
-}
-export const ICON = (env.LOG_COLORS) ? {
-  success:  '\x1B[92m✔️\x1B[39m ',
-  error:    '\x1B[31m❌\x1B[39m',
-  warn:     '\x1B[33m🔺\x1B[39m',
-  info:     '\x1B[36m💬\x1B[39m',
-  debug:    '\x1B[35m🔎\x1B[39m',
-} : {
-  success:  '✔️ ',
-  error:    '❌ ',
-  warn:     '🔺',
-  info:     '💬',
-  debug:    '🔎',
-}
+export const color = env.LOG_COLORS
+  ? {
+      end: '\x1B[0m',
+      k: '\x1B[30m',
+      r: '\x1B[31m',
+      g: '\x1B[32m',
+      y: '\x1B[33m',
+      b: '\x1B[34m',
+      m: '\x1B[35m',
+      c: '\x1B[36m',
+      w: '\x1B[37m',
+      HIG: '\x1B[1m',
+      LOW: '\x1B[2m',
+      REV: '\x1B[3m',
+      UND: '\x1B[4m',
+      HGL: '\x1B[5m',
+      kLOW: '\x1B[90m',
+    }
+  : {
+      end: '',
+      k: '',
+      r: '',
+      g: '',
+      y: '',
+      b: '',
+      m: '',
+      c: '',
+      w: '',
+      HIG: '',
+      LOW: '',
+      REV: '',
+      UND: '',
+      HGL: '',
+    };
+export const ICON = env.LOG_COLORS
+  ? {
+      success: '\x1B[92m✔️\x1B[39m ',
+      error: '\x1B[31m❌\x1B[39m',
+      warn: '\x1B[33m🔺\x1B[39m',
+      info: '\x1B[36m💬\x1B[39m',
+      debug: '\x1B[35m🔎\x1B[39m',
+    }
+  : {
+      success: '✔️ ',
+      error: '❌ ',
+      warn: '🔺',
+      info: '💬',
+      debug: '🔎',
+    };
 
 export const LEVEL = {
-  success:  color.g+color.LOW+'[SUCCESS] '+color.end,
-  error:    color.r+color.LOW+'[ERROR]  '+color.end,
-  warn:     color.y+color.LOW+'[WARN]   '+color.end,
-  info:     color.k+color.HIG+'[INFO]   '+color.end,
-  debug:    color.k+color.HIG+'[DEBUG]  '+color.end,
-}
+  success: color.g + color.LOW + '[SUCCESS] ' + color.end,
+  error: color.r + color.LOW + '[ERROR]  ' + color.end,
+  warn: color.y + color.LOW + '[WARN]   ' + color.end,
+  info: color.k + color.HIG + '[INFO]   ' + color.end,
+  debug: color.k + color.HIG + '[DEBUG]  ' + color.end,
+};
 
 // ['debug','log','info','warn','error'].forEach((method, level)=>{
 // const type = method.toUpperCase(), native = console[method];
@@ -85,31 +84,56 @@ export const LEVEL = {
 // }, { native }
 // );
 // });
-export const logger = async (level, message='', ...data) => {
+export const logger = async (level, message = '', ...data) => {
   // console[level](`[\x1B[90m${(new Date).toLocaleTimeString()}\x1B[39m]`, ICON[level], color.k+color.HIG+LEVEL[level]+color.end, color.LOW+funcName(4)+color.end, message, data);
-  console.log(`[${color.kLOW}${(new Date).toLocaleTimeString()}]${color.end}`, ICON[level], color.k+color.HIG+LEVEL[level], color.LOW+funcName(4)+(level == 'debug' ? '' : color.end), message, ...data, color.end);
+  console.log(
+    `[${color.kLOW}${new Date().toLocaleTimeString()}]${color.end}`,
+    ICON[level],
+    color.k + color.HIG + LEVEL[level],
+    color.LOW + funcName(4) + (level == 'debug' ? '' : color.end),
+    message,
+    ...data,
+    color.end
+  );
 };
 
-export const successLog = async (message, ...data) => { logger('success', message, ...data) };
-export const errorLog = async (message, ...data) => { logger('error', message, ...data) };
-export const warnLog = async (message, ...data) => { logger('warn', message, ...data) };
-export const infoLog = async (message, ...data) => { logger('info', message, ...data) };
-export const debugLog = async (message, ...data) => { if (env.debug) logger('debug', message, ...data) };
-
+export const successLog = async (message, ...data) => {
+  logger('success', message, ...data);
+};
+export const errorLog = async (message, ...data) => {
+  logger('error', message, ...data);
+};
+export const warnLog = async (message, ...data) => {
+  logger('warn', message, ...data);
+};
+export const infoLog = async (message, ...data) => {
+  logger('info', message, ...data);
+};
+export const debugLog = async (message, ...data) => {
+  if (env.debug) logger('debug', message, ...data);
+};
 
 // doveadm function for mailboxes
 // https://doc.dovecot.org/2.4.1/core/admin/doveadm.html
-export const doveadm = async (schema='dms', containerName=null, command=null, mailbox=null, jsonDict={}) => {   // jsonDict = {field:"messages unseen vsize", box:"INBOX Junk"}
-  if (!mailbox) return {success: false, error: 'mailbox is null'};
-  if (!command) return {success: false, error: 'command is null'};
-  if (!containerName) return {success: false, error: 'containerName is null'};
-  const anonymizedJsonDict = (jsonDict?.password) ? {...jsonDict, password: '********'} : jsonDict;
+export const doveadm = async (
+  schema = 'dms',
+  containerName = null,
+  command = null,
+  mailbox = null,
+  jsonDict = {}
+) => {
+  // jsonDict = {field:"messages unseen vsize", box:"INBOX Junk"}
+  if (!mailbox) return { success: false, error: 'mailbox is null' };
+  if (!command) return { success: false, error: 'command is null' };
+  if (!containerName) return { success: false, error: 'containerName is null' };
+  const anonymizedJsonDict = jsonDict?.password
+    ? { ...jsonDict, password: '********' }
+    : jsonDict;
   debugLog(`for ${containerName}: ${command} ${mailbox}`, anonymizedJsonDict);
 
   // https://doc.dovecot.org/main/core/summaries/doveadm.html
   // https://manpages.ubuntu.com/manpages/jammy/man1/doveadm-mailbox.1.html
   const doveadm = {
-    
     // https://doc.dovecot.org/main/core/summaries/doveadm.html#index
     // Index user mailbox folder or folders.
     index: {
@@ -118,7 +142,13 @@ export const doveadm = async (schema='dms', containerName=null, command=null, ma
       defaults: {
         none: null,
       },
-      api: [["index", {"mailboxMask": "{box}", "allUsers": false, "user": "{mailbox}"}, "dms-gui"]],
+      api: [
+        [
+          'index',
+          { mailboxMask: '{box}', allUsers: false, user: '{mailbox}' },
+          'dms-gui',
+        ],
+      ],
       stdout: false,
       messages: {
         pass: 'Reindexing started for {mailbox}',
@@ -133,13 +163,13 @@ export const doveadm = async (schema='dms', containerName=null, command=null, ma
       defaults: {
         none: null,
       },
-      api: [["index", {"userMask": "{mailbox}"}, "dms-gui"]],
+      api: [['index', { userMask: '{mailbox}' }, 'dms-gui']],
       stdout: true,
       messages: {
         pass: 'Queued index requests for {mailbox}:',
       },
     },
-    
+
     // https://doc.dovecot.org/main/core/summaries/doveadm.html#mailbox%20list
     // Get list of existing mailboxes.
     list: {
@@ -177,7 +207,7 @@ export const doveadm = async (schema='dms', containerName=null, command=null, ma
       // Trash
       // Sent
     },
-    
+
     // https://doc.dovecot.org/2.4.1/core/summaries/doveadm.html#mailbox%20metadata%20list
     // List metadata for a mailbox.
     metaGet: {
@@ -200,7 +230,13 @@ export const doveadm = async (schema='dms', containerName=null, command=null, ma
     mailboxStatus: {
       mailbox: true,
       cmd: 'doveadm mailbox status -u {mailbox} {field} {box}',
-      api: [["mailboxStatus", {"field": ["{field}"], "user": "{mailbox}", "mailboxMask": ["{box}"]}, "dms-gui"]],
+      api: [
+        [
+          'mailboxStatus',
+          { field: ['{field}'], user: '{mailbox}', mailboxMask: ['{box}'] },
+          'dms-gui',
+        ],
+      ],
       defaults: {
         field: 'all',
         box: 'INBOX',
@@ -211,14 +247,20 @@ export const doveadm = async (schema='dms', containerName=null, command=null, ma
       },
       // INBOX messages=5119 recent=0 uidnext=5125 uidvalidity=1759246520 unseen=703 highestmodseq=356 vsize=459768297 guid=68e18d2db8f8db68550f00008e1fe135 firstsaved=1759247564
     },
-    
+
     // https://doc.dovecot.org/2.4.1/core/summaries/doveadm.html#force%20resync
-    // Under certain circumstances Dovecot may be unable to automatically solve problems with mailboxes. 
-    // In such situations the force-resync command may be helpful. It tries to fix all problems. 
+    // Under certain circumstances Dovecot may be unable to automatically solve problems with mailboxes.
+    // In such situations the force-resync command may be helpful. It tries to fix all problems.
     forceResync: {
       mailbox: true,
       cmd: 'doveadm force-resync -u {mailbox} --mailbox-mask {box}',
-      api: [["forceResync", {"allUsers": false, "user": "{mailbox}", "mailboxMask": "{box}"}, "dms-gui"]],
+      api: [
+        [
+          'forceResync',
+          { allUsers: false, user: '{mailbox}', mailboxMask: '{box}' },
+          'dms-gui',
+        ],
+      ],
       defaults: {
         box: 'INBOX',
       },
@@ -236,7 +278,7 @@ export const doveadm = async (schema='dms', containerName=null, command=null, ma
     loginUser: {
       mailbox: true,
       cmd: `doveadm auth test {mailbox} '{password}'`,
-      api: [["auth", {"user": "{mailbox}", "password": "{password}"}, "dms-gui"]],    // TODO: TBD, I did not bother to check
+      api: [['auth', { user: '{mailbox}', password: '{password}' }, 'dms-gui']], // TODO: TBD, I did not bother to check
       defaults: {
         none: null,
       },
@@ -246,76 +288,82 @@ export const doveadm = async (schema='dms', containerName=null, command=null, ma
       },
       timeout: 4,
     },
-  }
+  };
 
   try {
     if (!doveadm[command]) throw new Error(`unknown command: ${command}`);
     const targetDict = getTargetDict('mailserver', containerName);
     if (doveadm[command].timeout) targetDict.timeout = doveadm[command].timeout;
-    
-    let jsonDictMerged = {...doveadm[command]?.defaults, ...jsonDict};
+
+    let jsonDictMerged = { ...doveadm[command]?.defaults, ...jsonDict };
     let formattedCommand = doveadm[command].cmd.replace(/{mailbox}/g, mailbox);
-    let formattedPass    = doveadm[command].messages.pass.replace(/{mailbox}/g, mailbox);
+    let formattedPass = doveadm[command].messages.pass.replace(
+      /{mailbox}/g,
+      mailbox
+    );
 
     // variables replacement in cmd and pass message
     for (const [key, value] of Object.entries(jsonDictMerged)) {
-        formattedCommand =  formattedCommand.replace(`{${key}}`, value);
-        formattedPass =     formattedPass.replace(`{${key}}`, value);
-      }
-    
+      formattedCommand = formattedCommand.replace(`{${key}}`, value);
+      formattedPass = formattedPass.replace(`{${key}}`, value);
+    }
+
     const results = await execCommand(formattedCommand, targetDict);
     if (!results?.returncode) {
       successLog(formattedPass, results.stdout);
-      return { success: true, message: results?.stdout || formattedPass};
-      
+      return { success: true, message: results?.stdout || formattedPass };
     } else {
       errorLog(results.stderr);
-      return { success: false, error: results.sterr, returncode: results?.returncode };
+      return {
+        success: false,
+        error: results.sterr,
+        returncode: results?.returncode,
+      };
     }
-    
   } catch (error) {
     errorLog(error.message || error);
     throw new Error(error.message || error);
     // TODO: we should return smth to theindex API instead of throwing an error
     // return {
-      // status: 'unknown',
-      // error: error.message,
+    // status: 'unknown',
+    // error: error.message,
     // };
   }
 };
-
 
 /**
  * Executes a setup.sh command in the docker-mailserver container
  * @param {string} setupCommand Command to pass to setup.sh
  * @return {Promise<string>} stdout from the command
  */
-export const execDMS = async (setupCommand=null, targetDict={}, ...rest) => {
+export const execDMS = async (
+  setupCommand = null,
+  targetDict = {},
+  ...rest
+) => {
   // The setup.sh script is usually located at /usr/local/bin/setup.sh or /usr/local/bin/setup in docker-mailserver
-  
+
   const command = `${targetDict.setupPath} ${setupCommand}`;
   const anonymizedCommand = command
-    .replace(/(email add \S+) ([\S]+)/, "$1 '********'")            // `email add mail@x.y 'password'` -> `email add mail@x.y '********'`
-    .replace(/(doveadm auth test \S+) ([\S]+)/, "$1 '********'");   // `doveadm auth test mail@x.y 'password'` -> `doveadm auth test mail@x.y '********'`
+    .replace(/(email add \S+) ([\S]+)/, "$1 '********'") // `email add mail@x.y 'password'` -> `email add mail@x.y '********'`
+    .replace(/(doveadm auth test \S+) ([\S]+)/, "$1 '********'"); // `doveadm auth test mail@x.y 'password'` -> `doveadm auth test mail@x.y '********'`
   debugLog(`Executing setup command: ${anonymizedCommand}`);
 
   return execCommand(command, targetDict, ...rest);
 };
 
-
-export const execCommand = async (command=null, targetDict={}, ...rest) => {
+export const execCommand = async (command = null, targetDict = {}, ...rest) => {
   // The setup.sh script is usually located at /usr/local/bin/setup.sh or /usr/local/bin/setup in docker-mailserver
-  
+
   const anonymizedCommand = command
-    .replace(/(email add \S+) ([\S]+)/, "$1 '********'")            // `email add mail@x.y 'password'` -> `email add mail@x.y '********'`
-    .replace(/(doveadm auth test \S+) ([\S]+)/, "$1 '********'");   // `doveadm auth test mail@x.y 'password'` -> `doveadm auth test mail@x.y '********'`
+    .replace(/(email add \S+) ([\S]+)/, "$1 '********'") // `email add mail@x.y 'password'` -> `email add mail@x.y '********'`
+    .replace(/(doveadm auth test \S+) ([\S]+)/, "$1 '********'"); // `doveadm auth test mail@x.y 'password'` -> `doveadm auth test mail@x.y '********'`
   debugLog(`Executing system command: ${anonymizedCommand}`);
 
   const result = await execInContainerAPI(command, targetDict, ...rest);
   // debugLog('ddebug result', result)
   return result;
 };
-
 
 /**
  * Executes a command in the docker-mailserver container through docker.sock
@@ -381,24 +429,22 @@ async function execInContainer(command, containerName) {
 }
 */
 
-
 /**
  * Executes a checkPort connect to a server
  * @param {object} targetDict with protocol, host, port, Authorization
  * @return {Promise<object>} with returncode, stdout and stderr
  */
-export const checkPort = async (targetDict={}) => {
+export const checkPort = async (targetDict = {}) => {
   return new Promise((resolve) => {
-
-    if (env.isDEMO) return {success: true, message: 'port_open'};
+    if (env.isDEMO) return { success: true, message: 'port_open' };
     try {
       const socket = new net.Socket();
-      socket.setTimeout((targetDict?.timeout ?? 0.3) * 1000);   // we don't accept less then 300ms reply time
+      socket.setTimeout((targetDict?.timeout ?? 0.3) * 1000); // we don't accept less then 300ms reply time
 
       // Attempt to connect to the specified host and port
       socket.connect(targetDict.port, targetDict.host, () => {
         socket.end(); // Close the connection immediately after success
-        resolve({success: true, message: 'port_open'});
+        resolve({ success: true, message: 'port_open' });
       });
 
       socket.on('error', (error) => {
@@ -408,50 +454,44 @@ export const checkPort = async (targetDict={}) => {
         // console.error(`Address: ${error.address}`);         // 172.19.0.3
         // console.error(`Port: ${error.port}`);               // 8888
         socket.destroy();
-        resolve({success: false, message: 'port_closed: ' + error.code});
+        resolve({ success: false, message: 'port_closed: ' + error.code });
       });
 
       // Handle 'timeout' events
       socket.on('timeout', () => {
         socket.destroy();
-        resolve({success: false, message: 'port_timeout'});
+        resolve({ success: false, message: 'port_timeout' });
       });
 
-      return {success: false, message: 'port_unknown'};       // should never happen
-
+      return { success: false, message: 'port_unknown' }; // should never happen
     } catch (error) {
       errorLog('error:', error.message);
-      return {success: false, message: error.message};
+      return { success: false, message: error.message };
     }
   });
-}
-
+};
 
 /**
  * Executes a ping to a server
  * @param {string} host
  * @return {Promise<object>} with returncode, stdout and stderr
  */
-export const ping = async (host=null) => {
-
-  if (env.isDEMO) return {success: true, message: "mock response"};
+export const ping = async (host = null) => {
+  if (env.isDEMO) return { success: true, message: 'mock response' };
   try {
     const { stdout, stderr } = await exec(`ping -q -c 1 -A ${host}`);
     // debugLog(`stdout: ${stdout}`);
     if (stderr) {
       errorLog(`stderr: ${stderr}`);
-      return {success: false, error: stderr};
+      return { success: false, error: stderr };
     }
 
-    return {success: true, message: stdout};
-
+    return { success: true, message: stdout };
   } catch (error) {
     errorLog('error:', error.message);
-    return {success: false, error: error.message};
+    return { success: false, error: error.message };
   }
-
-}
-
+};
 
 /**
  * Executes a command in the docker-mailserver container through an http API
@@ -459,50 +499,70 @@ export const ping = async (host=null) => {
  * @param {object} targetDict with protocol, host, port, Authorization and maybe timeout
  * @return {Promise<object>} with returncode, stdout and stderr
  */
-export const execInContainerAPI = async (command=null, targetDict={}, ...rest) => {
-  
-  if (env.isDEMO) return {returncode:0, stdout:"mock response"};
+export const execInContainerAPI = async (
+  command = null,
+  targetDict = {},
+  ...rest
+) => {
+  if (env.isDEMO) return { returncode: 0, stdout: 'mock response' };
   let result;
   try {
     // debugLog('ddebug targetDict', targetDict);
     // debugLog("ddebug reduxPropertiesOfObj(targetDict, ['protocol', 'host', 'port', 'Authorization']))", reduxPropertiesOfObj(targetDict, ['protocol', 'host', 'port', 'Authorization']));
-    if (!targetDict || (targetDict && Object.keys(reduxPropertiesOfObj(targetDict, ['protocol', 'host', 'port', 'Authorization'])).length < 4) ) {
+    if (
+      !targetDict ||
+      (targetDict &&
+        Object.keys(
+          reduxPropertiesOfObj(targetDict, [
+            'protocol',
+            'host',
+            'port',
+            'Authorization',
+          ])
+        ).length < 4)
+    ) {
       return {
         returncode: 99,
         stderr: 'targetDict needs 4 keys: protocol, host, port, Authorization',
       };
-    };
+    }
 
     result = await checkPort(targetDict);
     // debugLog('ddebug checkPort result',result)   // { success: false, error: 'running' } // whyyyyyyyyyyyyy
     if (result.success) {
-
       const anonymizedCommand = command
-        .replace(/(email add \S+) ([\S]+)/, "$1 '********'")            // `email add mail@x.y 'password'` -> `email add mail@x.y '********'`
-        .replace(/(doveadm auth test \S+) ([\S]+)/, "$1 '********'");   // `doveadm auth test mail@x.y 'password'` -> `doveadm auth test mail@x.y '********'`
+        .replace(/(email add \S+) ([\S]+)/, "$1 '********'") // `email add mail@x.y 'password'` -> `email add mail@x.y '********'`
+        .replace(/(doveadm auth test \S+) ([\S]+)/, "$1 '********'"); // `doveadm auth test mail@x.y 'password'` -> `doveadm auth test mail@x.y '********'`
 
-      const jsonData = Object.assign({}, 
+      const jsonData = Object.assign(
+        {},
         {
           command: command,
           timeout: Number(targetDict?.timeout ?? env.timeout),
         },
-        ...rest);
+        ...rest
+      );
 
-      debugLog(`${targetDict.protocol}://${targetDict.host}:${targetDict.port}`)
+      debugLog(
+        `${targetDict.protocol}://${targetDict.host}:${targetDict.port}`
+      );
       // debugLog(`targetDict`, targetDict);
       // debugLog(`jsonData`, jsonData);
-      const response = await postJsonToApi(`${targetDict.protocol}://${targetDict.host}:${targetDict.port}`, jsonData, targetDict.Authorization)
+      const response = await postJsonToApi(
+        `${targetDict.protocol}://${targetDict.host}:${targetDict.port}`,
+        jsonData,
+        targetDict.Authorization
+      );
       // debugLog('ddebug response',response)
 
       if ('error' in response) {
         errorLog('response:', response);
         return {
           returncode: 99,
-          stderr: response.error.toString('utf8'),    // example: Invalid api_key: api_error: xxx-491c1cfd-86ec-49ba-b962-ce0bce5ff189
+          stderr: response.error.toString('utf8'), // example: Invalid api_key: api_error: xxx-491c1cfd-86ec-49ba-b962-ce0bce5ff189
         };
-        
       } else {
-        successLog('command:', anonymizedCommand);  
+        successLog('command:', anonymizedCommand);
         return {
           returncode: response.returncode,
           stdout: response.stdout.toString('utf8'),
@@ -516,7 +576,6 @@ export const execInContainerAPI = async (command=null, targetDict={}, ...rest) =
         stderr: result.message,
       };
     }
-
   } catch (error) {
     errorLog('error:', error.message);
     return {
@@ -526,23 +585,26 @@ export const execInContainerAPI = async (command=null, targetDict={}, ...rest) =
   }
 };
 
-
 /**
  * Generic API function post
  * @param {string} apiUrl API url like http://whatever:8888
  * @return {Promise<string>} stdout from the fetch
  */
-export const postJsonToApi = async (apiUrl=null, jsonData={}, Authorization=null) => {
+export const postJsonToApi = async (
+  apiUrl = null,
+  jsonData = {},
+  Authorization = null
+) => {
   // debugLog('ddebug apiUrl', apiUrl)
   // debugLog('ddebug DMS_API_KEY', DMS_API_KEY)
   // debugLog('ddebug jsonData', jsonData)
-  
+
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': Authorization
+        Authorization: Authorization,
       },
       body: JSON.stringify(jsonData),
     });
@@ -589,27 +651,24 @@ export const postJsonToApi = async (apiUrl=null, jsonData={}, Authorization=null
     const responseData = await response.json(); // Parse the JSON response
     // debugLog('API response:', responseData);
     return responseData;
-    
   } catch (error) {
     errorLog(error.message || error);
     throw new Error(error.message || error);
   }
 };
 
-
 /**
  * Generic API function get
  * @param {string} apiUrl API url like http://whatever:8888
  * @return {Promise<string>} stdout from the fetch
  */
-export const getJsonFromApi = async (apiUrl=null, Authorization=null) => {
-
+export const getJsonFromApi = async (apiUrl = null, Authorization = null) => {
   try {
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
-        'Authorization': Authorization,
+        Accept: 'application/json',
+        Authorization: Authorization,
       },
     });
 
@@ -621,13 +680,11 @@ export const getJsonFromApi = async (apiUrl=null, Authorization=null) => {
     const responseData = await response.json(); // Parse the JSON response
     debugLog('Received JSON data:', responseData);
     return responseData;
-    
   } catch (error) {
     errorLog(error.message || error);
     throw new Error(error.message || error);
   }
 };
-
 
 /**
  * // https://github.com/orgs/docker-mailserver/discussions/2908#discussioncomment-14867771
@@ -661,7 +718,6 @@ try {
 }
 }
 */
-
 
 /**
  * Executes a command in the docker-mailserver container
@@ -719,44 +775,35 @@ try {
 }
 */
 
-
-export const readJson = async (jsonFile=null) => {
+export const readJson = async (jsonFile = null) => {
   var json = {};
 
   debugLog(`start to read ${jsonFile}`);
   try {
     debugLog(`checking if exist ${jsonFile}`);
-    
+
     if (fs.existsSync(jsonFile)) {
       debugLog(`reading ${jsonFile}`);
-      
-      const data = await fs.promises.readFile(jsonFile, "utf8");
+
+      const data = await fs.promises.readFile(jsonFile, 'utf8');
       json = JSON.parse(Buffer.from(data));
       successLog(`json from ${jsonFile}`);
       debugLog(`json from ${jsonFile}`, json);
-      
     } else {
       warnLog(`empty ${jsonFile}`);
     }
     return json;
-    
   } catch (error) {
     errorLog(error.message || error);
     throw new Error(error.message || error);
   }
 };
 
-
-
-export const writeJson = async (jsonFile=null, DBdict={}) => {
-  
+export const writeJson = async (jsonFile = null, DBdict = {}) => {
   if (DBdict.constructor == Object) {
     try {
-
       await writeFile(jsonFile, JSON.stringify(DBdict, null, 2));
       successLog(`DBdict into ${jsonFile}`);
-
-      
     } catch (error) {
       errorLog(`${jsonFile} write error:`, error.message);
       throw new Error(error.message || error);
@@ -767,62 +814,58 @@ export const writeJson = async (jsonFile=null, DBdict={}) => {
   }
 };
 
-
-export const writeFile = async (file=null, content='') => {
-  
+export const writeFile = async (file = null, content = '') => {
   try {
-
     // fs.writeFileSync(file, content, 'utf8');
     await fs.promises.writeFile(file, content, 'utf8');
     successLog(`${file}`);
-    return {success: true, message: file};
-
-    
+    return { success: true, message: file };
   } catch (error) {
     errorLog(error.message || error);
-    return {success: false, error: error.message};
+    return { success: false, error: error.message };
     // throw new Error(error.message || error);
   }
 };
 
-
 // examples:
 // let ErrorMsg = await formatDMSError('execDMS', results.stderr);
 // let ErrorMsg = await formatDMSError('addAccount', results.stderr);
-export const formatDMSError = async (errorMsg=null, error=null) => {
+export const formatDMSError = async (errorMsg = null, error = null) => {
   // Unfortunately, we cannot list all the error types from dms just here
   // var patterns = [
-    // /'?\S+'? is already an alias for recipient: '?\S+'?/i,
+  // /'?\S+'? is already an alias for recipient: '?\S+'?/i,
   // ]
-  
+
   // patterns.forEach(function(regex){
-    // if (typeof error == "string") {
-      // if (error.match(regex)) errorMsg = `${errorMsg}: ` + error.match(regex)[0].replace(/[\"\'\:]/g, "");
-    // } else {
-      // if (error.message.match(regex)) errorMsg = `${errorMsg}: ` + error.message.match(regex)[0].replace(/[\"\'\:]/g, "");
-    // }
+  // if (typeof error == "string") {
+  // if (error.match(regex)) errorMsg = `${errorMsg}: ` + error.match(regex)[0].replace(/[\"\'\:]/g, "");
+  // } else {
+  // if (error.message.match(regex)) errorMsg = `${errorMsg}: ` + error.message.match(regex)[0].replace(/[\"\'\:]/g, "");
+  // }
   // });
-  
+
   var splitErrorClean = '';
   if (error) {
     var split;
     const regexSplit = /ERROR:?|\n/i;
     const regexCleanup = /[\"\'\:\`]/g;
-    
-    if (typeof error == "string") {
+
+    if (typeof error == 'string') {
       split = error.split(regexSplit);
     } else {
       split = error.message.split(regexSplit);
     }
-    
-    const splitError = (split.length > 1) ? split[1] : split[0];
-    splitErrorClean = splitError.replace(regexColors,"").replace(regexPrintOnly,"").replace(regexCleanup, "")
+
+    const splitError = split.length > 1 ? split[1] : split[0];
+    splitErrorClean = splitError
+      .replace(regexColors, '')
+      .replace(regexPrintOnly, '')
+      .replace(regexCleanup, '');
   }
-  
+
   errorMsg = `${errorMsg}: ${splitErrorClean}`;
   return errorMsg;
 };
-
 
 /*
 // foolproof future where we can deal with multiple containers
@@ -832,7 +875,6 @@ export const getContainer = containerName => {
   return live.containers[containerName];
 };
 */
-
 
 // module.exports = {
 //   funcName,
@@ -942,7 +984,6 @@ export const getContainer = containerName => {
 //         This will provide you with a detailed explanation on how to use the
 //         config dkim command, showing what arguments can be passed and what they do.
 
-
 // was used for testing, we will likely never implement doveadm API
 /*
 export const doveadmAPIforTesting = async (containerName=null, command=null, mailbox=null, jsonDict={}) => {
@@ -1036,20 +1077,18 @@ export const doveadmAPIforTesting = async (containerName=null, command=null, mai
 };
 */
 
-
-                                                                                                                              
-// https://patorjk.com/software/taag/#p=display&f=Big+Mono+9&t=doveconf+-P&x=none&v=4&h=4&w=80&we=false                                                                                                                   
-//      █                                                                                                                        
-//      █                                       █                                                                     █          
-//      █                                       █                                                                     █          
-//   ██▓█   ███   █░ ░█   ███    ▓██▒   ███   █████                █▒██▒          █▒██▒  ███   █▓██    ███    █▒██▒ █████  ▒███▒ 
-//  █▓ ▓█  █▓ ▓█  ▓▒ ▒▓  ▓▓ ▒█  ▓█  ▓  █▓ ▓█    █                  █▓ ▒█          ██  █ ▓▓ ▒█  █▓ ▓█  █▓ ▓█   ██  █   █    █▒ ░█ 
-//  █   █  █   █  ▒█ █▒  █   █  █░     █   █    █                  █   █          █     █   █  █   █  █   █   █       █    █▒░   
-//  █   █  █   █   █ █   █████  █      █   █    █            ███   █   █          █     █████  █   █  █   █   █       █    ░███▒ 
-//  █   █  █   █   █▓█   █      █░     █   █    █                  █   █          █     █      █   █  █   █   █       █       ▒█ 
-//  █▓ ▓█  █▓ ▓█   ▒█▒   ▓▓  █  ▓█  ▓  █▓ ▓█    █░                 █   █          █     ▓▓  █  █▓ ▓█  █▓ ▓█   █       █░   █░ ▒█ 
-//   ██▓█   ███    ░█░    ███▒   ▓██▒   ███     ▒██                █   █          █      ███▒  █▓██    ███    █       ▒██  ▒███▒ 
-//                                                                                             █                                 
+// https://patorjk.com/software/taag/#p=display&f=Big+Mono+9&t=doveconf+-P&x=none&v=4&h=4&w=80&we=false
+//      █
+//      █                                       █                                                                     █
+//      █                                       █                                                                     █
+//   ██▓█   ███   █░ ░█   ███    ▓██▒   ███   █████                █▒██▒          █▒██▒  ███   █▓██    ███    █▒██▒ █████  ▒███▒
+//  █▓ ▓█  █▓ ▓█  ▓▒ ▒▓  ▓▓ ▒█  ▓█  ▓  █▓ ▓█    █                  █▓ ▒█          ██  █ ▓▓ ▒█  █▓ ▓█  █▓ ▓█   ██  █   █    █▒ ░█
+//  █   █  █   █  ▒█ █▒  █   █  █░     █   █    █                  █   █          █     █   █  █   █  █   █   █       █    █▒░
+//  █   █  █   █   █ █   █████  █      █   █    █            ███   █   █          █     █████  █   █  █   █   █       █    ░███▒
+//  █   █  █   █   █▓█   █      █░     █   █    █                  █   █          █     █      █   █  █   █   █       █       ▒█
+//  █▓ ▓█  █▓ ▓█   ▒█▒   ▓▓  █  ▓█  ▓  █▓ ▓█    █░                 █   █          █     ▓▓  █  █▓ ▓█  █▓ ▓█   █       █░   █░ ▒█
+//   ██▓█   ███    ░█░    ███▒   ▓██▒   ███     ▒██                █   █          █      ███▒  █▓██    ███    █       ▒██  ▒███▒
+//                                                                                             █
 // docker exec -it dms dovecot -n reports
 /*
   # 2.3.19.1 (9b53102964): /etc/dovecot/dovecot.conf
@@ -1271,21 +1310,18 @@ export const doveadmAPIforTesting = async (containerName=null, command=null, mai
   }
 */
 
-
-
-                                                                             
-// https://patorjk.com/software/taag/#p=display&f=Big+Mono+9&t=doveconf+-P&x=none&v=4&h=4&w=80&we=false                                                                                                                   
-//      █                                              ▒██                      
+// https://patorjk.com/software/taag/#p=display&f=Big+Mono+9&t=doveconf+-P&x=none&v=4&h=4&w=80&we=false
+//      █                                              ▒██
 //      █                                              █░                 █████░
 //      █                                              █                  █   ▓█
 //   ██▓█   ███   █░ ░█   ███    ▓██▒   ███   █▒██▒  █████                █    █
 //  █▓ ▓█  █▓ ▓█  ▓▒ ▒▓  ▓▓ ▒█  ▓█  ▓  █▓ ▓█  █▓ ▒█    █                  █   ▓█
 //  █   █  █   █  ▒█ █▒  █   █  █░     █   █  █   █    █                  █████░
-//  █   █  █   █   █ █   █████  █      █   █  █   █    █            ███   █     
-//  █   █  █   █   █▓█   █      █░     █   █  █   █    █                  █     
-//  █▓ ▓█  █▓ ▓█   ▒█▒   ▓▓  █  ▓█  ▓  █▓ ▓█  █   █    █                  █     
-//   ██▓█   ███    ░█░    ███▒   ▓██▒   ███   █   █    █                  █     
-                                                                             
+//  █   █  █   █   █ █   █████  █      █   █  █   █    █            ███   █
+//  █   █  █   █   █▓█   █      █░     █   █  █   █    █                  █
+//  █▓ ▓█  █▓ ▓█   ▒█▒   ▓▓  █  ▓█  ▓  █▓ ▓█  █   █    █                  █
+//   ██▓█   ███    ░█░    ███▒   ▓██▒   ███   █   █    █                  █
+
 /*
 # 2.3.19.1 (9b53102964): /etc/dovecot/dovecot.conf
 # Pigeonhole version 0.5.19 (4eae2f79)
@@ -1370,5 +1406,3 @@ dsync_commit_msgs_interval = 100
 dsync_features =
 ...
  */
-
-

@@ -1,9 +1,7 @@
 import React from 'react';
 import RBToast from 'react-bootstrap/Toast';
 import { useTranslation } from 'react-i18next';
-import {
-  Translate,
-} from './index.jsx';
+import { Translate } from './index.jsx';
 
 /**
  * Reusable floating toast notification replacing the inline layout-breaking Alert
@@ -22,18 +20,18 @@ const Toast = ({
   title,
   message,
   when = 'common.justNow',
-  onClose,                    // strictly receives the remove function from the Provider
+  onClose, // strictly receives the remove function from the Provider
   translate = true,
-  position = 'bottom-right',  // supports 'top-right', 'top-left', 'bottom-right'
-  delay = 9000,               // Added standard toast auto-hide delay parameter
+  position = 'bottom-right', // supports 'top-right', 'top-left', 'bottom-right'
+  delay = 9000, // Added standard toast auto-hide delay parameter
   animation = true,
   ...rest
 }) => {
   const { t } = useTranslation();
 
   if (!message) return null;
-  if (!title) title = (type == 'danger') ? 'common.error' : `common.${type}`;
-  type = (type == 'error') ? 'danger' : type;
+  if (!title) title = type == 'danger' ? 'common.error' : `common.${type}`;
+  type = type == 'error' ? 'danger' : type;
   const shouldAutohide = delay !== 0; // BUG: that does not work at all
 
   // Unified close action handling internal state + external callbacks
@@ -47,7 +45,7 @@ const Toast = ({
   // Extract translation metadata
   const translationKey = typeof message === 'object' ? message.key : message;
   const translationValues = typeof message === 'object' ? message.values : {};
-  const actualTranslatedString = t(translationKey); 
+  const actualTranslatedString = t(translationKey);
   const keyHasPlaceholder = actualTranslatedString.includes('{{error}}');
 
   // Match Toast backgrounds to your system color palette variants
@@ -64,12 +62,12 @@ const Toast = ({
     light: '',
     dark: 'light',
   };
-  const bgOpacity = bgMap[type] || 'bg-opacity-25';   // opacity for most colors
-  const textClass = textMap[type] || `${type}`;       // body text color for few bg colors
+  const bgOpacity = bgMap[type] || 'bg-opacity-25'; // opacity for most colors
+  const textClass = textMap[type] || `${type}`; // body text color for few bg colors
 
-      // key={key}
-      // show={showToast}
-      // onClose={handleClose}
+  // key={key}
+  // show={showToast}
+  // onClose={handleClose}
 
   return (
     <RBToast
@@ -81,21 +79,23 @@ const Toast = ({
       className={`overflow-hidden shadow-sm bg-white border-${type}`}
       {...rest}
     >
-    {/* This inner div applies the 25% tint directly over the solid white toast background */}
-    <div className={`w-100 h-100 bg-${type} ${bgOpacity} text-${textClass}`}>
-      {/* Render a clean header line with a built-in dismissal action if onClose is enabled */}
-      <RBToast.Header closeButton={!!onClose} className="border-0 pb-1">
-        <strong className="me-auto text-capitalize">{t(title)}</strong>
-        <small className="text-muted">{t(when)}</small>
-      </RBToast.Header>
-      
-      <RBToast.Body className={`pt-1`}>
-        <span>
-          {Translate(translationKey, translate, translationValues)}
-          {!keyHasPlaceholder && translationValues?.error && ` : ${translationValues.error}`}
-        </span>
-      </RBToast.Body>
-    </div>
+      {/* This inner div applies the 25% tint directly over the solid white toast background */}
+      <div className={`w-100 h-100 bg-${type} ${bgOpacity} text-${textClass}`}>
+        {/* Render a clean header line with a built-in dismissal action if onClose is enabled */}
+        <RBToast.Header closeButton={!!onClose} className="border-0 pb-1">
+          <strong className="me-auto text-capitalize">{t(title)}</strong>
+          <small className="text-muted">{t(when)}</small>
+        </RBToast.Header>
+
+        <RBToast.Body className={`pt-1`}>
+          <span>
+            {Translate(translationKey, translate, translationValues)}
+            {!keyHasPlaceholder &&
+              translationValues?.error &&
+              ` : ${translationValues.error}`}
+          </span>
+        </RBToast.Body>
+      </div>
     </RBToast>
   );
 };

@@ -10,10 +10,7 @@ import Modal from 'react-bootstrap/Modal'; // Import Modal
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
-import {
-  debugLog,
-  errorLog,
-} from '../../frontend.mjs';
+import { debugLog, errorLog } from '../../frontend.mjs';
 import {
   getValueFromArrayOfObj,
   plucks,
@@ -46,15 +43,14 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 
-
 const Logins = () => {
   // const sortKeysInObject = ['email', 'username'];   // not needed as they are not objects, just rendered FormControl
   const { t } = useTranslation();
   const triggerToast = useToast();
-  const { user } = useAuth();   // {"id":1,"username":"adminn","email":"admin@dms-gui.com","isAdmin":1,"isActive":1,"isAccount":0,"mailserver":"dms","roles":[],"mailbox":"admin@dms-gui.com"}
+  const { user } = useAuth(); // {"id":1,"username":"adminn","email":"admin@dms-gui.com","isAdmin":1,"isActive":1,"isAccount":0,"mailserver":"dms","roles":[],"mailbox":"admin@dms-gui.com"}
   const navigate = useNavigate();
-  const [containerName] = useLocalStorage("containerName", '');
-  const [mailservers] = useLocalStorage("mailservers", []);
+  const [containerName] = useLocalStorage('containerName', '');
+  const [mailservers] = useLocalStorage('mailservers', []);
 
   // Common states -------------------------------------------------
   const [isLoading, setLoading] = useState(true);
@@ -62,29 +58,32 @@ const Logins = () => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [selectedLogin, setSelectedLogin] = useState({});
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  
+
   // Form states --------------------------------------------------
   const [accountOptions, setAccountOptions] = useState([]);
 
   // Roles states -------------------------------------------------- // https://mui.com/material-ui/react-autocomplete/#multiple-values
   const [rolesAvailable, setRolesAvailable] = useState([]);
-  
+
   // changed data --------------------------------------------------
   // Track changes in a separate dictionary
   const [logins, setLogins] = useState([]);
   const [editedData, setEditedData] = useState({});
-  
+
   // show and changes in fields without modifying logins state
   const getFieldValue = (id, fieldName) => {
-    return editedData[id]?.[fieldName] ?? logins.find((r) => r.id === id)?.[fieldName];
+    return (
+      editedData[id]?.[fieldName] ??
+      logins.find((r) => r.id === id)?.[fieldName]
+    );
   };
-  
+
   // change detector to enable save button
   const isRowChanged = (id, currentEditedData = editedData) => {
     // debugLog('isRowChanged currentEditedData:', currentEditedData)
     return currentEditedData[id] !== undefined;
   };
-  
+
   const removeIdFromEditedData = (idToRemove) => {
     // Compute the clean remaining data object upfront synchronously
     const nextEditedData = { ...editedData };
@@ -94,7 +93,7 @@ const Logins = () => {
     setEditedData((prevData) => {
       // Destructure to separate the unwanted ID from the rest of the object
       const { [idToRemove]: _, ...remainingData } = prevData;
-      
+
       // Return the new object to update the state and trigger a re-render
       return remainingData;
     });
@@ -115,7 +114,8 @@ const Logins = () => {
     mailserver: containerName, // Leave empty here, we will populate it dynamically
     roles: [],
   };
-  const [newLoginformData, setNewLoginFormData] = useState(newLoginformDataINIT);
+  const [newLoginformData, setNewLoginFormData] =
+    useState(newLoginformDataINIT);
 
   // errors must be initialized unfortunately, otherwise the save login button is never disabled
   const [newLoginFormErrors, setNewLoginFormErrors] = useState({
@@ -138,46 +138,53 @@ const Logins = () => {
   });
   const [passwordFormErrors, setPasswordFormErrors] = useState({});
 
-
   // filter out the mailbox dropdown entries that are already used in logins
   const filteredAccountOptions = useMemo(() => {
-    return accountOptions.filter(option => 
-      !logins.some(login => login.mailbox === option.value)
+    return accountOptions.filter(
+      (option) => !logins.some((login) => login.mailbox === option.value)
     );
   }, [logins, accountOptions]);
 
-
   const formatLoginsForTable = async (data, currentEditedData) => {
-    debugLog('formatLoginsForTable currentEditedData:', currentEditedData)
+    debugLog('formatLoginsForTable currentEditedData:', currentEditedData);
     // add bolder for admins
-    data = data.map(login => { return { 
-    ...login, 
-    color:    (login.isAdmin) ? "fw-bolder" : null,
-    }; });
-    
+    data = data.map((login) => {
+      return {
+        ...login,
+        color: login.isAdmin ? 'fw-bolder' : null,
+      };
+    });
+
     // add blue color for linked accounts
-    data = data.map(login => { return { 
-    ...login, 
-    color:    (login.isAccount) ? login?.color+" text-info" : login?.color,
-    }; });
-    
+    data = data.map((login) => {
+      return {
+        ...login,
+        color: login.isAccount ? login?.color + ' text-info' : login?.color,
+      };
+    });
+
     // add muted color for inactives
-    data = data.map(login => { return { 
-    ...login, 
-    color:  (login.isActive) ? login?.color : login?.color+" td-opacity-25",
-    }; });
+    data = data.map((login) => {
+      return {
+        ...login,
+        color: login.isActive ? login?.color : login?.color + ' td-opacity-25',
+      };
+    });
 
     // add red color for edited
-    data = data.map(login => { return { 
-    ...login, 
-    color:  (isRowChanged(login.id, currentEditedData)) ? login?.color+" text-danger" : login?.color,
-    }; });
+    data = data.map((login) => {
+      return {
+        ...login,
+        color: isRowChanged(login.id, currentEditedData)
+          ? login?.color + ' text-danger'
+          : login?.color,
+      };
+    });
 
     return data;
-  }
+  };
 
   const fetchAll = async () => {
-    
     try {
       setLoading(true);
       setErrorMessage(null);
@@ -191,17 +198,15 @@ const Logins = () => {
       setSelectedLogin({});
       setSubmitDisabled(true);
       setShowDeleteConfirmModal(false);
-      
-      await Promise.all([
-        fetchAccounts(),
-        fetchLogins({}),
-      ]);
 
+      await Promise.all([fetchAccounts(), fetchLogins({})]);
     } catch (error) {
       errorLog(t('api.errors.fetchLogins'), error);
       // setErrorMessage('api.errors.fetchLogins');
-      setErrorMessage({key: 'api.errors.fetchLogins', values: { error: error.message }});
-      
+      setErrorMessage({
+        key: 'api.errors.fetchLogins',
+        values: { error: error.message },
+      });
     } finally {
       setLoading(false);
     }
@@ -211,11 +216,12 @@ const Logins = () => {
     // debugLog('ddebug containerName', containerName);
 
     try {
-      const [accountsData] = await Promise.all([    // loginsData better have a uniq readOnly id field we can use, as we may modify each other fields
+      const [accountsData] = await Promise.all([
+        // loginsData better have a uniq readOnly id field we can use, as we may modify each other fields
         // getAccounts(getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'), containerName),
         getAccounts(containerName),
       ]);
-        debugLog('accountsData',accountsData)
+      debugLog('accountsData', accountsData);
 
       if (accountsData?.success) {
         debugLog('ddebug accountsData', accountsData);
@@ -227,75 +233,79 @@ const Logins = () => {
         // }
 
         // Prepare all account options for the select field; this will be trimmed down by fetchAll
-        setAccountOptions(accountsData.message.map((account) => ({
-          value: account.mailbox,
-          label: account.mailbox,
-        })));
+        setAccountOptions(
+          accountsData.message.map((account) => ({
+            value: account.mailbox,
+            label: account.mailbox,
+          }))
+        );
 
-        let mailboxes = (plucks(accountsData.message, 'mailbox', false));  // we keep only an array of uniq (true) mailbox names [box1@domain.com, ..], already sorted by domain and no extra sort (false)
+        let mailboxes = plucks(accountsData.message, 'mailbox', false); // we keep only an array of uniq (true) mailbox names [box1@domain.com, ..], already sorted by domain and no extra sort (false)
         setRolesAvailable(mailboxes);
-        debugLog('mailboxes',mailboxes)
-
+        debugLog('mailboxes', mailboxes);
       } else setErrorMessage(accountsData?.error);
-
     } catch (error) {
-      errorLog(t('api.errors.fetchAccounts', {error:error.message}));
+      errorLog(t('api.errors.fetchAccounts', { error: error.message }));
       // setErrorMessage('api.errors.fetchAccounts');
-      setErrorMessage({key: 'api.errors.fetchAccounts', values: { error: error.message }});
-      
+      setErrorMessage({
+        key: 'api.errors.fetchAccounts',
+        values: { error: error.message },
+      });
     }
   };
 
   const fetchLogins = async (currentEditedData = editedData) => {
-    debugLog('fetchLogins currentEditedData:', currentEditedData)
-    
+    debugLog('fetchLogins currentEditedData:', currentEditedData);
+
     try {
-      const [loginsData] = await Promise.all([    // loginsData better have a uniq readOnly id field we can use, as we may modify each other fields
+      const [loginsData] = await Promise.all([
+        // loginsData better have a uniq readOnly id field we can use, as we may modify each other fields
         getLogins(),
       ]);
 
       if (loginsData?.success) {
         debugLog('loginsData', loginsData);
-        // { success: true, 
+        // { success: true,
         //   message: [
         //     { id: 1, username: "admin", mailbox: "admin@dms-gui.com", email: "admin@dms-gui.com", isAccount: 0, isActive: 1, isAdmin: 1, mailserver: "dms", roles: Array [] },
         //     { id: 2, username: "test", mailbox: "test@aaa.com", email: "test@xyz.com", isAccount: 0, isActive: 1, isAdmin: 1, mailserver: "dms", roles: Array [] },
         //   ]
         // }
 
-
-        let loginsDataAltered = await formatLoginsForTable(loginsData.message, currentEditedData);
+        let loginsDataAltered = await formatLoginsForTable(
+          loginsData.message,
+          currentEditedData
+        );
         debugLog('loginsDataAltered', loginsDataAltered);
         setLogins(loginsDataAltered);
-
       } else setErrorMessage(loginsData?.error);
-
     } catch (error) {
       errorLog(t('api.errors.fetchLogins'), error);
       // setErrorMessage('api.errors.fetchLogins');
-      setErrorMessage({key: 'api.errors.fetchLogins', values: { error: error.message }});
-      
+      setErrorMessage({
+        key: 'api.errors.fetchLogins',
+        values: { error: error.message },
+      });
     }
   };
 
-
   const handleNewLoginInputChange = (e) => {
-    const { name, value, type, checked } = e.target;    // { name: "isAccount", value: "on", type: "checkbox", checked: true }
-    debugLog('{ name, value, type, checked }',{ name, value, type, checked });
-    
+    const { name, value, type, checked } = e.target; // { name: "isAccount", value: "on", type: "checkbox", checked: true }
+    debugLog('{ name, value, type, checked }', { name, value, type, checked });
+
     // special cases ------------------------------
     let jsonDict, inputValue;
     // Determine the actual value based on the element type
     // BUG FOUND:
     // type === 'checkbox' ? ((checked === true) ? 1 : 0) : value   ===> evaluates to "on"
-    // This should evaluate to 1 when type is 'checkbox' and checked is true. 
+    // This should evaluate to 1 when type is 'checkbox' and checked is true.
     // The string "on" should be entirely bypassed.
     // If this function is still spitting out "on", it means the event triggering the function isn't what I think it is.
-    // If the checkbox looks like <Checkbox /> or <Form.Check /> (which it is) instead of a raw HTML <input type="checkbox" />, 
+    // If the checkbox looks like <Checkbox /> or <Form.Check /> (which it is) instead of a raw HTML <input type="checkbox" />,
     // these libraries don't pass a real HTML event to onChange.
     // Instead, they pass a custom synthetic event where:
-      // e.target.type is often undefined or 'text' rather than 'checkbox'
-      // e.target.value is overridden to pass the value string directly.
+    // e.target.type is often undefined or 'text' rather than 'checkbox'
+    // e.target.value is overridden to pass the value string directly.
 
     if (type === 'checkbox') {
       inputValue = checked ? 1 : 0; // Directly assigns 1 or 0
@@ -304,7 +314,7 @@ const Logins = () => {
     }
 
     // selecting various checkboxes will alter other options and we also need to construct the roles array, so we will use a temporary dict
-    jsonDict = {[name]: inputValue};
+    jsonDict = { [name]: inputValue };
 
     // checkboxes will resolve to 0 or 1 and 1 is == true
     if (name == 'isAdmin' && checked) {
@@ -316,11 +326,14 @@ const Logins = () => {
     if (name == 'isAccount' && checked) {
       // test if the mailbox entered manually prior / chosen from the list is in the list, and select it as a role, otherwise start from scratch
       if (plucks(accountOptions).has(newLoginformData.mailbox)) {
-        debugLog(`isAccount ==> 1: adding ${newLoginformData.mailbox} to the roles`);
-        jsonDict.roles = [newLoginformData.mailbox]
-
+        debugLog(
+          `isAccount ==> 1: adding ${newLoginformData.mailbox} to the roles`
+        );
+        jsonDict.roles = [newLoginformData.mailbox];
       } else {
-        debugLog(`isAccount ==> 1: removing ${newLoginformData.mailbox} as it is NOT defined in available mailboxes`);
+        debugLog(
+          `isAccount ==> 1: removing ${newLoginformData.mailbox} as it is NOT defined in available mailboxes`
+        );
         // we MUST reset mailbox since it is not in the official list
         jsonDict.mailbox = '';
         jsonDict.roles = [];
@@ -338,7 +351,7 @@ const Logins = () => {
     // Calculate the exact next state
     const updatedFormData = {
       ...newLoginformData,
-      ...jsonDict
+      ...jsonDict,
     };
     setNewLoginFormData(updatedFormData);
     debugLog('newLoginformData:', updatedFormData);
@@ -357,19 +370,18 @@ const Logins = () => {
     const freshErrors = validateNewLoginForm(updatedFormData);
     const hasErrors = !!isNonEmptyDict(freshErrors);
     setSubmitDisabled(hasErrors);
-    
   };
 
-  const handleNewLoginRolesChange = (e, newValue) => {  // newValue is an arrey with all the options selected
-    
+  const handleNewLoginRolesChange = (e, newValue) => {
+    // newValue is an arrey with all the options selected
+
     debugLog('newValue', newValue);
     debugLog('newLoginformData', newLoginformData);
 
     setNewLoginFormData({
       ...newLoginformData,
-      roles: newValue
+      roles: newValue,
     });
-    
   };
 
   const validateNewLoginForm = (currentFormData) => {
@@ -378,10 +390,9 @@ const Logins = () => {
     if (!currentFormData.mailserver) {
       errors.mailserver = 'logins.mailserverRequired';
     }
-    
+
     if (!currentFormData.username.trim()) {
       errors.username = 'logins.usernameRequired';
-
     } else if (!regexUsername.test(currentFormData.username.trim())) {
       errors.username = 'logins.usernameInvalid';
     }
@@ -389,7 +400,6 @@ const Logins = () => {
     // this is done by react somehow but we need to also do it to release the save login button
     if (!currentFormData.mailbox.trim()) {
       errors.mailbox = 'logins.mailboxRequired';
-
     } else if (!regexEmailStrict.test(currentFormData.mailbox.trim())) {
       errors.mailbox = 'logins.mailboxInvalid';
     }
@@ -397,26 +407,22 @@ const Logins = () => {
     // this is done by react somehow but we need to also do it to release the save login button
     if (!currentFormData.email.trim()) {
       errors.email = 'logins.emailRequired';
-
     } else if (!regexEmailStrict.test(currentFormData.email.trim())) {
       errors.email = 'logins.emailInvalid';
     }
 
     if (!currentFormData.password) {
       errors.password = 'password.passwordRequired';
-
     } else if (currentFormData.password.length < 8) {
       errors.password = 'password.passwordLength';
-
     } else if (currentFormData.password !== currentFormData.confirmPassword) {
       errors.confirmPassword = 'logins.passwordsNotMatch';
     }
 
     setNewLoginFormErrors(errors);
-    debugLog('ddebug setNewLoginFormErrors errors:', errors)
+    debugLog('ddebug setNewLoginFormErrors errors:', errors);
     return errors;
   };
-
 
   const handleSubmitNewLogin = async (e) => {
     e.preventDefault();
@@ -438,39 +444,39 @@ const Logins = () => {
         newLoginformData.isActive,
         newLoginformData.mailserver,
         newLoginformData.roles,
-        [],
+        []
       );
       if (result.success) {
         setSuccessMessage('logins.loginCreated');
         setNewLoginFormData(newLoginformDataINIT);
         fetchAll(); // Refresh the logins list
-        
       } else setErrorMessage(result?.error);
-      
     } catch (error) {
       errorLog(t('api.errors.addLogin'), error.message);
       // setErrorMessage('api.errors.addLogin', error.message);
-      setErrorMessage({key: 'api.errors.addLogin', values: { error: error.message }});
+      setErrorMessage({
+        key: 'api.errors.addLogin',
+        values: { error: error.message },
+      });
     }
   };
 
+  const handleLoginChange = (e, login, key, newValue) => {
+    // newValue is an arrey with all the options selected
 
-
-  const handleLoginChange = (e, login, key, newValue) => {  // newValue is an arrey with all the options selected
-    
-    debugLog('login', login);                                       // { id: 1, mailbox: "admin@domain.com", username: "admin", isAdmin: 1, isActive: 1, color: "" }
-    debugLog('key', key);                                           // roles, emails, username...
-    debugLog('editedData (prev)    ', editedData);                  // { 1:{username: "admin"}, .. }
-    debugLog('editedData (newValue)', newValue);                    // "adminn"
+    debugLog('login', login); // { id: 1, mailbox: "admin@domain.com", username: "admin", isAdmin: 1, isActive: 1, color: "" }
+    debugLog('key', key); // roles, emails, username...
+    debugLog('editedData (prev)    ', editedData); // { 1:{username: "admin"}, .. }
+    debugLog('editedData (newValue)', newValue); // "adminn"
     debugLog(`isRowChanged(${login.id}):`, isRowChanged(login.id)); // isRowChanged(1) true
-    
+
     // set state, with changes
     // setLogins(prevLogins =>
-      // prevLogins.map(item =>
-        // item.id === login.id                            // for that login...
-          // ? { ...item, [key]: newValue }                // update the key with newValue
-          // : item                                        // and keep other items as they are
-      // )
+    // prevLogins.map(item =>
+    // item.id === login.id                            // for that login...
+    // ? { ...item, [key]: newValue }                // update the key with newValue
+    // : item                                        // and keep other items as they are
+    // )
     // );
 
     // register change in a new key for that id
@@ -483,16 +489,15 @@ const Logins = () => {
     }));
 
     // reflect changes in the table row
-    setLogins(prevLogins =>
-      prevLogins.map(item =>
-        item.id === login.id                                      // for that login...
-          ? { ...item, color: `${item.color || ''} text-danger` } // add color class
-          : item                                                  // and keep other items as they are
+    setLogins((prevLogins) =>
+      prevLogins.map(
+        (item) =>
+          item.id === login.id // for that login...
+            ? { ...item, color: `${item.color || ''} text-danger` } // add color class
+            : item // and keep other items as they are
       )
     );
-
   };
-
 
   // const handleLoginDelete = async (login) => {
   //   setErrorMessage(null);
@@ -504,9 +509,9 @@ const Logins = () => {
   //       if (result.success) {
   //         setSuccessMessage('logins.loginDeleted');
   //         fetchAll(); // Refresh the logins list
-          
+
   //       } else setErrorMessage(result?.error);
-        
+
   //     } catch (error) {
   //       errorLog(t('api.errors.deleteLogin'), error.message);
   //       setErrorMessage('api.errors.deleteLogin', error.message);
@@ -514,23 +519,21 @@ const Logins = () => {
   //   }
   // };
 
-
   // Handle alsoDeleteMailbox checkbox
   const handleAlsoDeleteMailboxInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    debugLog('{ name, value, type, checked }',{ name, value, type, checked });
-    
+    debugLog('{ name, value, type, checked }', { name, value, type, checked });
+
     let inputValue;
     // Determine the actual value based on the element type
     if (type === 'checkbox') {
       inputValue = checked ? 1 : 0; // Directly assigns 1 or 0
-      
+
       let updatedSelectedLogin = {
         ...selectedLogin,
-        [name]: inputValue
+        [name]: inputValue,
       };
       setSelectedLogin(updatedSelectedLogin);
-    
     } // ignore anything else
   };
 
@@ -546,20 +549,24 @@ const Logins = () => {
 
     try {
       debugLog('selectedLogin:', selectedLogin);
-      const result = await deleteLogin(selectedLogin.id, !!selectedLogin?.alsoDeleteMailbox);
+      const result = await deleteLogin(
+        selectedLogin.id,
+        !!selectedLogin?.alsoDeleteMailbox
+      );
       if (result.success) {
         setLogins(reduxArrayOfObjByValue(logins, 'id', selectedLogin.id, true));
         removeIdFromEditedData(selectedLogin.id);
         setSuccessMessage('logins.loginDeleted');
-        
       } else {
         setErrorMessage(result?.error);
       }
     } catch (error) {
       errorLog(t('api.errors.deleteLogin'), error.message);
       // setErrorMessage('api.errors.deleteLogin');
-      setErrorMessage({key: 'api.errors.deleteLogin', values: { error: error.message }});
-
+      setErrorMessage({
+        key: 'api.errors.deleteLogin',
+        values: { error: error.message },
+      });
     } finally {
       handleCloseDeleteConfirmModal();
     }
@@ -571,25 +578,20 @@ const Logins = () => {
     setSelectedLogin(null);
   };
 
-
   const handleLoginFlipBit = async (login, what) => {
     setErrorMessage(null);
     setSuccessMessage(null);
 
     try {
-      
       const jsonDict = { [what]: +!login[what] };
-      
+
       // special cases here as well as in the backend
       // disable isAccount for admins:
       if (what == 'isAdmin' && +!login.isAdmin == 1) jsonDict.isAccount = 0;
       // disable isAdmin for linked accounts:
       if (what == 'isAccount' && +!login.isAccount == 1) jsonDict.isAdmin = 0;
-      
-      const result = await updateLogin(
-        login.id,
-        jsonDict
-      );
+
+      const result = await updateLogin(login.id, jsonDict);
 
       if (result.success) {
         // reflect changes in the table instead of fetching all again // edit: nope, because of the alteration of logins data after fetch, we need to reload
@@ -602,16 +604,16 @@ const Logins = () => {
         // );
         // setSuccessMessage(t('logins.updated', {username:login.mailbox}));  // no need for that, the table will reflect the changes
         fetchLogins();
-        
       } else setErrorMessage(result?.error);
-      
     } catch (error) {
       errorLog(t('api.errors.updateLogin'), error.message);
       // setErrorMessage('api.errors.updateLogin', error.message);
-      setErrorMessage({key: 'api.errors.updateLogin', values: { error: error.message }});
+      setErrorMessage({
+        key: 'api.errors.updateLogin',
+        values: { error: error.message },
+      });
     }
   };
-
 
   // the save operation is done per id
   const handleLoginSave = async (login) => {
@@ -619,52 +621,49 @@ const Logins = () => {
     setSuccessMessage(null);
 
     try {
-      
       // // process all rows in editedData
       // const updatedData = data.map((row) =>
-        // editedData[row.id] ? { ...row, ...editedData[row.id] } : row
+      // editedData[row.id] ? { ...row, ...editedData[row.id] } : row
       // );
 
       // send only the editedData from id: {mailbox:newEmail, username:newValue, roles:[whatever]}
       // ATTENTION the key field=email must come last or else subsequent db updates will fail!
       // moveKeyToLast(editedData[login.id], 'mailbox')   // no need anymore we use id instead
-      const result = await updateLogin(
-        login.id,
-        editedData[login.id]
-      );
+      const result = await updateLogin(login.id, editedData[login.id]);
       debugLog('result:', result);
 
       if (result.success) {
         // TODO: handle individual change failure
-        
-        setSuccessMessage(t('logins.saved', {username:login.mailbox}));
+
+        setSuccessMessage(t('logins.saved', { username: login.mailbox }));
 
         // if you modified yourself, logout immediately since we cannot reflect the changes in the token nor the profile dynamically
         if (login.id == user.id) {
           setTimeout(() => {
-            navigate("/login");
+            navigate('/login');
           }, 2000);
         }
-        
+
         // remove that id from editedData object
         let nextEditedData = removeIdFromEditedData(login.id);
 
         // reload table with remaining editedData if any
         await fetchLogins(nextEditedData);
-
       } else setErrorMessage(result?.error);
-      
     } catch (error) {
-        errorLog(t('api.errors.updateLogin'), error.message);
-        // setErrorMessage('api.errors.updateLogin', error.message);
-        setErrorMessage({key: 'api.errors.updateLogin', values: { error: error.message }});
+      errorLog(t('api.errors.updateLogin'), error.message);
+      // setErrorMessage('api.errors.updateLogin', error.message);
+      setErrorMessage({
+        key: 'api.errors.updateLogin',
+        values: { error: error.message },
+      });
     }
   };
 
   // Open password change modal
   const handleChangePassword = (login) => {
     setSelectedLogin(login);
-    
+
     setPasswordFormData({
       newPassword: '',
       confirmPassword: '',
@@ -683,7 +682,7 @@ const Logins = () => {
   // Handle input changes for password change form
   const handlePasswordInputChange = (e) => {
     const { name, value, type } = e.target;
-    
+
     setPasswordFormData({
       ...passwordFormData,
       [name]: type === 'number' ? Number(value) : value,
@@ -704,7 +703,6 @@ const Logins = () => {
 
     if (!passwordFormData.newPassword) {
       errors.newPassword = 'password.passwordRequired';
-
     } else if (!user.isAdmin && passwordFormData.newPassword.length < 8) {
       errors.newPassword = 'password.passwordLength';
     }
@@ -727,194 +725,226 @@ const Logins = () => {
       return;
     }
 
-    let result = {success:false, message: ''};
+    let result = { success: false, message: '' };
     try {
-
       // normal dms-gui local account; always done, otherwise how will the user login when we turn it to normal user?
-      result = await updateLogin(
-        selectedLogin.id,
-        { password: passwordFormData.newPassword }
-      );
+      result = await updateLogin(selectedLogin.id, {
+        password: passwordFormData.newPassword,
+      });
       if (result.success) {
-        result.message = t('password.passwordUpdated', {key:'username', value:selectedLogin.username});
+        result.message = t('password.passwordUpdated', {
+          key: 'username',
+          value: selectedLogin.username,
+        });
 
         // change mailbox password when user isAccount
         if (selectedLogin.isAccount) {
           result = await updateAccount(
-            getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'), 
+            getValueFromArrayOfObj(
+              mailservers,
+              containerName,
+              'value',
+              'schema'
+            ),
             containerName,
             selectedLogin.mailbox,
             { password: passwordFormData.newPassword }
           );
         }
         if (result.success) {
-          result.message = t('password.passwordUpdated', {key:'mailbox', value:selectedLogin.mailbox});
+          result.message = t('password.passwordUpdated', {
+            key: 'mailbox',
+            value: selectedLogin.mailbox,
+          });
         } else {
           setErrorMessage(result?.error);
         }
-          
       } else setErrorMessage(result?.error);
-      
     } catch (error) {
       errorLog(t('api.errors.changePassword'), error);
       // setErrorMessage('api.errors.changePassword');
-      setErrorMessage({key: 'api.errors.changePassword', values: { error: error.message }});
-
+      setErrorMessage({
+        key: 'api.errors.changePassword',
+        values: { error: error.message },
+      });
     } finally {
       if (result.success) setSuccessMessage(result.message);
       handleClosePasswordModal(); // Close the modal
     }
-
   };
 
   // highlight options by shades of yellow if they aequal to login's mailbox or at least the domains are the same
-  const highlightOptionByDomain = (option, mailbox=undefined, className="") => {
-    let highlight = "";
+  const highlightOptionByDomain = (
+    option,
+    mailbox = undefined,
+    className = ''
+  ) => {
+    let highlight = '';
     if (mailbox) {
-      highlight = (mailbox == option) ? " bg-warning bg-opacity-25" : ((mailbox.match(option.split('@')[1])) ? " bg-warning bg-opacity-10" : "");
+      highlight =
+        mailbox == option
+          ? ' bg-warning bg-opacity-25'
+          : mailbox.match(option.split('@')[1])
+            ? ' bg-warning bg-opacity-10'
+            : '';
     }
     return className + highlight;
   };
-
 
   // https://www.w3schools.com/react/react_useeffect.asp
   useEffect(() => {
     fetchAll();
   }, [containerName]);
 
-
-
   if (isLoading || !user?.isAdmin) {
     return <LoadingSpinner />;
   }
 
-            // getOptionLabel={rolesAvailable}    // requires a dict
-                // placeholder={t('logins.roles2pick')}
+  // getOptionLabel={rolesAvailable}    // requires a dict
+  // placeholder={t('logins.roles2pick')}
 
-//   ░██████             ░██                                                  
-//  ░██   ░██            ░██                                                  
-// ░██         ░███████  ░██ ░██    ░██ ░█████████████  ░████████   ░███████  
-// ░██        ░██    ░██ ░██ ░██    ░██ ░██   ░██   ░██ ░██    ░██ ░██        
-// ░██        ░██    ░██ ░██ ░██    ░██ ░██   ░██   ░██ ░██    ░██  ░███████  
-//  ░██   ░██ ░██    ░██ ░██ ░██   ░███ ░██   ░██   ░██ ░██    ░██        ░██ 
-//   ░██████   ░███████  ░██  ░█████░██ ░██   ░██   ░██ ░██    ░██  ░███████  
+  //   ░██████             ░██
+  //  ░██   ░██            ░██
+  // ░██         ░███████  ░██ ░██    ░██ ░█████████████  ░████████   ░███████
+  // ░██        ░██    ░██ ░██ ░██    ░██ ░██   ░██   ░██ ░██    ░██ ░██
+  // ░██        ░██    ░██ ░██ ░██    ░██ ░██   ░██   ░██ ░██    ░██  ░███████
+  //  ░██   ░██ ░██    ░██ ░██ ░██   ░███ ░██   ░██   ░██ ░██    ░██        ░██
+  //   ░██████   ░███████  ░██  ░█████░██ ░██   ░██   ░██ ░██    ░██  ░███████
 
   // Column definitions for existing logins table
   // adding hidden data in the span before the FormField let us sort also this column
   const columns = [
-    { 
+    {
       key: 'mailbox',
       label: 'logins.mailbox',
       render: (login) => (
         <>
-        <span className="d-none">{login.mailbox}</span>
-        <FormField
-          type="email"
-          id="mailbox"
-          name="mailbox"
-          value={getFieldValue(login.id, 'mailbox')}
-          onChange={(e) => handleLoginChange(e, login, "mailbox", e.target.value)}
-          maxLength={254}
-          groupClass=""
-          className="form-control-sm"
-          required
-        />
+          <span className="d-none">{login.mailbox}</span>
+          <FormField
+            type="email"
+            id="mailbox"
+            name="mailbox"
+            value={getFieldValue(login.id, 'mailbox')}
+            onChange={(e) =>
+              handleLoginChange(e, login, 'mailbox', e.target.value)
+            }
+            maxLength={254}
+            groupClass=""
+            className="form-control-sm"
+            required
+          />
         </>
       ),
     },
-    { 
+    {
       key: 'username',
       label: 'logins.username',
       render: (login) => (
         <>
-        <span className="d-none">{login.username}</span>
-        <FormField
-          type="username"
-          id="username"
-          name="username"
-          value={getFieldValue(login.id, 'username')}
-          onChange={(e) => handleLoginChange(e, login, "username", e.target.value)}
-          maxLength={36}
-          groupClass=""
-          className="form-control-sm"
-          required
-        />
+          <span className="d-none">{login.username}</span>
+          <FormField
+            type="username"
+            id="username"
+            name="username"
+            value={getFieldValue(login.id, 'username')}
+            onChange={(e) =>
+              handleLoginChange(e, login, 'username', e.target.value)
+            }
+            maxLength={36}
+            groupClass=""
+            className="form-control-sm"
+            required
+          />
         </>
       ),
     },
-    { 
+    {
       key: 'isAdmin',
       label: 'logins.isAdmin',
       noFilter: true,
       render: (login) => (
         <>
-        <span>{(login.isAdmin) ? t('common.yes') : t('common.no')}</span>
-        <Button
-          variant={(login.isAdmin) ? "info" : "warning"}
-          size="xs"
-          icon={(login.isAdmin) ? "chevron-double-down" : "chevron-double-up"}
-          title={(login.isAdmin) ? t('logins.demote', { username: login.username}) : t('logins.promote', { username: login.username})}
-          onClick={() => handleLoginFlipBit(login, 'isAdmin')}
-          className="me-2 float-end"
-        />
+          <span>{login.isAdmin ? t('common.yes') : t('common.no')}</span>
+          <Button
+            variant={login.isAdmin ? 'info' : 'warning'}
+            size="xs"
+            icon={login.isAdmin ? 'chevron-double-down' : 'chevron-double-up'}
+            title={
+              login.isAdmin
+                ? t('logins.demote', { username: login.username })
+                : t('logins.promote', { username: login.username })
+            }
+            onClick={() => handleLoginFlipBit(login, 'isAdmin')}
+            className="me-2 float-end"
+          />
         </>
       ),
     },
-    { 
+    {
       key: 'isAccount',
       label: 'logins.isAccount',
       noFilter: true,
-      render: (login) => (
-      /* only render linkAccount button when isAccount=0 if rolesAvailable.includes(login.mailbox) */
-      /* always render unlinkAccount button when isAccount=1 */
-      ( login.isAccount || (rolesAvailable && rolesAvailable.includes(login.mailbox)) ) &&
-        <>
-        <span>{(login.isAccount) ? t('common.yes') : t('common.no')}</span>
-        <Button
-          variant={(login.isAccount) ? "warning" : "info"}
-          size="xs"
-          icon={(login.isAccount) ? "heartbreak" : "link-45deg"}
-          title={(login.isAccount) ? t('logins.unlinkAccount', { username: login.username}) : t('logins.linkAccount', { username: login.username})}
-          onClick={() => handleLoginFlipBit(login, 'isAccount')}
-          className="me-2 float-end"
-        />
-        </>
-      ),
+      render: (login) =>
+        /* only render linkAccount button when isAccount=0 if rolesAvailable.includes(login.mailbox) */
+        /* always render unlinkAccount button when isAccount=1 */
+        (login.isAccount ||
+          (rolesAvailable && rolesAvailable.includes(login.mailbox))) && (
+          <>
+            <span>{login.isAccount ? t('common.yes') : t('common.no')}</span>
+            <Button
+              variant={login.isAccount ? 'warning' : 'info'}
+              size="xs"
+              icon={login.isAccount ? 'heartbreak' : 'link-45deg'}
+              title={
+                login.isAccount
+                  ? t('logins.unlinkAccount', { username: login.username })
+                  : t('logins.linkAccount', { username: login.username })
+              }
+              onClick={() => handleLoginFlipBit(login, 'isAccount')}
+              className="me-2 float-end"
+            />
+          </>
+        ),
     },
-    { 
+    {
       key: 'roles',
       label: 'logins.roles',
       noSort: true,
       render: (login) => (
         <>
-        <Autocomplete
-          multiple
-          id="roles"
-          size="small"
-          options={rolesAvailable}
-          groupBy={(mailbox) => mailbox.split('@')[1]}    // groupBy with an array of strings: so easy! create the group off the valuesdirectly!
-          filterSelectedOptions
-          disabled={login.isAccount}
-          
-          value={getFieldValue(login.id, 'roles')}
-          onChange={(e, newValue) => handleLoginChange(e, login, "roles", newValue)}
-          renderOption={(props, option) => (
-            <li
-              {...props}
-              className={highlightOptionByDomain(option, login?.mailbox, props.className)}
-              key={option}
-            >
-            {option}
-            </li>
-          )}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              sx={{ minWidth: 0 }}
-              label={t('logins.roles')}
-            />
-          )}
-        />
+          <Autocomplete
+            multiple
+            id="roles"
+            size="small"
+            options={rolesAvailable}
+            groupBy={(mailbox) => mailbox.split('@')[1]} // groupBy with an array of strings: so easy! create the group off the valuesdirectly!
+            filterSelectedOptions
+            disabled={login.isAccount}
+            value={getFieldValue(login.id, 'roles')}
+            onChange={(e, newValue) =>
+              handleLoginChange(e, login, 'roles', newValue)
+            }
+            renderOption={(props, option) => (
+              <li
+                {...props}
+                className={highlightOptionByDomain(
+                  option,
+                  login?.mailbox,
+                  props.className
+                )}
+                key={option}
+              >
+                {option}
+              </li>
+            )}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                sx={{ minWidth: 0 }}
+                label={t('logins.roles')}
+              />
+            )}
+          />
         </>
       ),
     },
@@ -929,7 +959,11 @@ const Logins = () => {
             variant="primary"
             size="sm"
             icon="key"
-            title={(login.isAdmin) ? t('password.changeLocalPassword') : t('password.changeMailboxPassword') }
+            title={
+              login.isAdmin
+                ? t('password.changeLocalPassword')
+                : t('password.changeMailboxPassword')
+            }
             onClick={() => handleChangePassword(login)}
             className="me-2"
           />
@@ -944,8 +978,12 @@ const Logins = () => {
           <Button
             variant="secondary"
             size="sm"
-            icon={(login.isActive) ? "toggle-on" : "toggle-off"}
-            title={(login.isActive) ? t('logins.deactivate', { username: login.mailbox }) : t('logins.activate', { username: login.mailbox })}
+            icon={login.isActive ? 'toggle-on' : 'toggle-off'}
+            title={
+              login.isActive
+                ? t('logins.deactivate', { username: login.mailbox })
+                : t('logins.activate', { username: login.mailbox })
+            }
             onClick={() => handleLoginFlipBit(login, 'isActive')}
             className="me-2"
           />
@@ -963,251 +1001,280 @@ const Logins = () => {
     },
   ];
 
-
-// ░██████████                                    ░███    ░██                              ░██                               ░██           
-// ░██                                            ░████   ░██                              ░██                                             
-// ░██         ░███████  ░██░████ ░█████████████  ░██░██  ░██  ░███████  ░██    ░██    ░██ ░██          ░███████   ░████████ ░██░████████  
-// ░█████████ ░██    ░██ ░███     ░██   ░██   ░██ ░██ ░██ ░██ ░██    ░██ ░██    ░██    ░██ ░██         ░██    ░██ ░██    ░██ ░██░██    ░██ 
-// ░██        ░██    ░██ ░██      ░██   ░██   ░██ ░██  ░██░██ ░█████████  ░██  ░████  ░██  ░██         ░██    ░██ ░██    ░██ ░██░██    ░██ 
-// ░██        ░██    ░██ ░██      ░██   ░██   ░██ ░██   ░████ ░██          ░██░██ ░██░██   ░██         ░██    ░██ ░██   ░███ ░██░██    ░██ 
-// ░██         ░███████  ░██      ░██   ░██   ░██ ░██    ░███  ░███████     ░███   ░███    ░██████████  ░███████   ░█████░██ ░██░██    ░██ 
-//                                                                                                                       ░██               
-//                                                                                                                 ░███████                
+  // ░██████████                                    ░███    ░██                              ░██                               ░██
+  // ░██                                            ░████   ░██                              ░██
+  // ░██         ░███████  ░██░████ ░█████████████  ░██░██  ░██  ░███████  ░██    ░██    ░██ ░██          ░███████   ░████████ ░██░████████
+  // ░█████████ ░██    ░██ ░███     ░██   ░██   ░██ ░██ ░██ ░██ ░██    ░██ ░██    ░██    ░██ ░██         ░██    ░██ ░██    ░██ ░██░██    ░██
+  // ░██        ░██    ░██ ░██      ░██   ░██   ░██ ░██  ░██░██ ░█████████  ░██  ░████  ░██  ░██         ░██    ░██ ░██    ░██ ░██░██    ░██
+  // ░██        ░██    ░██ ░██      ░██   ░██   ░██ ░██   ░████ ░██          ░██░██ ░██░██   ░██         ░██    ░██ ░██   ░███ ░██░██    ░██
+  // ░██         ░███████  ░██      ░██   ░██   ░██ ░██    ░███  ░███████     ░███   ░███    ░██████████  ░███████   ░█████░██ ░██░██    ░██
+  //                                                                                                                       ░██
+  //                                                                                                                 ░███████
 
   const FormNewLogin = (
     <>
-    <Form onSubmit={handleSubmitNewLogin} className="form-wrapper">
-      <FormField
-        type="checkbox"
-        id="isAdmin"
-        name="isAdmin"
-        label="logins.isAdmin"
-        onChange={handleNewLoginInputChange}
-        error={newLoginFormErrors.isAdmin}
-        isChecked={newLoginformData.isAdmin}
-      />
-
-      <FormField
-        type="checkbox"
-        id="isAccount"
-        name="isAccount"
-        label="logins.isAccountChoice"
-        onChange={handleNewLoginInputChange}
-        error={newLoginFormErrors.isAccount}
-        isChecked={newLoginformData.isAccount && !newLoginformData.isAdmin}
-        disabled={newLoginformData.isAdmin}
-      />
-
-      <SelectField
-        id="mailserver"
-        name="mailserver"
-        label="logins.mailserver"
-        value={containerName}
-        onChange={handleNewLoginInputChange}
-        options={mailservers}
-        placeholder="logins.mailserverRequired"
-        error={newLoginFormErrors.mailserver}
-        helpText="logins.mailserverRequired"
-        required
-      />
-
-      <div>
+      <Form onSubmit={handleSubmitNewLogin} className="form-wrapper">
         <FormField
-          type="text"
-          id="username"
-          name="username"
-          label="logins.username"
-          value={newLoginformData.username}
+          type="checkbox"
+          id="isAdmin"
+          name="isAdmin"
+          label="logins.isAdmin"
           onChange={handleNewLoginInputChange}
-          maxLength={36}
-          groupClass="mb-0" // Removed margin so the badge sits cleanly right under the input field
-          placeholder="admin"
-          error={newLoginFormErrors.username}
-          helpText="logins.usernameHelp"
-          required
+          error={newLoginFormErrors.isAdmin}
+          isChecked={newLoginformData.isAdmin}
         />
-        
-        {/* The Live Character Counter Badge */}
-        <div className="text-end small mb-2" style={{ marginTop: "-2px" }}>
-          <span className={newLoginformData.username?.length >= 30 ? "text-danger fw-bold" : "text-muted"}>
-            {newLoginformData.username?.length || 0}/36
-          </span>
-        </div>
-      </div>
 
-      {newLoginformData.isAccount && (
-        <SelectField
-          id="mailbox"
-          name="mailbox"
-          label="accounts.mailbox"
-          value={plucks(filteredAccountOptions, 'value').has(newLoginformData.mailbox) ? newLoginformData.mailbox : ""}
+        <FormField
+          type="checkbox"
+          id="isAccount"
+          name="isAccount"
+          label="logins.isAccountChoice"
           onChange={handleNewLoginInputChange}
-          options={filteredAccountOptions}
-          placeholder="accounts.mailboxRequired"
-          error={(filteredAccountOptions.length) ? newLoginFormErrors.mailbox : t('logins.mailboxNothingToPick')}
-          helpText="accounts.mailboxHelp"
+          error={newLoginFormErrors.isAccount}
+          isChecked={newLoginformData.isAccount && !newLoginformData.isAdmin}
+          disabled={newLoginformData.isAdmin}
+        />
+
+        <SelectField
+          id="mailserver"
+          name="mailserver"
+          label="logins.mailserver"
+          value={containerName}
+          onChange={handleNewLoginInputChange}
+          options={mailservers}
+          placeholder="logins.mailserverRequired"
+          error={newLoginFormErrors.mailserver}
+          helpText="logins.mailserverRequired"
           required
         />
-      ) || (
+
         <div>
           <FormField
-            type="email"
-            id="mailbox"
-            name="mailbox"
-            label="logins.mailbox"
-            value={newLoginformData.mailbox}
+            type="text"
+            id="username"
+            name="username"
+            label="logins.username"
+            value={newLoginformData.username}
             onChange={handleNewLoginInputChange}
-            maxLength={254}
+            maxLength={36}
             groupClass="mb-0" // Removed margin so the badge sits cleanly right under the input field
-            placeholder="user@domain.com"
-            error={newLoginFormErrors.mailbox}
-            helpText="logins.mailboxHelp"
+            placeholder="admin"
+            error={newLoginFormErrors.username}
+            helpText="logins.usernameHelp"
             required
           />
-          
+
           {/* The Live Character Counter Badge */}
-          <div className="text-end small mb-2" style={{ marginTop: "-2px" }}>
-            <span className={newLoginformData.mailbox?.length >= 200 ? "text-danger fw-bold" : "text-muted"}>
-              {newLoginformData.mailbox?.length || 0}/254
+          <div className="text-end small mb-2" style={{ marginTop: '-2px' }}>
+            <span
+              className={
+                newLoginformData.username?.length >= 30
+                  ? 'text-danger fw-bold'
+                  : 'text-muted'
+              }
+            >
+              {newLoginformData.username?.length || 0}/36
             </span>
           </div>
         </div>
 
-      )}
-
-      <Autocomplete
-        multiple
-        id="roles"
-        options={rolesAvailable}
-        groupBy={(mailbox) => mailbox.split('@')[1]}    // groupBy with an array of strings: so easy! create the group off the valuesdirectly!
-        filterSelectedOptions
-        disabled={newLoginformData.isAccount}
-        
-        value={newLoginformData.roles}
-        onChange={(e, newValue) => handleNewLoginRolesChange(e, newValue)}
-        renderOption={(props, option) => (
-          <li
-            {...props}
-            className={highlightOptionByDomain(option, newLoginformData?.mailbox, props.className)}
-            key={option}
-          >
-          {option}
-          </li>
-        )}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            sx={{ minWidth: 0 }}
-            label={t('logins.roles')}
+        {(newLoginformData.isAccount && (
+          <SelectField
+            id="mailbox"
+            name="mailbox"
+            label="accounts.mailbox"
+            value={
+              plucks(filteredAccountOptions, 'value').has(
+                newLoginformData.mailbox
+              )
+                ? newLoginformData.mailbox
+                : ''
+            }
+            onChange={handleNewLoginInputChange}
+            options={filteredAccountOptions}
+            placeholder="accounts.mailboxRequired"
+            error={
+              filteredAccountOptions.length
+                ? newLoginFormErrors.mailbox
+                : t('logins.mailboxNothingToPick')
+            }
+            helpText="accounts.mailboxHelp"
+            required
           />
+        )) || (
+          <div>
+            <FormField
+              type="email"
+              id="mailbox"
+              name="mailbox"
+              label="logins.mailbox"
+              value={newLoginformData.mailbox}
+              onChange={handleNewLoginInputChange}
+              maxLength={254}
+              groupClass="mb-0" // Removed margin so the badge sits cleanly right under the input field
+              placeholder="user@domain.com"
+              error={newLoginFormErrors.mailbox}
+              helpText="logins.mailboxHelp"
+              required
+            />
+
+            {/* The Live Character Counter Badge */}
+            <div className="text-end small mb-2" style={{ marginTop: '-2px' }}>
+              <span
+                className={
+                  newLoginformData.mailbox?.length >= 200
+                    ? 'text-danger fw-bold'
+                    : 'text-muted'
+                }
+              >
+                {newLoginformData.mailbox?.length || 0}/254
+              </span>
+            </div>
+          </div>
         )}
-      />
 
-      <div>
-        <FormField
-          type="email"
-          id="email"
-          name="email"
-          label="logins.email"
-          value={newLoginformData.email}
-          onChange={handleNewLoginInputChange}
-          maxLength={254}
-          groupClass="mb-0" // Removed margin so the badge sits cleanly right under the input field
-          placeholder="user@domain.com"
-          error={newLoginFormErrors.email}
-          helpText="logins.emailHelp"
-          required
+        <Autocomplete
+          multiple
+          id="roles"
+          options={rolesAvailable}
+          groupBy={(mailbox) => mailbox.split('@')[1]} // groupBy with an array of strings: so easy! create the group off the valuesdirectly!
+          filterSelectedOptions
+          disabled={newLoginformData.isAccount}
+          value={newLoginformData.roles}
+          onChange={(e, newValue) => handleNewLoginRolesChange(e, newValue)}
+          renderOption={(props, option) => (
+            <li
+              {...props}
+              className={highlightOptionByDomain(
+                option,
+                newLoginformData?.mailbox,
+                props.className
+              )}
+              key={option}
+            >
+              {option}
+            </li>
+          )}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              sx={{ minWidth: 0 }}
+              label={t('logins.roles')}
+            />
+          )}
         />
-        
-        {/* The Live Character Counter Badge */}
-        <div className="text-end small mb-2" style={{ marginTop: "-2px" }}>
-          <span className={newLoginformData.email?.length >= 200 ? "text-danger fw-bold" : "text-muted"}>
-            {newLoginformData.email?.length || 0}/254
-          </span>
+
+        <div>
+          <FormField
+            type="email"
+            id="email"
+            name="email"
+            label="logins.email"
+            value={newLoginformData.email}
+            onChange={handleNewLoginInputChange}
+            maxLength={254}
+            groupClass="mb-0" // Removed margin so the badge sits cleanly right under the input field
+            placeholder="user@domain.com"
+            error={newLoginFormErrors.email}
+            helpText="logins.emailHelp"
+            required
+          />
+
+          {/* The Live Character Counter Badge */}
+          <div className="text-end small mb-2" style={{ marginTop: '-2px' }}>
+            <span
+              className={
+                newLoginformData.email?.length >= 200
+                  ? 'text-danger fw-bold'
+                  : 'text-muted'
+              }
+            >
+              {newLoginformData.email?.length || 0}/254
+            </span>
+          </div>
         </div>
-      </div>
 
-      <Row className="mb-3">
+        <Row className="mb-3">
+          <FormField
+            as={Col}
+            type="password"
+            id="password"
+            name="password"
+            label="password.password"
+            value={newLoginformData.password}
+            onChange={handleNewLoginInputChange}
+            error={newLoginFormErrors.password}
+            required
+          />
+
+          <FormField
+            as={Col}
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            label="password.confirmPassword"
+            value={newLoginformData.confirmPassword}
+            onChange={handleNewLoginInputChange}
+            error={newLoginFormErrors.confirmPassword}
+            required
+          />
+        </Row>
+
         <FormField
-          as={Col}
-          type="password"
-          id="password"
-          name="password"
-          label="password.password"
-          value={newLoginformData.password}
+          type="checkbox"
+          id="isActive"
+          name="isActive"
+          label="logins.isActive"
           onChange={handleNewLoginInputChange}
-          error={newLoginFormErrors.password}
-          required
+          error={newLoginFormErrors.isActive}
+          isChecked={newLoginformData.isActive}
         />
 
-        <FormField
-          as={Col}
-          type="password"
-          id="confirmPassword"
-          name="confirmPassword"
-          label="password.confirmPassword"
-          value={newLoginformData.confirmPassword}
-          onChange={handleNewLoginInputChange}
-          error={newLoginFormErrors.confirmPassword}
-          required
+        <Button
+          type="submit"
+          variant="primary"
+          text="logins.addLogin"
+          disabled={submitDisabled}
         />
-      </Row>
-
-      <FormField
-        type="checkbox"
-        id="isActive"
-        name="isActive"
-        label="logins.isActive"
-        onChange={handleNewLoginInputChange}
-        error={newLoginFormErrors.isActive}
-        isChecked={newLoginformData.isActive}
-      />
-
-      <Button
-        type="submit"
-        variant="primary"
-        text="logins.addLogin"
-        disabled={submitDisabled}
-      />
-    </Form>
+      </Form>
     </>
   );
-  
+
   const DataTableLogins = (
     <>
-          <DataTable
-          columns={columns}
-          data={logins}
-          keyExtractor={(login) => login.mailbox}
-          isLoading={isLoading}
-          emptyMessage="logins.noLogins"
-          />
+      <DataTable
+        columns={columns}
+        data={logins}
+        keyExtractor={(login) => login.mailbox}
+        isLoading={isLoading}
+        emptyMessage="logins.noLogins"
+      />
     </>
   );
-  
 
-  // ░██████████           ░██                   
-  //   ░██               ░██                   
-  //   ░██     ░██████   ░████████   ░███████  
-  //   ░██          ░██  ░██    ░██ ░██        
-  //   ░██     ░███████  ░██    ░██  ░███████  
-  //   ░██    ░██   ░██  ░███   ░██        ░██ 
-  //   ░██     ░█████░██ ░██░█████   ░███████  
-                                            
+  // ░██████████           ░██
+  //   ░██               ░██
+  //   ░██     ░██████   ░████████   ░███████
+  //   ░██          ░██  ░██    ░██ ░██
+  //   ░██     ░███████  ░██    ░██  ░███████
+  //   ░██    ░██   ░██  ░███   ░██        ░██
+  //   ░██     ░█████░██ ░██░█████   ░███████
 
   // https://icons.getbootstrap.com/
   const loginTabs = [
-    { id: 1, 
-      title: "logins.existingLogins",
-      titleExtra: `(${logins.length})`, 
-      icon: "person-lines-fill", 
-      onClickRefresh: () => fetchAll(), 
-      content: DataTableLogins
+    {
+      id: 1,
+      title: 'logins.existingLogins',
+      titleExtra: `(${logins.length})`,
+      icon: 'person-lines-fill',
+      onClickRefresh: () => fetchAll(),
+      content: DataTableLogins,
     },
-    { id: 2, 
-      title: "logins.newLogin",
-      icon: "person-fill-add",
-      content: FormNewLogin
+    {
+      id: 2,
+      title: 'logins.newLogin',
+      icon: 'person-fill-add',
+      content: FormNewLogin,
     },
   ];
 
@@ -1216,35 +1283,39 @@ const Logins = () => {
   return (
     <>
       <h2 className="mb-4">{Translate('logins.title')}</h2>
-      
+
       <AlertMessage type="danger" message={errorMessage} />
       <AlertMessage type="success" message={successMessage} />
-      
-      <Accordion tabs={loginTabs}>
-      </Accordion>
+
+      <Accordion tabs={loginTabs}></Accordion>
 
       {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteConfirmModal} onHide={handleCloseDeleteConfirmModal}>
+      <Modal
+        show={showDeleteConfirmModal}
+        onHide={handleCloseDeleteConfirmModal}
+      >
         <Modal.Header closeButton>
           <Modal.Title>
             {/* selectedLogin is null by default, must use ? */}
-            {Translate('logins.confirmDeleteTitle')}: {selectedLogin?.username} / {selectedLogin?.mailbox}{' '}
+            {Translate('logins.confirmDeleteTitle')}: {selectedLogin?.username}{' '}
+            / {selectedLogin?.mailbox}{' '}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedLogin && ( // Ensure selectedLogin exists before rendering form
             <>
               <p>{Translate('logins.confirmDeleteBody')}</p>
-              {!!selectedLogin?.isAccount && selectedLogin?.mailbox && ( // Ensure selectedLogin has a mailbox and isAccount
-                <FormField
-                  type="checkbox"
-                  id="alsoDeleteMailbox"
-                  name="alsoDeleteMailbox"
-                  label="logins.confirmAlsoDeleteMailbox"
-                  onChange={handleAlsoDeleteMailboxInputChange}
-                  isChecked={!!selectedLogin?.alsoDeleteMailbox}
-                />
-              )}
+              {!!selectedLogin?.isAccount &&
+                selectedLogin?.mailbox && ( // Ensure selectedLogin has a mailbox and isAccount
+                  <FormField
+                    type="checkbox"
+                    id="alsoDeleteMailbox"
+                    name="alsoDeleteMailbox"
+                    label="logins.confirmAlsoDeleteMailbox"
+                    onChange={handleAlsoDeleteMailboxInputChange}
+                    isChecked={!!selectedLogin?.alsoDeleteMailbox}
+                  />
+                )}
             </>
           )}
         </Modal.Body>
@@ -1261,13 +1332,13 @@ const Logins = () => {
           />
         </Modal.Footer>
       </Modal>
-      
+
       {/* Password Change Modal using react-bootstrap */}
       <Modal show={showPasswordModal} onHide={handleClosePasswordModal}>
         <Modal.Header closeButton>
           <Modal.Title>
-            {Translate('password.changePassword')}: {selectedLogin?.username} / {selectedLogin?.mailbox}{' '}
-            {/* Use optional chaining */}
+            {Translate('password.changePassword')}: {selectedLogin?.username} /{' '}
+            {selectedLogin?.mailbox} {/* Use optional chaining */}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -1311,7 +1382,6 @@ const Logins = () => {
           />
         </Modal.Footer>
       </Modal>
-
     </>
   );
 };

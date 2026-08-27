@@ -1,19 +1,13 @@
-import {
-  delay,
-  isNonEmptyDict,
-  regexFindEmailStrict
-} from '../common.mjs';
+import { delay, isNonEmptyDict, regexFindEmailStrict } from '../common.mjs';
 import {
   color,
   debugLog,
   doveadm,
   errorLog,
   infoLog,
-  successLog
+  successLog,
 } from './backend.mjs';
-import {
-  env
-} from './env.mjs';
+import { env } from './env.mjs';
 
 import {
   dbCount,
@@ -22,15 +16,10 @@ import {
   dbUpgrade,
   deleteEntry,
   resetTokens,
-  updateDB
+  updateDB,
 } from './db.mjs';
 
-import {
-  addLogin,
-  deleteLogin,
-  getLogins,
-  loginUser
-} from './logins.mjs';
+import { addLogin, deleteLogin, getLogins, loginUser } from './logins.mjs';
 
 import {
   getConfigs,
@@ -44,17 +33,9 @@ import {
   saveSettings,
 } from './settings.mjs';
 
-import {
-  addAccount,
-  deleteAccount,
-  getAccounts,
-} from './accounts.mjs';
+import { addAccount, deleteAccount, getAccounts } from './accounts.mjs';
 
-import {
-  addAlias,
-  deleteAlias,
-  getAliases,
-} from './aliases.mjs';
+import { addAlias, deleteAlias, getAliases } from './aliases.mjs';
 
 // const express = require('express');
 // const app = express();
@@ -92,11 +73,10 @@ const options = {
 };
 const oasDefinition = swaggerJsdoc(options);
 
-
 // cors manual way
-// Tell Express to trust Cloudflare and SWAG proxy headers 
+// Tell Express to trust Cloudflare and SWAG proxy headers
 // This makes sure secure cookies are correctly issued
-app.set('trust proxy', true); 
+app.set('trust proxy', true);
 
 // app.use(function(req, res, next) {
 //   res.header("Access-Control-Allow-Origin", "*");
@@ -105,8 +85,8 @@ app.set('trust proxy', true);
 // });
 
 // cors the react way https://expressjs.com/en/resources/middleware/cors.html
-debugLog('env.API_URL',env.API_URL)
-debugLog('env.BACKEND_PROXY_URL',env.BACKEND_PROXY_URL)
+debugLog('env.API_URL', env.API_URL);
+debugLog('env.BACKEND_PROXY_URL', env.BACKEND_PROXY_URL);
 // const allowedOrigins = [
 //   env.API_URL,              // Development
 // ];
@@ -114,7 +94,7 @@ debugLog('env.BACKEND_PROXY_URL',env.BACKEND_PROXY_URL)
 //   origin: function (origin, callback) {
 //     // Allow requests with no origin (mobile apps, etc.)
 //     if (!origin) return callback(null, true);
-    
+
 //     if (allowedOrigins.indexOf(origin) !== -1) {
 //       callback(null, true);
 //     } else {
@@ -126,10 +106,10 @@ debugLog('env.BACKEND_PROXY_URL',env.BACKEND_PROXY_URL)
 //   allowedHeaders: ['Content-Type', 'Authorization', Accept-Language'] X-Requested-With
 // };
 const corsOptions = {
-  origin: true,       // reflect the request origin, as defined by req.header('Origin')
+  origin: true, // reflect the request origin, as defined by req.header('Origin')
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept-Language']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept-Language'],
 };
 
 // ============================================
@@ -155,18 +135,18 @@ SECURITY BENEFITS:
 ✅ All tokens are httpOnly cookies (XSS protection)
 */
 
-const cookieOptionsAccess = { 
-  httpOnly: true, 
-  secure: env.ENV_MODE === 'production',        // Use secure in production
-  sameSite: 'lax',                              // 'none' or 'lax' or 'strict' (for CSRF protection)
-  maxAge: 3600000                               // 1h
+const cookieOptionsAccess = {
+  httpOnly: true,
+  secure: env.ENV_MODE === 'production', // Use secure in production
+  sameSite: 'lax', // 'none' or 'lax' or 'strict' (for CSRF protection)
+  maxAge: 3600000, // 1h
 };
 
-const cookieOptionsRefresh = { 
+const cookieOptionsRefresh = {
   httpOnly: true,
   secure: env.ENV_MODE === 'production',
   sameSite: 'lax',
-  maxAge: 7 * 24 * 60 * 60 * 1000               // 7 days
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
 app.use(cookieParser());
@@ -183,21 +163,13 @@ const generateToken = (userPayload, secret, expriry) => {
   // otherwise you will get a Bad "options.expiresIn" option the payload already has an "exp" property.
   const { exp, iat, ...userPayloadClean } = userPayload;
 
-  return jwt.sign(
-    userPayloadClean,
-    secret,
-    { expiresIn: expriry }
-  );
+  return jwt.sign(userPayloadClean, secret, { expiresIn: expriry });
 };
 
 // Generate access token
 const generateAccessToken = (userPayload) => {
   infoLog(`${color.m}generateAccessToken for user ${userPayload?.username}`);
-  return generateToken(
-    userPayload,
-    env.JWT_SECRET,
-    env.ACCESS_TOKEN_EXPIRY
-  );
+  return generateToken(userPayload, env.JWT_SECRET, env.ACCESS_TOKEN_EXPIRY);
 };
 
 // Generate refresh token
@@ -210,33 +182,31 @@ const generateRefreshToken = (userPayload) => {
   );
 };
 
-
 // authenticateToken middleware extracts JWT from cookie and adds req.user to every request
 const authenticateToken = (req, res, next) => {
   try {
     const accessToken = req.cookies.accessToken; // Assuming cookie name is 'token', provided by cookieParser
-    
+
     if (!accessToken) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'Authentication required',
-        code: 'NO_TOKEN' 
+        code: 'NO_TOKEN',
       });
     }
 
     const decoded = jwt.verify(accessToken, env.JWT_SECRET);
     req.user = decoded; // Attach user data to request
     next();
-
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'Session expired. Please login again.',
-        code: 'TOKEN_EXPIRED' 
+        code: 'TOKEN_EXPIRED',
       });
     }
-    return res.status(403).json({ 
+    return res.status(403).json({
       error: 'Invalid token',
-      code: 'INVALID_TOKEN' 
+      code: 'INVALID_TOKEN',
     });
   }
 };
@@ -244,10 +214,13 @@ const authenticateToken = (req, res, next) => {
 // requireAdmin middleware checks if req.user.isAdmin is true
 const requireAdmin = (req, res, next) => {
   if (!req.user.isAdmin) {
-    errorLog(`Non-admin user ${req.user?.username} just tried to access`, req.originalUrl);
-    return res.status(403).json({ 
+    errorLog(
+      `Non-admin user ${req.user?.username} just tried to access`,
+      req.originalUrl
+    );
+    return res.status(403).json({
       error: 'Admin access required',
-      code: 'FORBIDDEN' 
+      code: 'FORBIDDEN',
     });
   }
   next();
@@ -257,19 +230,18 @@ const requireAdmin = (req, res, next) => {
 const requireActive = (req, res, next) => {
   if (!req.user || !req.user?.isActive) {
     errorLog(`Inactive user ${req.user?.username} just tried to login`);
-    return res.status(403).json({ 
+    return res.status(403).json({
       error: 'Account is inactive',
-      code: 'ACCOUNT_INACTIVE' 
+      code: 'ACCOUNT_INACTIVE',
     });
   }
   next();
 };
 
-
 app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(oasDefinition));
 
-app.options('/*splat', cors()) // include pre-flight across-the-board before other routes
+app.options('/*splat', cors()); // include pre-flight across-the-board before other routes
 
 // Parser
 // https://www.codemzy.com/blog/parse-booleans-express-query-params
@@ -280,45 +252,44 @@ app.set('query parser', function (str) {
         true: true,
         false: false,
       };
-      if (type === 'value' && typeof bools[str] === "boolean") {
+      if (type === 'value' && typeof bools[str] === 'boolean') {
         return bools[str];
       } else {
         return defaultDecoder(str);
       }
-    }
-  })
+    },
+  });
 });
-
 
 // Routes ------------------------------------------------------------------------------------------
 // @swagger descriptions based off https://swagger.io/docs/specification/v3_0/describing-parameters/
 
-// post('/api/status/:plugin/:schema/:containerName', 
-// get('/api/infos', 
-// get('/api/envs/:plugin/:schema/:containerName', 
-// get('/api/accounts/:schema/:containerName', 
-// post('/api/accounts/:schema/:containerName', 
-// put('/api/doveadm/:schema/:containerName/:command/:mailbox', 
-// delete('/api/accounts/:containerName/:mailbox', 
-// patch('/api/accounts/:schema/:containerName/:mailbox', 
-// get('/api/aliases/:schema/:containerName', 
-// post('/api/aliases/:schema/:containerName', 
-// delete('/api/aliases/:schema/:containerName', 
-// get('/api/settings/:plugin/:schema/:scope/:containerName', 
-// get('/api/configs/:plugin{/:schema}{/:name}', 
-// post('/api/settings/:plugin/:schema/:scope/:containerName', 
-// get('/api/roles/:credential', 
-// post('/api/getLogins', 
-// put('/api/logins', 
-// patch('/api/logins/:id', 
-// delete('/api/logins/:id', 
+// post('/api/status/:plugin/:schema/:containerName',
+// get('/api/infos',
+// get('/api/envs/:plugin/:schema/:containerName',
+// get('/api/accounts/:schema/:containerName',
+// post('/api/accounts/:schema/:containerName',
+// put('/api/doveadm/:schema/:containerName/:command/:mailbox',
+// delete('/api/accounts/:containerName/:mailbox',
+// patch('/api/accounts/:schema/:containerName/:mailbox',
+// get('/api/aliases/:schema/:containerName',
+// post('/api/aliases/:schema/:containerName',
+// delete('/api/aliases/:schema/:containerName',
+// get('/api/settings/:plugin/:schema/:scope/:containerName',
+// get('/api/configs/:plugin{/:schema}{/:name}',
+// post('/api/settings/:plugin/:schema/:scope/:containerName',
+// get('/api/roles/:credential',
+// post('/api/getLogins',
+// put('/api/logins',
+// patch('/api/logins/:id',
+// delete('/api/logins/:id',
 // post('/api/loginUser', async (req, res, next) => {
 // post('/api/refresh', async (req, res) => {
 // post('/api/logout', authenticateToken, async (req, res) => {
-// get('/api/domains/:containerName{/:domain}', 
-// get('/api/getCount/:table{/:containerName}{/:schema}', 
-// post('/api/initAPI/:plugin/:schema/:containerName', 
-// post('/api/killContainer{/:plugin}{/:schema}{/:containerName}', 
+// get('/api/domains/:containerName{/:domain}',
+// get('/api/getCount/:table{/:containerName}{/:schema}',
+// post('/api/initAPI/:plugin/:schema/:containerName',
+// post('/api/killContainer{/:plugin}{/:schema}{/:containerName}',
 
 /**
  * @swagger
@@ -355,26 +326,28 @@ app.set('query parser', function (str) {
  *       500:
  *         description: Unable to connect to docker-mailserver
  */
-app.post('/api/status/:plugin/:containerName', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { plugin, containerName } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
-    const test = ('test' in req.query) ? req.query.test : null;
-    // const { settings } = req.body;
+app.post(
+  '/api/status/:plugin/:containerName',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { plugin, containerName } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
+      const test = 'test' in req.query ? req.query.test : null;
+      // const { settings } = req.body;
 
-    // const status = await getServerStatus(plugin, containerName, test, settings); // I think one one api like initAPI should be allowed to pass settings directly from the GUI
-    const status = await getServerStatus(plugin, containerName, test);
-    return res.json(status);
-
-  } catch (error) {
-    errorLog(`index /api/status: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to connect to docker-mailserver' });
-    return res.status(500).json({ error: error.message });
+      // const status = await getServerStatus(plugin, containerName, test, settings); // I think one one api like initAPI should be allowed to pass settings directly from the GUI
+      const status = await getServerStatus(plugin, containerName, test);
+      return res.json(status);
+    } catch (error) {
+      errorLog(`index /api/status: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to connect to docker-mailserver' });
+      return res.status(500).json({ error: error.message });
+    }
   }
-});
+);
 
 /**
  * @swagger
@@ -388,14 +361,10 @@ async (req, res) => {
  *       500:
  *         description: Unable to connect to docker-mailserver
  */
-app.get('/api/infos', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
+app.get('/api/infos', authenticateToken, requireActive, async (req, res) => {
   try {
     const infos = await getNodeInfos();
     return res.json(infos);
-    
   } catch (error) {
     errorLog(`index /api/infos: ${error.message}`);
     // res.status(500).json({ error: 'Unable to connect to docker-mailserver' });
@@ -444,26 +413,28 @@ async (req, res) => {
  *       500:
  *         description: Unable to connect to docker-mailserver
  */
-app.get('/api/envs/:plugin/:containerName', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { plugin, containerName } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
+app.get(
+  '/api/envs/:plugin/:containerName',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { plugin, containerName } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
 
-    const refresh = ('refresh' in req.query) ? req.query.refresh   : false;
-    const name = ('name' in req.query) ? req.query.name : null;
+      const refresh = 'refresh' in req.query ? req.query.refresh : false;
+      const name = 'name' in req.query ? req.query.name : null;
 
-    const envs = await getServerEnvs(plugin, containerName, refresh, name);
-    return res.json(envs);
-
-  } catch (error) {
-    errorLog(`index /api/envs: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to connect to docker-mailserver' });
-    return res.status(500).json({ error: error.message });
+      const envs = await getServerEnvs(plugin, containerName, refresh, name);
+      return res.json(envs);
+    } catch (error) {
+      errorLog(`index /api/envs: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to connect to docker-mailserver' });
+      return res.status(500).json({ error: error.message });
+    }
   }
-});
+);
 
 // Endpoint for retrieving mailbox accounts
 /**
@@ -492,32 +463,33 @@ async (req, res) => {
  *       500:
  *         description: Unable to retrieve accounts
  */
-app.get('/api/accounts/:containerName', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { containerName } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
-    const refresh = ('refresh' in req.query) ? req.query.refresh : false;
+app.get(
+  '/api/accounts/:containerName',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { containerName } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
+      const refresh = 'refresh' in req.query ? req.query.refresh : false;
 
-    // Users can only pull their own mailboxes or those in their roles (unless admin)
-    let accounts;
-    if (req.user.isAdmin) {
-      accounts = await getAccounts(containerName, refresh);
-
-    } else {
-      // const roles = await getRoles(req.user.mailbox);
-      accounts = await getAccounts(containerName, false, req.user.roles);
+      // Users can only pull their own mailboxes or those in their roles (unless admin)
+      let accounts;
+      if (req.user.isAdmin) {
+        accounts = await getAccounts(containerName, refresh);
+      } else {
+        // const roles = await getRoles(req.user.mailbox);
+        accounts = await getAccounts(containerName, false, req.user.roles);
+      }
+      return res.json(accounts);
+    } catch (error) {
+      errorLog(`index /api/accounts: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to retrieve accounts' });
+      return res.status(500).json({ error: error.message });
     }
-    return res.json(accounts);
-    
-  } catch (error) {
-    errorLog(`index /api/accounts: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to retrieve accounts' });
-    return res.status(500).json({ error: error.message });
   }
-});
+);
 
 // Endpoint for adding a new mailbox account
 /**
@@ -564,27 +536,37 @@ async (req, res) => {
  *       500:
  *         description: Unable to create account
  */
-app.post('/api/accounts/:schema/:containerName', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { schema, containerName } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
+app.post(
+  '/api/accounts/:schema/:containerName',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { schema, containerName } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
 
-    const { mailbox, password, createLogin } = req.body;
-    if (!mailbox || !password) {
-      return res.status(400).json({ error: 'Mailbox and password are required' });
+      const { mailbox, password, createLogin } = req.body;
+      if (!mailbox || !password) {
+        return res
+          .status(400)
+          .json({ error: 'Mailbox and password are required' });
+      }
+      const result = await addAccount(
+        schema,
+        containerName,
+        mailbox,
+        password,
+        createLogin
+      );
+      return res.status(201).json(result);
+    } catch (error) {
+      errorLog(`index /api/accounts: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to create account' });
+      return res.status(500).json({ error: error.message });
     }
-    const result = await addAccount(schema, containerName, mailbox, password, createLogin);
-    return res.status(201).json(result);
-    
-  } catch (error) {
-    errorLog(`index /api/accounts: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to create account' });
-    return res.status(500).json({ error: error.message });
   }
-});
+);
 
 // Endpoint for doveadm command on mailbox
 /**
@@ -626,33 +608,45 @@ async (req, res) => {
  *       500:
  *         description: See error message
  */
-app.put('/api/doveadm/:schema/:containerName/:command/:mailbox', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { schema, containerName, command, mailbox } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
-    if (!command || !mailbox) return res.status(400).json({ error: 'Command and Mailbox are required' });
-    
-    // Users can only act on their own mailboxes or those in their roles (unless admin)
-    let result;
-    if (req.user.isAdmin) {
-      result = await doveadm(schema, containerName, command, mailbox, req.body);
+app.put(
+  '/api/doveadm/:schema/:containerName/:command/:mailbox',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { schema, containerName, command, mailbox } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
+      if (!command || !mailbox)
+        return res
+          .status(400)
+          .json({ error: 'Command and Mailbox are required' });
 
-    } else {
-      // const roles = await getRoles(req.user.mailbox);
-      result = (req.user.roles.includes(mailbox)) ? await doveadm(schema, containerName, command, mailbox, req.body) : {success: false, error: 'Permission denied'};
+      // Users can only act on their own mailboxes or those in their roles (unless admin)
+      let result;
+      if (req.user.isAdmin) {
+        result = await doveadm(
+          schema,
+          containerName,
+          command,
+          mailbox,
+          req.body
+        );
+      } else {
+        // const roles = await getRoles(req.user.mailbox);
+        result = req.user.roles.includes(mailbox)
+          ? await doveadm(schema, containerName, command, mailbox, req.body)
+          : { success: false, error: 'Permission denied' };
+      }
+      debugLog('ddebug doveadm result', result);
+      return res.json(result);
+    } catch (error) {
+      errorLog(`PUT /api/doveadm: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to execute doveadm' });
+      return res.status(500).json({ error: error.message });
     }
-    debugLog('ddebug doveadm result', result);
-    return res.json(result);
-    
-  } catch (error) {
-    errorLog(`PUT /api/doveadm: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to execute doveadm' });
-    return res.status(500).json({ error: error.message });
   }
-});
+);
 
 // Endpoint for deleting a mailbox account
 /**
@@ -688,24 +682,31 @@ async (req, res) => {
  *       500:
  *         description: Unable to delete account
  */
-app.delete('/api/accounts/:schema/:containerName/:mailbox', 
-  authenticateToken, 
-  requireActive, 
-  requireAdmin, 
-async (req, res) => {
-  try {
-    const { schema, containerName, mailbox, alsoDeleteLogin } = req.params;
-    if (!mailbox)       return res.status(400).json({ error: 'Mailbox is required' });
+app.delete(
+  '/api/accounts/:schema/:containerName/:mailbox',
+  authenticateToken,
+  requireActive,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { schema, containerName, mailbox, alsoDeleteLogin } = req.params;
+      if (!mailbox)
+        return res.status(400).json({ error: 'Mailbox is required' });
 
-    const result = await deleteAccount(schema, containerName, mailbox, alsoDeleteLogin);
-    return res.json(result);
-    
-  } catch (error) {
-    errorLog(`index /api/accounts: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to delete account' });
-    return res.status(500).json({ error: error.message });
+      const result = await deleteAccount(
+        schema,
+        containerName,
+        mailbox,
+        alsoDeleteLogin
+      );
+      return res.json(result);
+    } catch (error) {
+      errorLog(`index /api/accounts: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to delete account' });
+      return res.status(500).json({ error: error.message });
+    }
   }
-});
+);
 
 // Endpoint for updating a mailbox account; only password in local db is covered atm
 /**
@@ -754,37 +755,43 @@ async (req, res) => {
  *       500:
  *         description: Unable to update account
  */
-app.patch('/api/accounts/:schema/:containerName/:mailbox', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { schema, containerName, mailbox } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
-    if (!mailbox)       return res.status(400).json({ error: 'Mailbox is required' });
+app.patch(
+  '/api/accounts/:schema/:containerName/:mailbox',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { schema, containerName, mailbox } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
+      if (!mailbox)
+        return res.status(400).json({ error: 'Mailbox is required' });
 
-    // Users can only act on their own mailboxes or those in their roles (unless admin)
-    let result, jsonDict;
-    jsonDict = {...req.body, schema:schema};
+      // Users can only act on their own mailboxes or those in their roles (unless admin)
+      let result, jsonDict;
+      jsonDict = { ...req.body, schema: schema };
 
-    // Regardless of if we are updating logins only or accounts (+logins), there are 3 distinct scenarios:
-    if (    req.user.isAdmin                                    // user isAdmin -> we do whatever an admin wants
-        || (req.user.isAccount && req.user?.mailbox == mailbox) // user isAccount only AND it's their mailbox
-        || (req.user.roles.includes(mailbox))) {                // user handles multiple mailboxes, cannot be isAccount
-      result = await updateDB('accounts', mailbox, jsonDict, containerName)
+      // Regardless of if we are updating logins only or accounts (+logins), there are 3 distinct scenarios:
+      if (
+        req.user.isAdmin || // user isAdmin -> we do whatever an admin wants
+        (req.user.isAccount && req.user?.mailbox == mailbox) || // user isAccount only AND it's their mailbox
+        req.user.roles.includes(mailbox)
+      ) {
+        // user handles multiple mailboxes, cannot be isAccount
+        result = await updateDB('accounts', mailbox, jsonDict, containerName);
 
-    // hack tentative
-    } else {
-      result = {success: false, error: 'Permission denied'};
+        // hack tentative
+      } else {
+        result = { success: false, error: 'Permission denied' };
+      }
+      return res.json(result);
+    } catch (error) {
+      errorLog(`index PATCH /api/accounts: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to update Account' });
+      return res.status(500).json({ error: error.message });
     }
-    return res.json(result);
-    
-  } catch (error) {
-    errorLog(`index PATCH /api/accounts: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to update Account' });
-    return res.status(500).json({ error: error.message });
   }
-});
+);
 
 // Endpoint for retrieving aliases
 /**
@@ -813,32 +820,33 @@ async (req, res) => {
  *       500:
  *         description: Unable to retrieve aliases
  */
-app.get('/api/aliases/:containerName', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { containerName } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
-    const refresh = ('refresh' in req.query) ? req.query.refresh : false;
+app.get(
+  '/api/aliases/:containerName',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { containerName } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
+      const refresh = 'refresh' in req.query ? req.query.refresh : false;
 
-    // Users can only act on their own mailboxes or those in their roles (unless admin)
-    let result;
-    if (req.user.isAdmin) {
-      result = await getAliases(containerName, refresh);
-
-    } else {
-      // const roles = await getRoles(req.user.mailbox);
-      result = await getAliases(containerName, false, req.user.roles);
+      // Users can only act on their own mailboxes or those in their roles (unless admin)
+      let result;
+      if (req.user.isAdmin) {
+        result = await getAliases(containerName, refresh);
+      } else {
+        // const roles = await getRoles(req.user.mailbox);
+        result = await getAliases(containerName, false, req.user.roles);
+      }
+      return res.json(result);
+    } catch (error) {
+      errorLog(`index /api/aliases: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to retrieve aliases' });
+      return res.status(500).json({ error: error.message });
     }
-    return res.json(result);
-
-  } catch (error) {
-    errorLog(`index /api/aliases: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to retrieve aliases' });
-    return res.status(500).json({ error: error.message });
   }
-});
+);
 
 // Endpoint for adding an alias
 /**
@@ -878,54 +886,62 @@ async (req, res) => {
  *       500:
  *         description: Unable to create alias
  */
-app.post('/api/aliases/:containerName', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { containerName } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
-    const { source, destination } = req.body;
-    if (!source || !destination) {
-      return res
-        .status(400)
-        .json({ error: 'Source and destination are required' });
-    }
-
-    // Users can only act on their own mailboxes or those in their roles (unless admin)
-    let result;
-    if (req.user.isAdmin) {
-      // TODO: maybe add some checks even tho it's an admin?
-      result = await addAlias(containerName, source, destination);
-
-    } else {
-      // const roles = await getRoles(req.user.mailbox);
-      // TODO: find a way to analyze regex so users do not hijack others
-      
-      // check source for obvious hack attempt. extract domains and see that they match. Only admins can create aliases for different domain then destination
-      // TODO: we match full domains sub.domain.com, but maybe we should only match the main domain.com?
-      let domainSource = source.match(regexFindEmailStrict);
-      debugLog('ddebug source,domainSource',source,domainSource);
-      
-      // atm we simply refuse to let linked account users add regex aliases by themselves
-      if (!domainSource && req.user.isAccount) {
-        result = {success:false, error: 'Permission denied'};
-
-      } else {
-        let domainDest = destination.match(regexFindEmailStrict);
-        debugLog('ddebug destination,domainDest',destination,domainDest);
-        let domainsMatch = (domainSource?.length == 3 && domainDest?.length == 3 && domainSource[2].toLowerCase() == domainDest[2].toLowerCase()) ? true : false;
-        result = (req.user.roles.includes(destination) && domainsMatch) ? await addAlias(containerName, source, destination) : {success:false, error: 'Permission denied'};
+app.post(
+  '/api/aliases/:containerName',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { containerName } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
+      const { source, destination } = req.body;
+      if (!source || !destination) {
+        return res
+          .status(400)
+          .json({ error: 'Source and destination are required' });
       }
+
+      // Users can only act on their own mailboxes or those in their roles (unless admin)
+      let result;
+      if (req.user.isAdmin) {
+        // TODO: maybe add some checks even tho it's an admin?
+        result = await addAlias(containerName, source, destination);
+      } else {
+        // const roles = await getRoles(req.user.mailbox);
+        // TODO: find a way to analyze regex so users do not hijack others
+
+        // check source for obvious hack attempt. extract domains and see that they match. Only admins can create aliases for different domain then destination
+        // TODO: we match full domains sub.domain.com, but maybe we should only match the main domain.com?
+        let domainSource = source.match(regexFindEmailStrict);
+        debugLog('ddebug source,domainSource', source, domainSource);
+
+        // atm we simply refuse to let linked account users add regex aliases by themselves
+        if (!domainSource && req.user.isAccount) {
+          result = { success: false, error: 'Permission denied' };
+        } else {
+          let domainDest = destination.match(regexFindEmailStrict);
+          debugLog('ddebug destination,domainDest', destination, domainDest);
+          let domainsMatch =
+            domainSource?.length == 3 &&
+            domainDest?.length == 3 &&
+            domainSource[2].toLowerCase() == domainDest[2].toLowerCase()
+              ? true
+              : false;
+          result =
+            req.user.roles.includes(destination) && domainsMatch
+              ? await addAlias(containerName, source, destination)
+              : { success: false, error: 'Permission denied' };
+        }
+      }
+      return res.status(201).json(result);
+    } catch (error) {
+      errorLog(`index /api/aliases: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to create alias' });
+      return res.status(500).json({ error: error.message });
     }
-    return res.status(201).json(result);
-    
-  } catch (error) {
-    errorLog(`index /api/aliases: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to create alias' });
-    return res.status(500).json({ error: error.message });
   }
-});
+);
 
 // Endpoint for deleting an alias
 /**
@@ -962,37 +978,40 @@ async (req, res) => {
  *       500:
  *         description: Unable to delete alias
  */
-app.delete('/api/aliases/:containerName', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { schema, containerName } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
+app.delete(
+  '/api/aliases/:containerName',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { schema, containerName } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
 
-    const { source, destination } = req.body;
-    if (!source || !destination) {
-      return res
-        .status(400)
-        .json({ error: 'Source and destination are required' });
-    }
-    
-    // Users can only act on their own mailboxes or those in their roles (unless admin)
-    let result;
-    if (req.user.isAdmin) {
-      result = await deleteAlias(containerName, source, destination);
+      const { source, destination } = req.body;
+      if (!source || !destination) {
+        return res
+          .status(400)
+          .json({ error: 'Source and destination are required' });
+      }
 
-    } else {
-      // const roles = await getRoles(req.user.mailbox);
-      result = (req.user.roles.includes(destination)) ? await deleteAlias(containerName, source, destination) : {success:false, error: 'Permission denied'};
+      // Users can only act on their own mailboxes or those in their roles (unless admin)
+      let result;
+      if (req.user.isAdmin) {
+        result = await deleteAlias(containerName, source, destination);
+      } else {
+        // const roles = await getRoles(req.user.mailbox);
+        result = req.user.roles.includes(destination)
+          ? await deleteAlias(containerName, source, destination)
+          : { success: false, error: 'Permission denied' };
+      }
+      return res.json(result);
+    } catch (error) {
+      errorLog(`DELETE /api/aliases: ${error.message}`);
+      return res.status(500).json({ error: error.message });
     }
-    return res.json(result);
-    
-  } catch (error) {
-    errorLog(`DELETE /api/aliases: ${error.message}`);
-    return res.status(500).json({ error: error.message });
   }
-});
+);
 
 // Endpoint for retrieving settings
 /**
@@ -1033,26 +1052,30 @@ async (req, res) => {
  *       500:
  *         description: Unable to retrieve settings
  */
-app.get('/api/settings/:plugin/:containerName{/:scope}', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { plugin, containerName } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
-    const name = ('name' in req.query) ? req.query.name : null;
-    const encrypted = ('encrypted' in req.query) ? req.query.encrypted : false;
+app.get(
+  '/api/settings/:plugin/:containerName{/:scope}',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { plugin, containerName } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
+      const name = 'name' in req.query ? req.query.name : null;
+      const encrypted = 'encrypted' in req.query ? req.query.encrypted : false;
 
-    const settings = (req.user.isAdmin || req.user.id == scope) ? getSettings(plugin, containerName, name, encrypted) : {success:false, error:'Permission denied'};    // fails silently
-    return res.json(settings);
-    
-  } catch (error) {
-    errorLog(`GET /api/settings: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to retrieve settings' });
-    return res.status(500).json({ error: error.message });
+      const settings =
+        req.user.isAdmin || req.user.id == scope
+          ? getSettings(plugin, containerName, name, encrypted)
+          : { success: false, error: 'Permission denied' }; // fails silently
+      return res.json(settings);
+    } catch (error) {
+      errorLog(`GET /api/settings: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to retrieve settings' });
+      return res.status(500).json({ error: error.message });
+    }
   }
-});
-
+);
 
 // Endpoint for retrieving config names
 /**
@@ -1082,22 +1105,33 @@ async (req, res) => {
  *       500:
  *         description: Unable to retrieve configs
  */
-app.get('/api/configs/:plugin{/:name}', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { plugin, name } = req.params;
-    // for non-admins:  for mailserver plugin we send scope=roles, for anything else we send scope=userID
-    debugLog(            `getConfigs(${plugin}, ${(req.user.isAdmin) ? [] : (plugin == 'mailserver') ? req.user.roles : [req.user.id]}, ${name})`)
-    const configs = await getConfigs(plugin,      (req.user.isAdmin) ? [] : (plugin == 'mailserver') ? req.user.roles : [req.user.id],    name);
-    return res.json(configs);
-    
-  } catch (error) {
-    errorLog(`GET /api/configs: ${error.message}`);
-    return res.status(500).json({ error: error.message });
+app.get(
+  '/api/configs/:plugin{/:name}',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { plugin, name } = req.params;
+      // for non-admins:  for mailserver plugin we send scope=roles, for anything else we send scope=userID
+      debugLog(
+        `getConfigs(${plugin}, ${req.user.isAdmin ? [] : plugin == 'mailserver' ? req.user.roles : [req.user.id]}, ${name})`
+      );
+      const configs = await getConfigs(
+        plugin,
+        req.user.isAdmin
+          ? []
+          : plugin == 'mailserver'
+            ? req.user.roles
+            : [req.user.id],
+        name
+      );
+      return res.json(configs);
+    } catch (error) {
+      errorLog(`GET /api/configs: ${error.message}`);
+      return res.status(500).json({ error: error.message });
+    }
   }
-});
+);
 
 // Endpoint for saving settings
 /**
@@ -1154,29 +1188,37 @@ async (req, res) => {
  *       500:
  *         description: Unable to save settings
  */
-app.post('/api/settings/:plugin/:schema/:scope/:containerName', 
-  authenticateToken, 
-  requireActive, 
-  requireAdmin, 
-async (req, res) => {
-  try {
-    const { plugin, schema, scope, containerName } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
+app.post(
+  '/api/settings/:plugin/:schema/:scope/:containerName',
+  authenticateToken,
+  requireActive,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { plugin, schema, scope, containerName } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
 
-    const encrypted = ('encrypted' in req.query) ? req.query.encrypted : false;
+      const encrypted = 'encrypted' in req.query ? req.query.encrypted : false;
 
-    debugLog('ddebug containerName', containerName);
-    debugLog('ddebug req.body', req.body);
-    const result = await saveSettings(plugin, schema, scope, containerName, req.body, encrypted);     // req.body = [{name:name, value:value}, ..]
-    return res.status(201).json(result);
-    
-  } catch (error) {
-    errorLog(`index POST /api/settings: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to save settings' });
-    return res.status(500).json({ error: error.message });
+      debugLog('ddebug containerName', containerName);
+      debugLog('ddebug req.body', req.body);
+      const result = await saveSettings(
+        plugin,
+        schema,
+        scope,
+        containerName,
+        req.body,
+        encrypted
+      ); // req.body = [{name:name, value:value}, ..]
+      return res.status(201).json(result);
+    } catch (error) {
+      errorLog(`index POST /api/settings: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to save settings' });
+      return res.status(500).json({ error: error.message });
+    }
   }
-});
-
+);
 
 // Endpoint for retrieving roles
 /**
@@ -1198,30 +1240,30 @@ async (req, res) => {
  *       500:
  *         description: Unable to retrieve roles
  */
-app.get('/api/roles/:credential', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { credential } = req.params;
-    if (!credential) return res.status(400).json({ error: 'credential is required' });
-    
-    // Users can get its own roles unless isAdmin
-    let roles = {success:false, error: 'Permission denied'};
-    if (req.user.isAdmin || credential == req.user.mailbox) {
-      
-      // roles = await getRolesFromLogins(credential);   // since 1.5.67 we have the roles table
-      roles = await getRoles(credential);
-    }
-    return res.json(roles);
-    
-  } catch (error) {
-    errorLog(`index GET /api/roles: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to retrieve roles' });
-    return res.status(500).json({ error: error.message });
-  }
-});
+app.get(
+  '/api/roles/:credential',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { credential } = req.params;
+      if (!credential)
+        return res.status(400).json({ error: 'credential is required' });
 
+      // Users can get its own roles unless isAdmin
+      let roles = { success: false, error: 'Permission denied' };
+      if (req.user.isAdmin || credential == req.user.mailbox) {
+        // roles = await getRolesFromLogins(credential);   // since 1.5.67 we have the roles table
+        roles = await getRoles(credential);
+      }
+      return res.json(roles);
+    } catch (error) {
+      errorLog(`index GET /api/roles: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to retrieve roles' });
+      return res.status(500).json({ error: error.message });
+    }
+  }
+);
 
 // Endpoint for retrieving logins
 /**
@@ -1246,24 +1288,24 @@ async (req, res) => {
  *       500:
  *         description: Unable to retrieve logins
  */
-app.post('/api/getLogins', 
-  authenticateToken, 
-  requireActive, 
-  requireAdmin, 
-async (req, res) => {
-  try {
-    const { credentials } = req.body;
+app.post(
+  '/api/getLogins',
+  authenticateToken,
+  requireActive,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { credentials } = req.body;
 
-    const logins = await getLogins(credentials);
-    return res.json(logins);
-    
-  } catch (error) {
-    errorLog(`index POST /api/getLogins: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to retrieve logins' });
-    return res.status(500).json({ error: error.message });
+      const logins = await getLogins(credentials);
+      return res.json(logins);
+    } catch (error) {
+      errorLog(`index POST /api/getLogins: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to retrieve logins' });
+      return res.status(500).json({ error: error.message });
+    }
   }
-});
-
+);
 
 // Endpoint for adding logins
 /**
@@ -1319,26 +1361,50 @@ async (req, res) => {
  *       500:
  *         description: Unable to save Login
  */
-app.put('/api/logins', 
-  authenticateToken, 
-  requireActive, 
-  requireAdmin, 
-async (req, res) => {
-  try {
-    const { mailbox, username, password, email, isAdmin, isAccount, isActive, mailserver, roles } = req.body;
-    if (!mailbox)     return res.status(400).json({ error: 'mailbox is missing' });
-    if (!username)  return res.status(400).json({ error: 'username is missing' });
-    if (!password)  return res.status(400).json({ error: 'password is missing' });
+app.put(
+  '/api/logins',
+  authenticateToken,
+  requireActive,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const {
+        mailbox,
+        username,
+        password,
+        email,
+        isAdmin,
+        isAccount,
+        isActive,
+        mailserver,
+        roles,
+      } = req.body;
+      if (!mailbox)
+        return res.status(400).json({ error: 'mailbox is missing' });
+      if (!username)
+        return res.status(400).json({ error: 'username is missing' });
+      if (!password)
+        return res.status(400).json({ error: 'password is missing' });
 
-    const result = await addLogin(mailbox, username, password, email, isAdmin, isAccount, isActive, mailserver, roles);
-    return res.status(201).json(result);
-    
-  } catch (error) {
-    errorLog(`index PUT /api/logins: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to save Login' });
-    return res.status(500).json({ error: error.message });
+      const result = await addLogin(
+        mailbox,
+        username,
+        password,
+        email,
+        isAdmin,
+        isAccount,
+        isActive,
+        mailserver,
+        roles
+      );
+      return res.status(201).json(result);
+    } catch (error) {
+      errorLog(`index PUT /api/logins: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to save Login' });
+      return res.status(500).json({ error: error.message });
+    }
   }
-});
+);
 
 // update logins and change password
 // https://swagger.io/docs/specification/v3_0/data-models/data-types/#objects
@@ -1390,72 +1456,71 @@ async (req, res) => {
  *       500:
  *         description: Unable to update login
  */
-app.patch('/api/logins/:id', 
-  authenticateToken, 
-  requireActive, 
-async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      return res.status(400).json({ error: 'id is required' });
-    }
-
-    // Users can only act on their own mailboxes or those in their roles (unless admin)
-    let result = {success: false, error: 'Permission denied'};
-    const { roles, ...jsonDict } = req.body;
-    if (req.user.isAdmin) {
-      if (isNonEmptyDict(jsonDict)) result = await updateDB('logins', id, jsonDict);    // example: { isActive: 0 }
-      
-      // now process roles
-      if (req.body?.roles?.length) {
-        result = await deleteEntry('roles', id);    // we need to purge roles first
-        for (const role of req.body.roles) {
-          result = await updateDB('roles', id, {role:role});
-        }
+app.patch(
+  '/api/logins/:id',
+  authenticateToken,
+  requireActive,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ error: 'id is required' });
       }
 
-    } else {
-      // non admin users can only modify themselves
-      if (id == req.user.id) {
-        result = await updateDB('logins', id, jsonDict);
+      // Users can only act on their own mailboxes or those in their roles (unless admin)
+      let result = { success: false, error: 'Permission denied' };
+      const { roles, ...jsonDict } = req.body;
+      if (req.user.isAdmin) {
+        if (isNonEmptyDict(jsonDict))
+          result = await updateDB('logins', id, jsonDict); // example: { isActive: 0 }
 
         // now process roles
         if (req.body?.roles?.length) {
-          result = await deleteEntry('roles', id);    // we need to purge roles first
+          result = await deleteEntry('roles', id); // we need to purge roles first
           for (const role of req.body.roles) {
-            result = await updateDB('roles', id, {role:role});
+            result = await updateDB('roles', id, { role: role });
           }
         }
+      } else {
+        // non admin users can only modify themselves
+        if (id == req.user.id) {
+          result = await updateDB('logins', id, jsonDict);
 
+          // now process roles
+          if (req.body?.roles?.length) {
+            result = await deleteEntry('roles', id); // we need to purge roles first
+            for (const role of req.body.roles) {
+              result = await updateDB('roles', id, { role: role });
+            }
+          }
+        }
       }
+
+      // must refresh tokens as the token signature may have changed
+      if (result.success && id == req.user.id) {
+        const updatedUser = {
+          ...req.user,
+          ...req.body,
+        };
+        const accessToken = generateAccessToken(updatedUser);
+        const refreshToken = generateRefreshToken(updatedUser);
+
+        // Store refresh token in database
+        updateDB('logins', updatedUser.id, { refreshToken: refreshToken });
+
+        // Overwrite the cookies instantly so the frontend is up to date
+        res.cookie('accessToken', accessToken, cookieOptionsAccess);
+        res.cookie('refreshToken', refreshToken, cookieOptionsRefresh);
+      }
+
+      return res.json(result);
+    } catch (error) {
+      errorLog(`index PATCH /api/logins: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to update login' });
+      return res.status(500).json({ error: error.message });
     }
-
-    // must refresh tokens as the token signature may have changed
-    if (result.success && id == req.user.id) {
-      const updatedUser = {
-        ...req.user,
-        ...req.body
-      };
-      const accessToken = generateAccessToken(updatedUser);
-      const refreshToken = generateRefreshToken(updatedUser);
-
-      // Store refresh token in database
-      updateDB('logins', updatedUser.id, {refreshToken:refreshToken});
-
-      // Overwrite the cookies instantly so the frontend is up to date
-      res.cookie('accessToken', accessToken, cookieOptionsAccess);
-      res.cookie('refreshToken', refreshToken, cookieOptionsRefresh);
-    }
-
-    return res.json(result);
-    
-  } catch (error) {
-    errorLog(`index PATCH /api/logins: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to update login' });
-    return res.status(500).json({ error: error.message });
   }
-});
-
+);
 
 // Endpoint for deleting a login account
 /**
@@ -1479,28 +1544,28 @@ async (req, res) => {
  *       500:
  *         description: Unable to delete login
  */
-app.delete('/api/logins/:id', 
-  authenticateToken, 
-  requireActive, 
-  requireAdmin, 
-async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { alsoDeleteMailbox } = req.body;
-    if (!id) {
-      return res.status(400).json({ error: 'id is required' });
+app.delete(
+  '/api/logins/:id',
+  authenticateToken,
+  requireActive,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { alsoDeleteMailbox } = req.body;
+      if (!id) {
+        return res.status(400).json({ error: 'id is required' });
+      }
+      // const result = await deleteEntry('logins', id, 'id');
+      const result = await deleteLogin(id, alsoDeleteMailbox);
+      return res.json(result);
+    } catch (error) {
+      errorLog(`index /api/login: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to delete login' });
+      return res.status(500).json({ error: error.message });
     }
-    // const result = await deleteEntry('logins', id, 'id');
-    const result = await deleteLogin(id, alsoDeleteMailbox);
-    return res.json(result);
-    
-  } catch (error) {
-    errorLog(`index /api/login: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to delete login' });
-    return res.status(500).json({ error: error.message });
   }
-});
-
+);
 
 // Endpoint to log in a user
 /**
@@ -1538,8 +1603,10 @@ async (req, res) => {
 app.post('/api/loginUser', async (req, res, next) => {
   try {
     const { credential, password, test } = req.body;
-    if (!credential)  return res.status(400).json({ error: 'credential is missing' });
-    if (!password)    return res.status(400).json({ error: 'password is missing' });
+    if (!credential)
+      return res.status(400).json({ error: 'credential is missing' });
+    if (!password)
+      return res.status(400).json({ error: 'password is missing' });
 
     const user = await loginUser(String(credential), String(password), !!test);
     if (env.isDEMO) user.isDEMO = true;
@@ -1547,16 +1614,20 @@ app.post('/api/loginUser', async (req, res, next) => {
 
     debugLog('loginUser user=', user);
     if (test == true && credential == 'admin' && password == 'changeme') {
-        return res.json({success: user.success, isDEMO:env.isDEMO, debug:env.debug});  // just return basics, not real login, it's to show various messages on the Login page
+      return res.json({
+        success: user.success,
+        isDEMO: env.isDEMO,
+        debug: env.debug,
+      }); // just return basics, not real login, it's to show various messages on the Login page
     }
-    
+
     if (user.success) {
       // Generate tokens
       const accessToken = generateAccessToken(user.message);
       const refreshToken = generateRefreshToken(user.message);
 
       // Store refresh token in database
-      updateDB('logins', user.message.id, {refreshToken:refreshToken});
+      updateDB('logins', user.message.id, { refreshToken: refreshToken });
 
       // HTTP-Only Cookies (for Refresh Tokens):
       res.cookie('accessToken', accessToken, cookieOptionsAccess);
@@ -1564,18 +1635,15 @@ app.post('/api/loginUser', async (req, res, next) => {
 
       // and we indeed send user's information with isAdmin, roles etc
       return res.json(user);
-
     } else {
       // res.status(401).json(user);   // this 401 error cannot be hidden from the browser when /login does the default user/pass test
       return res.json(user);
     }
-
   } catch (error) {
     errorLog(`index POST /api/loginUser: ${error.message}`);
     return res.status(500).json({ error: error.message });
   }
 });
-
 
 // Refresh access token using refresh token
 /**
@@ -1597,9 +1665,9 @@ app.post('/api/refresh', async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'Refresh token required',
-        code: 'NO_REFRESH_TOKEN' 
+        code: 'NO_REFRESH_TOKEN',
       });
     }
 
@@ -1607,15 +1675,19 @@ app.post('/api/refresh', async (req, res) => {
     const decoded = jwt.verify(refreshToken, env.JWT_SECRET_REFRESH);
 
     // Check if refresh token exists in database
-    const result = dbGet(sql.logins.select.refreshToken, {refreshToken:refreshToken}, decoded?.id);  // both id and refreshToken must match in the db
-    const user = (result.success) ? result.message : null;
-      // // remove sensitive data // done by sql
-      // let { refreshToken, salt, hash, attempts, lockout_until, ... user } = result.message
+    const result = dbGet(
+      sql.logins.select.refreshToken,
+      { refreshToken: refreshToken },
+      decoded?.id
+    ); // both id and refreshToken must match in the db
+    const user = result.success ? result.message : null;
+    // // remove sensitive data // done by sql
+    // let { refreshToken, salt, hash, attempts, lockout_until, ... user } = result.message
 
     if (!user) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Invalid refresh token',
-        code: 'INVALID_REFRESH_TOKEN' 
+        code: 'INVALID_REFRESH_TOKEN',
       });
     }
 
@@ -1625,16 +1697,15 @@ app.post('/api/refresh', async (req, res) => {
     // Set new access token cookie
     res.cookie('accessToken', accessToken, cookieOptionsAccess);
 
-    return res.json({ 
+    return res.json({
       success: true,
-      message: 'Token refreshed' 
+      message: 'Token refreshed',
     });
-
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: 'Refresh token expired. Please login again.',
-        code: 'REFRESH_TOKEN_EXPIRED' 
+        code: 'REFRESH_TOKEN_EXPIRED',
       });
     }
 
@@ -1642,18 +1713,17 @@ app.post('/api/refresh', async (req, res) => {
     if (error.name === 'JsonWebTokenError') {
       return res.status(403).json({
         error: 'Malformed or invalid token signature.',
-        code: 'INVALID_REFRESH_TOKEN'
+        code: 'INVALID_REFRESH_TOKEN',
       });
     }
 
     console.error('Refresh error:', error);
-    return res.status(403).json({ 
+    return res.status(403).json({
       error: 'Failed to refresh token',
-      code: 'REFRESH_ERROR' 
+      code: 'REFRESH_ERROR',
     });
   }
 });
-
 
 // Endpoint to logout and clear cookie
 /**
@@ -1682,20 +1752,18 @@ app.post('/api/logout', authenticateToken, async (req, res) => {
     res.clearCookie('accessToken', cookieOptionsAccess);
     res.clearCookie('refreshToken', cookieOptionsRefresh);
 
-    return res.json({ 
+    return res.json({
       success: true,
-      message: 'Logged out successfully' 
+      message: 'Logged out successfully',
     });
-
   } catch (error) {
     console.error('Logout error:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Logout failed',
-      code: 'LOGOUT_ERROR' 
+      code: 'LOGOUT_ERROR',
     });
   }
 });
-
 
 // Endpoint for retrieving domains
 /**
@@ -1726,24 +1794,28 @@ app.post('/api/logout', authenticateToken, async (req, res) => {
  *       500:
  *         description: Unable to retrieve domains
  */
-app.get('/api/domains/:containerName{/:domain}', 
-  authenticateToken, 
-  requireActive, 
-  requireAdmin, 
-async (req, res) => {
-  try {
-    const { containerName, domain } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
+app.get(
+  '/api/domains/:containerName{/:domain}',
+  authenticateToken,
+  requireActive,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { containerName, domain } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
 
-    const domains = await getDomains(containerName, domain);
-    return res.json(domains);
-    
-  } catch (error) {
-    errorLog(`index GET /api/domains/${domain}/${containerName}: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to retrieve domains' });
-    return res.status(500).json({ error: error.message });
+      const domains = await getDomains(containerName, domain);
+      return res.json(domains);
+    } catch (error) {
+      errorLog(
+        `index GET /api/domains/${domain}/${containerName}: ${error.message}`
+      );
+      // res.status(500).json({ error: 'Unable to retrieve domains' });
+      return res.status(500).json({ error: error.message });
+    }
   }
-});
+);
 
 // Endpoint for retrieving count of any table
 /**
@@ -1779,25 +1851,25 @@ async (req, res) => {
  *       500:
  *         description: Unable to count table
  */
-app.get('/api/getCount/:table{/:containerName}{/:schema}', 
-  authenticateToken, 
-  requireActive, 
-  requireAdmin, 
-async (req, res) => {
-  try {
-    const { table, containerName, schema } = req.params;
-    if (!table) return res.status(400).json({ error: 'table is required' });
-    
-    const count = dbCount(table, containerName, schema);
-    return res.json(count);
-    
-  } catch (error) {
-    errorLog(`index GET /api/getCount: ${error.message}`);
-    // res.status(500).json({ error: 'Unable to count table' });
-    return res.status(500).json({ error: error.message });
-  }
-});
+app.get(
+  '/api/getCount/:table{/:containerName}{/:schema}',
+  authenticateToken,
+  requireActive,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { table, containerName, schema } = req.params;
+      if (!table) return res.status(400).json({ error: 'table is required' });
 
+      const count = dbCount(table, containerName, schema);
+      return res.json(count);
+    } catch (error) {
+      errorLog(`index GET /api/getCount: ${error.message}`);
+      // res.status(500).json({ error: 'Unable to count table' });
+      return res.status(500).json({ error: error.message });
+    }
+  }
+);
 
 // Endpoint for pushing/getting DMS_API_KEY
 /**
@@ -1843,27 +1915,41 @@ async (req, res) => {
  *       500:
  *         description: Unable to generate DMS_API_KEY
  */
-app.post('/api/initAPI/:plugin/:schema/:containerName', 
-  authenticateToken, 
-  requireActive, 
-  requireAdmin, 
-async (req, res) => {
-  try {
-    const { plugin, schema, containerName } = req.params;
-    if (!containerName) return res.status(400).json({ error: 'containerName is required' });
-    const { action, dms_api_key_param } = req.body;
-    
-    debugLog('initAPI received:', plugin, schema, containerName, action, dms_api_key_param);
-    const result = await initAPI(plugin, schema, containerName, action, dms_api_key_param);
-    debugLog('initAPI result:', result);
-    return res.json(result);
-    
-  } catch (error) {
-    errorLog(`index /api/accounts: ${error.message}`);
-    return res.status(500).json({ error: error.message });
-  }
-});
+app.post(
+  '/api/initAPI/:plugin/:schema/:containerName',
+  authenticateToken,
+  requireActive,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { plugin, schema, containerName } = req.params;
+      if (!containerName)
+        return res.status(400).json({ error: 'containerName is required' });
+      const { action, dms_api_key_param } = req.body;
 
+      debugLog(
+        'initAPI received:',
+        plugin,
+        schema,
+        containerName,
+        action,
+        dms_api_key_param
+      );
+      const result = await initAPI(
+        plugin,
+        schema,
+        containerName,
+        action,
+        dms_api_key_param
+      );
+      debugLog('initAPI result:', result);
+      return res.json(result);
+    } catch (error) {
+      errorLog(`index /api/accounts: ${error.message}`);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+);
 
 // Endpoint for rebooting this container
 /**
@@ -1899,23 +1985,23 @@ async (req, res) => {
  *       500:
  *         description: Unable to restart container
  */
-app.post('/api/killContainer{/:plugin}{/:schema}{/:containerName}', 
-  authenticateToken, 
-  requireActive, 
-  requireAdmin, 
-async (req, res) => {
-  try {
-    const { plugin, schema, containerName } = req.params;
-    
-    const result = killContainer(plugin, schema, containerName);
-    return res.json({success:true, message: result?.message});
-    
-  } catch (error) {
-    errorLog(`index /api/killContainer: ${error.message}`);
-    return res.status(500).json({ error: error.message });
-  }
-});
+app.post(
+  '/api/killContainer{/:plugin}{/:schema}{/:containerName}',
+  authenticateToken,
+  requireActive,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { plugin, schema, containerName } = req.params;
 
+      const result = killContainer(plugin, schema, containerName);
+      return res.json({ success: true, message: result?.message });
+    } catch (error) {
+      errorLog(`index /api/killContainer: ${error.message}`);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+);
 
 // ============================================
 // GLOBAL ERROR HANDLER
@@ -1929,10 +2015,9 @@ app.use((err, req, res, next) => {
   return res.status(err.status || 500).json({
     error: err.message || 'Internal server error',
     code: err.code || 'INTERNAL_ERROR',
-    ...(isDevelopment && { stack: err.stack })
+    ...(isDevelopment && { stack: err.stack }),
   });
 });
-
 
 // ============================================
 // Serve Production Files
@@ -1955,7 +2040,9 @@ app.use((err, req, res, next) => {
 // BACKEND APP LISTEN
 // ============================================
 app.listen(env.PORT_BACKEND, async () => {
-  infoLog(`DMSGUI_VERSION=${env.DMSGUI_VERSION} NodeJS=${process.version} running on PORT_BACKEND=${env.PORT_BACKEND}`);
+  infoLog(
+    `DMSGUI_VERSION=${env.DMSGUI_VERSION} NodeJS=${process.version} running on PORT_BACKEND=${env.PORT_BACKEND}`
+  );
   infoLog(`DEBUG=${env.debug}`);
   infoLog(`isDEMO=${env.isDEMO}`);
   infoLog(`DATABASE=${env.DATABASE}`);
@@ -1963,17 +2050,17 @@ app.listen(env.PORT_BACKEND, async () => {
 
   // https://github.com/ncb000gt/node-cron    // internal crontan
   if (env.DMSGUI_CRON) {
-    infoLog('DMSGUI_CRON',env.DMSGUI_CRON)
+    infoLog('DMSGUI_CRON', env.DMSGUI_CRON);
     cron.schedule(env.DMSGUI_CRON, () => {
-        delay(60000); // wait until next minute or the container will reboot 60 times
-        killContainer('dms-gui', 'dms-gui', 'dms-gui');    // no await
+      delay(60000); // wait until next minute or the container will reboot 60 times
+      killContainer('dms-gui', 'dms-gui', 'dms-gui'); // no await
     });
-  };
+  }
 
   // apply patches etc
-  dbInit(env.DATABASE_RESET);     // reset db: 1.5.10 to 1.5.25; also debug mode since 1.5.28
+  dbInit(env.DATABASE_RESET); // reset db: 1.5.10 to 1.5.25; also debug mode since 1.5.28
   dbUpgrade();
-  await resetTokens();      // delete all user's refreshToken as the secret has changed after a restart
+  await resetTokens(); // delete all user's refreshToken as the secret has changed after a restart
 
   if (env.AES_SECRET == 'changeme') {
     errorLog(`
@@ -1989,9 +2076,7 @@ app.listen(env.PORT_BACKEND, async () => {
 
     `);
   } else successLog(`AES_SECRET found`);
-
 });
-
 
 // ============================================
 // CRITICAL SECURITY CHECKLIST

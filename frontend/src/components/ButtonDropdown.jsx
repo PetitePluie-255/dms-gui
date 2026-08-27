@@ -43,26 +43,21 @@ const ButtonDropdown = ({
         disabled={!!disabled}
         {...rest} // Spread remaining props
       >
-        {icon && (
-          <i className={`bi bi-${icon} ${text ? 'me-2' : ''}`}></i>
-        )}
+        {icon && <i className={`bi bi-${icon} ${text ? 'me-2' : ''}`}></i>}
         {text && t(text)}
       </Dropdown.Toggle>
 
       <Dropdown.Menu>
-      
         {items.map((item) => (
-          <Dropdown.Item
-            key={item.id}
-            onClick={item?.onClick}
-          >
+          <Dropdown.Item key={item.id} onClick={item?.onClick}>
             {item?.icon && (
-              <i className={`bi bi-${item.icon} ${item?.title ? 'me-2' : ''}`}></i>
+              <i
+                className={`bi bi-${item.icon} ${item?.title ? 'me-2' : ''}`}
+              ></i>
             )}
             {t(item.title)}
           </Dropdown.Item>
         ))}
-        
       </Dropdown.Menu>
     </Dropdown>
   );

@@ -1,13 +1,13 @@
 import React, { useState, useCallback } from 'react';
-import { createPortal } from 'react-dom';               // needed to post Toasts at the bottom of the viewport, not the container
+import { createPortal } from 'react-dom'; // needed to post Toasts at the bottom of the viewport, not the container
 // import { ToastContainer } from 'react-bootstrap';
 import ToastContainer from 'react-bootstrap/ToastContainer';
 // import {
 //   Toast,
 // } from './index.jsx';
 // import { Toast } from './Toast';
-import Toast from './Toast';                        // DIRECT DEFAULT IMPORT
-import { ToastContext } from './ToastContext';      // DIRECT NAMED IMPORT
+import Toast from './Toast'; // DIRECT DEFAULT IMPORT
+import { ToastContext } from './ToastContext'; // DIRECT NAMED IMPORT
 
 // Create the Context
 // const ToastContext = createContext();            // ToastContext
@@ -19,11 +19,11 @@ function ToastProvider({ children }) {
   // Accept a configuration object instead of a string
   const triggerToast = useCallback((options) => {
     setToasts((prev) => [
-      ...prev, 
-      { 
+      ...prev,
+      {
         id: Date.now(), // Unique tracker for the loop
-        ...options      // Passes type, title, message, translate, delay, etc.
-      }
+        ...options, // Passes type, title, message, translate, delay, etc.
+      },
     ]);
   }, []);
 
@@ -40,27 +40,44 @@ function ToastProvider({ children }) {
   const bootstrapPositions = {
     'top-right': 'top-end',
     'top-left': 'top-start',
-    'bottom-right': 'bottom-end'
+    'bottom-right': 'bottom-end',
   };
 
   // Calculate dynamic layout constraints based on activePosition, so the Toasts are in the viewport, not the bottom of the container
   const getPositionStyles = (position) => {
     const baseStyles = { zIndex: 9999, position: 'fixed' };
-    
-    switch(position) {
+
+    switch (position) {
       case 'top-right':
-        return { ...baseStyles, top: '20px', right: '20px', bottom: 'auto', left: 'auto' };
+        return {
+          ...baseStyles,
+          top: '20px',
+          right: '20px',
+          bottom: 'auto',
+          left: 'auto',
+        };
       case 'top-left':
-        return { ...baseStyles, top: '20px', left: '20px', bottom: 'auto', right: 'auto' };
+        return {
+          ...baseStyles,
+          top: '20px',
+          left: '20px',
+          bottom: 'auto',
+          right: 'auto',
+        };
       case 'bottom-right':
       default:
-        return { ...baseStyles, bottom: '20px', right: '20px', top: 'auto', left: 'auto' };
+        return {
+          ...baseStyles,
+          bottom: '20px',
+          right: '20px',
+          top: 'auto',
+          left: 'auto',
+        };
     }
   };
 
-
-        // style={{ zIndex: 1 }}
-        // style={{ zIndex: 1, position: 'fixed' }}
+  // style={{ zIndex: 1 }}
+  // style={{ zIndex: 1, position: 'fixed' }}
 
   return (
     <ToastContext.Provider value={triggerToast}>
@@ -69,9 +86,9 @@ function ToastProvider({ children }) {
 
       {/* Wrap the container in a portal to display it relative to the viewport, bypassing parent styling traps */}
       {createPortal(
-        <ToastContainer 
-          position={bootstrapPositions[activePosition] || 'bottom-end'} 
-          className="p-3" 
+        <ToastContainer
+          position={bootstrapPositions[activePosition] || 'bottom-end'}
+          className="p-3"
           // style={{ zIndex: 9999, position: 'fixed' }}
           // Inject the dynamic positioning style here to override Bootstrap defaults
           style={getPositionStyles(activePosition)}

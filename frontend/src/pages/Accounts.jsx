@@ -7,35 +7,29 @@ import ProgressBar from 'react-bootstrap/ProgressBar'; // Import ProgressBar
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
+import { plucks, isNonEmptyDict } from '../../../common.mjs';
+import { debugLog, errorLog } from '../../frontend.mjs';
 import {
-  plucks,
-  isNonEmptyDict,
-} from '../../../common.mjs';
-import {
-  debugLog,
-  errorLog,
-} from '../../frontend.mjs';
-import {
-//   regexColors,
-//   regexPrintOnly,
-//   regexFindEmailStrict,
+  //   regexColors,
+  //   regexPrintOnly,
+  //   regexFindEmailStrict,
   regexEmailStrict,
-//   regexMatchPostfix,
-//   regexUsername,
-//   funcName,
-//   fixStringType,
-//   arrayOfStringToDict,
-//   obj2ArrayOfObj,
-//   reduxArrayOfObjByKey,
+  //   regexMatchPostfix,
+  //   regexUsername,
+  //   funcName,
+  //   fixStringType,
+  //   arrayOfStringToDict,
+  //   obj2ArrayOfObj,
+  //   reduxArrayOfObjByKey,
   reduxArrayOfObjByValue,
-//   reduxPropertiesOfObj,
-//   mergeArrayOfObj,
+  //   reduxPropertiesOfObj,
+  //   mergeArrayOfObj,
   getValueFromArrayOfObj,
-//   getValuesFromArrayOfObj,
-//   pluck,
-//   byteSize2HumanSize,
-//   humanSize2ByteSize,
-//   moveKeyToLast,
+  //   getValuesFromArrayOfObj,
+  //   pluck,
+  //   byteSize2HumanSize,
+  //   humanSize2ByteSize,
+  //   moveKeyToLast,
 } from '../../../common.mjs';
 
 import {
@@ -67,13 +61,13 @@ const Accounts = () => {
   const { t } = useTranslation();
   const triggerToast = useToast();
   const { user } = useAuth();
-  const [containerName] = useLocalStorage("containerName", '');
-  const [mailservers] = useLocalStorage("mailservers", []);
+  const [containerName] = useLocalStorage('containerName', '');
+  const [mailservers] = useLocalStorage('mailservers', []);
 
-  const [accounts, setAccounts] = useState("accounts", []);
+  const [accounts, setAccounts] = useState('accounts', []);
   // [
-    // { domain: "aaa.com", mailbox: "eric@aaa.com", username: "eric@aaa.com", storage: { used: "565M", total: "5.2G", percent: "10" } }
-    // { domain: "bbb.com", mailbox: "admin@bbb.com", username: "admin@bbb.com", storage: { used: "0M", total: "5.2G", percent: "0" } }
+  // { domain: "aaa.com", mailbox: "eric@aaa.com", username: "eric@aaa.com", storage: { used: "565M", total: "5.2G", percent: "10" } }
+  // { domain: "bbb.com", mailbox: "admin@bbb.com", username: "admin@bbb.com", storage: { used: "0M", total: "5.2G", percent: "0" } }
 
   const [DOVECOT_FTS, setDOVECOT_FTS] = useState(0);
 
@@ -84,7 +78,7 @@ const Accounts = () => {
   const [selectedAccount, setSelectedAccount] = useState(null);
   // Roles states -------------------------------------------------- // https://mui.com/material-ui/react-autocomplete/#multiple-values
   const [rolesAvailable, setRolesAvailable] = useState([]);
-  
+
   // State for new new account inputs ------------------------------
   const newAccountformDataINIT = {
     mailbox: '',
@@ -92,7 +86,9 @@ const Accounts = () => {
     confirmPassword: '',
     createLogin: 1,
   };
-  const [newAccountformData, setNewAccountFormData] = useState(newAccountformDataINIT);
+  const [newAccountformData, setNewAccountFormData] = useState(
+    newAccountformDataINIT
+  );
   const [newAccountFormErrors, setNewAccountFormErrors] = useState({});
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
 
@@ -111,31 +107,24 @@ const Accounts = () => {
   const [dnsFormData, setDNSFormData] = useState({});
   const [dnsFormErrors, setDNSFormErrors] = useState({});
 
-
-  const fetchAll = async (refresh=false) => {
-
+  const fetchAll = async (refresh = false) => {
     try {
       setLoading(true);
       setErrorMessage(null);
       setSuccessMessage(null);
       setRolesAvailable([]);
-      
-      await Promise.all([
-        fetchAccounts(refresh),
-        fetchDOVECOT_FTS(),
-      ]);
 
+      await Promise.all([fetchAccounts(refresh), fetchDOVECOT_FTS()]);
     } catch (error) {
       // each fetch has its own error handling
-
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchAccounts = async (refresh=false) => {
+  const fetchAccounts = async (refresh = false) => {
     refresh = !user.isAdmin ? false : refresh;
-    
+
     try {
       // const [accountsData, DOVECOT_FTSdata] = await Promise.all([
       //   getAccounts(containerName, refresh),
@@ -147,37 +136,44 @@ const Accounts = () => {
         setAccounts(accountsData.message);
         // also set managers available for the disabled selector
         setRolesAvailable(plucks(accountsData.message, 'managers', false));
-
       } else setErrorMessage(accountsData?.error);
-
     } catch (error) {
       errorLog(t('api.errors.fetchAccounts'), error);
       // setErrorMessage(t('api.errors.fetchAccounts'), ": ", error);
-      setErrorMessage({key: 'api.errors.fetchAccounts', values: { error: error.message }});
+      setErrorMessage({
+        key: 'api.errors.fetchAccounts',
+        values: { error: error.message },
+      });
     }
   };
 
-  const fetchDOVECOT_FTS = async (refresh=false) => {
+  const fetchDOVECOT_FTS = async (refresh = false) => {
     refresh = !user.isAdmin ? false : refresh;
-    
+
     try {
-      const DOVECOT_FTSdata = await getServerEnvs('mailserver', containerName, refresh, 'DOVECOT_FTS');
+      const DOVECOT_FTSdata = await getServerEnvs(
+        'mailserver',
+        containerName,
+        refresh,
+        'DOVECOT_FTS'
+      );
       debugLog('ddebug DOVECOT_FTSdata', DOVECOT_FTSdata);
       if (DOVECOT_FTSdata?.success) {
         setDOVECOT_FTS(DOVECOT_FTSdata.message);
-        
       } else setErrorMessage(DOVECOT_FTSdata?.error);
-
     } catch (error) {
       errorLog(t('api.errors.fetchServerEnvs'), error);
       // setErrorMessage(t('api.errors.fetchServerEnvs'), ": ", error);
-      setErrorMessage({key: 'api.errors.fetchServerEnvs', values: { error: error.message }});
+      setErrorMessage({
+        key: 'api.errors.fetchServerEnvs',
+        values: { error: error.message },
+      });
     }
   };
 
   const handleNewAccountInputChange = (e) => {
     const { name, value, type, checked } = e.target; // Destructure 'checked'
-    
+
     let inputValue;
     if (type === 'checkbox') {
       inputValue = checked ? 1 : 0; // Assign 1 or 0 based on checked state
@@ -231,44 +227,43 @@ const Accounts = () => {
 
     try {
       const result = await addAccount(
-        getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'), 
+        getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'),
         containerName,
         newAccountformData.mailbox,
         newAccountformData.password,
-        newAccountformData.createLogin,
+        newAccountformData.createLogin
       );
       if (result.success) {
         setNewAccountFormData(newAccountformDataINIT);
 
         fetchAccounts(); // Refresh the accounts list fast, since getAccounts will do the work in the backend, we don't bother adding a manually crafted data line in current DataTable state
         setSuccessMessage('accounts.accountCreated');
-        
       } else setErrorMessage(result?.error);
-      
     } catch (error) {
       errorLog(t('api.errors.addAccount'), error.message);
       // setErrorMessage('api.errors.addAccount', error.message);
-      setErrorMessage({key: 'api.errors.addAccount', values: { error: error.message }});
+      setErrorMessage({
+        key: 'api.errors.addAccount',
+        values: { error: error.message },
+      });
     }
   };
-
 
   // Handle alsoDeleteLogin checkbox
   const handleAlsoDeleteLoginInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    debugLog('{ name, value, type, checked }',{ name, value, type, checked });
-    
+    debugLog('{ name, value, type, checked }', { name, value, type, checked });
+
     let inputValue;
     // Determine the actual value based on the element type
     if (type === 'checkbox') {
       inputValue = checked ? 1 : 0; // Directly assigns 1 or 0
-      
+
       let updatedSelectedAccount = {
         ...selectedAccount,
-        [name]: inputValue
+        [name]: inputValue,
       };
       setSelectedAccount(updatedSelectedAccount);
-    
     } // ignore anything else
   };
 
@@ -283,20 +278,33 @@ const Accounts = () => {
     setSuccessMessage(null);
 
     try {
-      const result = await deleteAccount(getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'), containerName, selectedAccount.mailbox, !!selectedAccount?.alsoDeleteLogin);
+      const result = await deleteAccount(
+        getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'),
+        containerName,
+        selectedAccount.mailbox,
+        !!selectedAccount?.alsoDeleteLogin
+      );
       // debugLog('ddebug deleteAccount result', result)
       if (result.success) {
-        setAccounts(reduxArrayOfObjByValue(accounts, 'mailbox', selectedAccount.mailbox, true));
+        setAccounts(
+          reduxArrayOfObjByValue(
+            accounts,
+            'mailbox',
+            selectedAccount.mailbox,
+            true
+          )
+        );
         setSuccessMessage('accounts.accountDeleted');
-        
       } else {
         setErrorMessage(result?.error);
       }
     } catch (error) {
       errorLog(t('api.errors.deleteAccount'), error.message);
       // setErrorMessage('api.errors.deleteAccount', error.message);
-      setErrorMessage({key: 'api.errors.deleteAccount', values: { error: error.message }});
-
+      setErrorMessage({
+        key: 'api.errors.deleteAccount',
+        values: { error: error.message },
+      });
     } finally {
       handleCloseDeleteConfirmModal();
     }
@@ -308,32 +316,35 @@ const Accounts = () => {
     setSelectedAccount(null);
   };
 
-
   const handleDoveadm = async (command, mailbox) => {
     setErrorMessage(null);
-    
+
     try {
-      const result = await doveadm(getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'), containerName, command, mailbox);
-      debugLog('result',result);
+      const result = await doveadm(
+        getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'),
+        containerName,
+        command,
+        mailbox
+      );
+      debugLog('result', result);
       if (result.success) {
         // setSuccessMessage('accounts.doveadmExecuted');
         setSuccessMessage(result.message);
-      
       } else setErrorMessage(result?.error);
-      
     } catch (error) {
       errorLog(t('api.errors.doveadm'), error.message);
       // setErrorMessage('api.errors.doveadm', error.message);
-      setErrorMessage({key: 'api.errors.doveadm', values: { error: error.message }});
+      setErrorMessage({
+        key: 'api.errors.doveadm',
+        values: { error: error.message },
+      });
     }
   };
-
-
 
   // Open password change modal for an account
   const handleChangePassword = (account) => {
     setSelectedAccount(account);
-    
+
     setPasswordFormData({
       newPassword: '',
       confirmPassword: '',
@@ -351,7 +362,7 @@ const Accounts = () => {
   // Handle input changes for password change form
   const handlePasswordInputChange = (e) => {
     const { name, value, type } = e.target;
-    
+
     setPasswordFormData({
       ...passwordFormData,
       [name]: type === 'number' ? Number(value) : value,
@@ -394,34 +405,33 @@ const Accounts = () => {
       return;
     }
 
-    let result = {success:false, message:''};
+    let result = { success: false, message: '' };
     try {
-
       result = await updateAccount(
-        getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'), 
+        getValueFromArrayOfObj(mailservers, containerName, 'value', 'schema'),
         containerName,
         selectedAccount.mailbox,
         { password: passwordFormData.newPassword }
       );
       if (result.success) {
-        result.message = t('password.passwordUpdated', {key:'mailbox', value:selectedAccount.mailbox});
-        
+        result.message = t('password.passwordUpdated', {
+          key: 'mailbox',
+          value: selectedAccount.mailbox,
+        });
       } else setErrorMessage(result?.error);
-      
     } catch (error) {
       errorLog(t('api.errors.changePassword'), error);
       // setErrorMessage('api.errors.changePassword');
-      setErrorMessage({key: 'api.errors.changePassword', values: { error: error.message }});
-
+      setErrorMessage({
+        key: 'api.errors.changePassword',
+        values: { error: error.message },
+      });
     } finally {
       if (result.success) setSuccessMessage(result.message);
       handleClosePasswordModal(); // Close the modal
     }
-
   };
-  
-  
-  
+
   // Open DNS change modal for an account
   const handleChangeDNS = (account) => {
     setSelectedAccount(account);
@@ -475,35 +485,33 @@ const Accounts = () => {
     }
 
     try {
-      await updateDNS(
-        selectedAccount.domain,
-        passwordFormData.newPassword
-      );
+      await updateDNS(selectedAccount.domain, passwordFormData.newPassword);
       setSuccessMessage('accounts.dnsUpdated');
       handleCloseDNSModal(); // Close the modal
-
     } catch (error) {
       errorLog(t('api.errors.updateDNS'), error);
       // setErrorMessage('api.errors.updateDNS');
-      setErrorMessage({key: 'api.errors.updateDNS', values: { error: error.message }});
+      setErrorMessage({
+        key: 'api.errors.updateDNS',
+        values: { error: error.message },
+      });
     }
   };
 
   // https://www.w3schools.com/react/react_useeffect.asp
   useEffect(() => {
     fetchAll();
-  // }, [mailservers, containerName]);
-  // }, [mailservers, containerName, fetchAll]);   // eslint fix 2
-  }, [mailservers, containerName]);   // eslint fix 2 lied to me
-
+    // }, [mailservers, containerName]);
+    // }, [mailservers, containerName, fetchAll]);   // eslint fix 2
+  }, [mailservers, containerName]); // eslint fix 2 lied to me
 
   if (isLoading) {
     return <LoadingSpinner />;
-  };
-  
+  }
+
   // Column definitions for existing accounts table
   const columns = [
-    { 
+    {
       key: 'domain',
       label: 'accounts.domain',
       render: (account) => (
@@ -522,45 +530,41 @@ const Accounts = () => {
         </>
       ),
     },
-    { 
+    {
       key: 'mailbox',
       label: 'accounts.mailbox',
     },
-    { 
+    {
       key: 'username',
       label: 'logins.login',
     },
-    { 
+    {
       key: 'managers',
       label: 'accounts.managers',
       noSort: true,
       render: (account) => (
         <>
-        <Autocomplete
-          multiple
-          id="managers"
-          size="small"
-          options={rolesAvailable}
-          filterSelectedOptions
-          disabled
-          
-          value={account.managers}
-          renderOption={(props, option) => (
-            <li
-              {...props}
-              key={option}
-            >
-            {option}
-            </li>
-          )}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              sx={{ minWidth: 0 }}
-              label={t('accounts.managers')}
-            />
-          )}
-        />
+          <Autocomplete
+            multiple
+            id="managers"
+            size="small"
+            options={rolesAvailable}
+            filterSelectedOptions
+            disabled
+            value={account.managers}
+            renderOption={(props, option) => (
+              <li {...props} key={option}>
+                {option}
+              </li>
+            )}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                sx={{ minWidth: 0 }}
+                label={t('accounts.managers')}
+              />
+            )}
+          />
         </>
       ),
     },
@@ -600,7 +604,7 @@ const Accounts = () => {
             onClick={() => handleChangePassword(account)}
             className="me-2"
           />
-          {user.isAdmin == 1 &&
+          {user.isAdmin == 1 && (
             <Button
               variant="danger"
               size="sm"
@@ -609,16 +613,16 @@ const Accounts = () => {
               onClick={() => handleConfirmDeleteAccount(account)}
               className="me-2"
             />
-          }
+          )}
           {DOVECOT_FTS && (
-          <Button
-            variant="warning"
-            size="sm"
-            icon="stack-overflow"
-            title={t('accounts.index')}
-            onClick={() => handleDoveadm('index', account.mailbox)}
-            className="me-2"
-          />
+            <Button
+              variant="warning"
+              size="sm"
+              icon="stack-overflow"
+              title={t('accounts.index')}
+              onClick={() => handleDoveadm('index', account.mailbox)}
+              className="me-2"
+            />
           )}
           <Button
             variant="warning"
@@ -641,7 +645,6 @@ const Accounts = () => {
     },
   ];
 
-
   const FormNewAccount = (
     <>
       <form onSubmit={handleSubmitNewAccount} className="form-wrapper">
@@ -659,10 +662,16 @@ const Accounts = () => {
             error={newAccountFormErrors.mailbox}
             required
           />
-          
+
           {/* The Live Character Counter Badge */}
-          <div className="text-end small mb-2" style={{ marginTop: "-2px" }}>
-            <span className={newAccountformData.mailbox?.length >= 200 ? "text-danger fw-bold" : "text-muted"}>
+          <div className="text-end small mb-2" style={{ marginTop: '-2px' }}>
+            <span
+              className={
+                newAccountformData.mailbox?.length >= 200
+                  ? 'text-danger fw-bold'
+                  : 'text-muted'
+              }
+            >
               {newAccountformData.mailbox?.length || 0}/254
             </span>
           </div>
@@ -701,73 +710,72 @@ const Accounts = () => {
           isChecked={newAccountformData.createLogin}
         />
 
-        <Button
-          type="submit"
-          variant="primary"
-          text="accounts.addAccount"
-        />
+        <Button type="submit" variant="primary" text="accounts.addAccount" />
       </form>
     </>
   );
-  
+
   const DataTableAccounts = (
     <>
       <DataTable
-      columns={columns}
-      data={accounts}
-      keyExtractor={(account) => account.mailbox}
-      isLoading={isLoading}
-      emptyMessage="accounts.noAccounts"
-      sortKeysInObject={sortKeysInObject}
+        columns={columns}
+        data={accounts}
+        keyExtractor={(account) => account.mailbox}
+        isLoading={isLoading}
+        emptyMessage="accounts.noAccounts"
+        sortKeysInObject={sortKeysInObject}
       />
     </>
   );
-  
-  // ░██████████           ░██                   
-  //   ░██               ░██                   
-  //   ░██     ░██████   ░████████   ░███████  
-  //   ░██          ░██  ░██    ░██ ░██        
-  //   ░██     ░███████  ░██    ░██  ░███████  
-  //   ░██    ░██   ░██  ░███   ░██        ░██ 
-  //   ░██     ░█████░██ ░██░█████   ░███████  
+
+  // ░██████████           ░██
+  //   ░██               ░██
+  //   ░██     ░██████   ░████████   ░███████
+  //   ░██          ░██  ░██    ░██ ░██
+  //   ░██     ░███████  ░██    ░██  ░███████
+  //   ░██    ░██   ░██  ░███   ░██        ░██
+  //   ░██     ░█████░██ ░██░█████   ░███████
 
   const accountTabs = [
     {
-      id: 1, 
-      title: "accounts.existingAccounts",  
-      titleExtra: `(${accounts.length})`, 
-      icon: "inboxes-fill", 
-      onClickRefresh: () => fetchAccounts(true), 
-      titleRefresh: t('common.forceResync'), 
-      content: DataTableAccounts
+      id: 1,
+      title: 'accounts.existingAccounts',
+      titleExtra: `(${accounts.length})`,
+      icon: 'inboxes-fill',
+      onClickRefresh: () => fetchAccounts(true),
+      titleRefresh: t('common.forceResync'),
+      content: DataTableAccounts,
     },
   ];
-  if (user.isAdmin) accountTabs.push({
-    id: 2, 
-    title: "accounts.newAccount",
-    icon: "inbox",
-    content: FormNewAccount
-  });
-
+  if (user.isAdmin)
+    accountTabs.push({
+      id: 2,
+      title: 'accounts.newAccount',
+      icon: 'inbox',
+      content: FormNewAccount,
+    });
 
   // BUG: passing defaultActiveKey to Accordion as string does not activate said key, while setting it up as "1" in Accordion also does not
   // icons: https://icons.getbootstrap.com/
   return (
     <div>
-      <h2 className="mb-4">{Translate('accounts.title')} {t('common.forWhat', {what:containerName})}</h2>
-      
+      <h2 className="mb-4">
+        {Translate('accounts.title')}{' '}
+        {t('common.forWhat', { what: containerName })}
+      </h2>
+
       <AlertMessage type="danger" message={errorMessage} />
       <AlertMessage type="success" message={successMessage} />
-      
-      <Accordion tabs={accountTabs}>
-      </Accordion>
+
+      <Accordion tabs={accountTabs}></Accordion>
 
       {/* Password Change Modal */}
       <Modal show={showPasswordModal} onHide={handleClosePasswordModal}>
         <Modal.Header closeButton>
           <Modal.Title>
             {/* selectedAccount is null by default, must use ? */}
-            {Translate('password.changePassword')}: {selectedAccount?.mailbox}{' '}
+            {Translate('password.changePassword')}:{' '}
+            {selectedAccount?.mailbox}{' '}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -810,11 +818,15 @@ const Accounts = () => {
       </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteConfirmModal} onHide={handleCloseDeleteConfirmModal}>
+      <Modal
+        show={showDeleteConfirmModal}
+        onHide={handleCloseDeleteConfirmModal}
+      >
         <Modal.Header closeButton>
           <Modal.Title>
             {/* selectedAccount is null by default, must use ? */}
-            {Translate('accounts.confirmDeleteTitle')}: {selectedAccount?.mailbox}{' '}
+            {Translate('accounts.confirmDeleteTitle')}:{' '}
+            {selectedAccount?.mailbox}{' '}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -847,7 +859,7 @@ const Accounts = () => {
           />
         </Modal.Footer>
       </Modal>
-      
+
       {/* DNS Modal */}
       <Modal show={showDNSModal} onHide={handleCloseDNSModal}>
         <Modal.Header closeButton>
@@ -874,7 +886,6 @@ const Accounts = () => {
           />
         </Modal.Footer>
       </Modal>
-      
     </div>
   );
 };

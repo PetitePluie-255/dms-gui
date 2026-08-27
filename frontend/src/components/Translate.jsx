@@ -8,16 +8,31 @@ import { Trans } from 'react-i18next';
  */
 
 // this HAS to be a function, and I'm not sure why
-function Translate(key, shouldTranslate=true, values = {}, ...rest) {
+function Translate(key, shouldTranslate = true, values = {}, ...rest) {
   // 1. Guard clause: If the key is undefined, null, or an empty string, render nothing.
   if (key === undefined || key === null || key === '') {
     return null;
   }
 
-  const i18nHtmlComponents = { strong: <strong />, i: <i />, b: <b />, a: <a />, pre: <pre />, br: <br />, };   // html tags authorized in translation.js
+  const i18nHtmlComponents = {
+    strong: <strong />,
+    i: <i />,
+    b: <b />,
+    a: <a />,
+    pre: <pre />,
+    br: <br />,
+  }; // html tags authorized in translation.js
   // console.debug('ddebug Translate key=',key)
-  return (shouldTranslate) ? <Trans i18nKey={key} components={i18nHtmlComponents} values={values} {...rest} /> : key;
-
-};
+  return shouldTranslate ? (
+    <Trans
+      i18nKey={key}
+      components={i18nHtmlComponents}
+      values={values}
+      {...rest}
+    />
+  ) : (
+    key
+  );
+}
 
 export default Translate;

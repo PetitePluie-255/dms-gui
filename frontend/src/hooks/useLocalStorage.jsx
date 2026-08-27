@@ -1,7 +1,7 @@
 // https://blog.logrocket.com/authentication-react-router-v6/
 // To maintain the user’s state even after a page refresh, we create the useLocalStorage Hook, which synchronizes the state value with the browser’s local storage:
 
-// 1.5.21 EDIT: useSyncExternalStore is the recommended way in 2025 to synchronize React state with external stores like localStorage. 
+// 1.5.21 EDIT: useSyncExternalStore is the recommended way in 2025 to synchronize React state with external stores like localStorage.
 // It ensures your UI stays consistent across multiple browser tabs by subscribing to the global storage event
 // you do not need useState if you are using the useSyncExternalStore implementation for localStorage.
 // one of the primary reasons to use useSyncExternalStore in 2025 is to remove useState and useEffect duplication.
@@ -22,27 +22,27 @@ export const useLocalStorage = (key, initialValue) => {
   const cache = useRef({ raw: null, parsed: initialValue });
 
   // 1. Snapshot for the browser
-  // Only check window here to be extra safe, though getSnapshot 
+  // Only check window here to be extra safe, though getSnapshot
   // is typically only called on the client.
   const getSnapshot = () => {
     if (typeof window === 'undefined') return initialValue;
-    
-    const raw = localStorage.getItem(key) || initialValue;   // returns null when not exist so let's use initialValue instead
-    
+
+    const raw = localStorage.getItem(key) || initialValue; // returns null when not exist so let's use initialValue instead
+
     // Check if the raw string changed before parsing
     // if (key == 'containerName') console.debug(`${key}.raw: ${JSON.stringify(cache.current.raw)} == ${JSON.stringify(raw)}`);
     if (cache.current.raw !== raw) {
       cache.current.raw = raw;
       try {
         // If null (key missing), use initialValue; otherwise parse
-        cache.current.parsed = (raw !== null) ? JSON.parse(raw) : initialValue;
-      
-      // catch any parsing error, and they WILL happen; for instance, even though raw is null when key does not exist, its value is still undefined when the if test happens. No idea why.
+        cache.current.parsed = raw !== null ? JSON.parse(raw) : initialValue;
+
+        // catch any parsing error, and they WILL happen; for instance, even though raw is null when key does not exist, its value is still undefined when the if test happens. No idea why.
       } catch (error) {
         cache.current.parsed = initialValue;
       }
     }
-    
+
     return cache.current.parsed;
   };
 
@@ -61,10 +61,11 @@ export const useLocalStorage = (key, initialValue) => {
   const setState = (newValue) => {
     if (typeof window !== 'undefined') {
       // 1. Correctly evaluate functions using the freshest value from the cache ref
-      const valueToStore = typeof newValue === 'function' 
-        ? newValue(cache.current.parsed) 
-        : newValue;
-        
+      const valueToStore =
+        typeof newValue === 'function'
+          ? newValue(cache.current.parsed)
+          : newValue;
+
       const serializedValue = JSON.stringify(valueToStore);
       localStorage.setItem(key, serializedValue);
 
@@ -79,7 +80,7 @@ export const useLocalStorage = (key, initialValue) => {
   };
 
   return [state, setState];
-}
+};
 
 /*
 bugfix: updating values handled by useLocalStorage does not update them on the UI like useState

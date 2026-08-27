@@ -5,8 +5,8 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
-  // component: Component,
-export const ProtectedRoute = ({ 
+// component: Component,
+export const ProtectedRoute = ({
   children,
   isAdmin = false,
   // ...rest // Pass any other props // no, never
@@ -16,17 +16,17 @@ export const ProtectedRoute = ({
 
   const { user } = useAuth();
   // console.debug('ddebug ProtectedRoute user', user);
-  
+
   // user is not authenticated, no access
   // if (!user) return <Navigate to="/login" {...rest} />;
   if (!user) return <Navigate to="/login" replace />;
-  
+
   // Control admin access to admin pages
   if (isAdmin && !user.isAdmin) {
     // return <Navigate to="/profile" {...rest} />;
     return <Navigate to="/profile" replace />;
   }
-  
+
   // console.debug('ddebug ProtectedRoute useAuth return children:', children);
   return children;
   // return Component;

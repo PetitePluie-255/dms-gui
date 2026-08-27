@@ -1,28 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  debugLog,
-  errorLog,
-} from '../../frontend.mjs';
+import { debugLog, errorLog } from '../../frontend.mjs';
 import {
   isNonEmptyDict,
   getValueFromArrayOfObj,
   mergeArrayOfObj,
 } from '../../../common.mjs';
 
-import {
-  getSettings,
-  saveSettings,
-  getDomains,
-} from '../services/api';
+import { getSettings, saveSettings, getDomains } from '../services/api';
 
-import { 
-  AlertMessage,
-  Button,
-  FormField,
-  LoadingSpinner,
-} from '../components';
-
+import { AlertMessage, Button, FormField, LoadingSpinner } from '../components';
 
 function FormDomains() {
   const { t } = useTranslation();
@@ -31,36 +18,28 @@ function FormDomains() {
 
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-  
+
   const [formErrors, setFormErrors] = useState({});
   const [settings, setSettings] = useState([]);
   const [domains, setDomains] = useState([]);
 
-
   const fetchAll = async () => {
     setLoading(true);
 
-    await Promise.all([
-      fetchSettings(),
-      fetchDomains(),
-    ]);
+    await Promise.all([fetchSettings(), fetchDomains()]);
 
     setLoading(false);
-
   };
 
   const fetchSettings = async () => {
     debugLog(`fetchSettings call getSettings`);
 
     try {
-      const [settingsData] = await Promise.all([
-        getSettings(),
-      ]);
+      const [settingsData] = await Promise.all([getSettings()]);
 
       debugLog('settingsData', settingsData);
       setSettings(settingsData);
       setErrorMessage(null);
-
     } catch (error) {
       errorLog(t('api.errors.fetchSettings'), error);
       setErrorMessage('api.errors.fetchSettings');
@@ -71,32 +50,36 @@ function FormDomains() {
     debugLog(`fetchDomains call getDomains`);
 
     try {
-      const [domainsData] = await Promise.all([
-        getDomains(),
-      ]);
+      const [domainsData] = await Promise.all([getDomains()]);
 
       debugLog('domainsData', domainsData);
       setDomains(domainsData);
       setErrorMessage(null);
-
     } catch (error) {
       errorLog(t('api.errors.fetchDomains'), error);
       setErrorMessage('api.errors.fetchDomains');
     }
   };
 
-
-
   const handleChangeSettings = (e) => {
     const { name, value, type } = e.target;
     // setSettings({
-      // ...settings,
-      // [name]: value,
+    // ...settings,
+    // [name]: value,
     // });
     // merge array of settings objects by their name
-    debugLog(`handleChangeSettings mergeArrayOfObj settings`,settings);
-    debugLog(`handleChangeSettings mergeArrayOfObj [{name: name, value:value}]`, [{name: name, value:value}]);
-    setSettings(mergeArrayOfObj(settings, [{name: name, value:type === 'number' ? Number(value) : value}], 'name'));
+    debugLog(`handleChangeSettings mergeArrayOfObj settings`, settings);
+    debugLog(
+      `handleChangeSettings mergeArrayOfObj [{name: name, value:value}]`,
+      [{ name: name, value: value }]
+    );
+    setSettings(
+      mergeArrayOfObj(
+        settings,
+        [{ name: name, value: type === 'number' ? Number(value) : value }],
+        'name'
+      )
+    );
 
     // Clear the error for this field while typing
     if (formErrors[name]) {
@@ -111,11 +94,17 @@ function FormDomains() {
     const errors = {};
 
     // if (settings.containerName.length == 0) {
-    if (!settings.find(item => item['name'] == 'containerName') || !settings.find(item => item['name'] == 'containerName').value.length) {
+    if (
+      !settings.find((item) => item['name'] == 'containerName') ||
+      !settings.find((item) => item['name'] == 'containerName').value.length
+    ) {
       errors.containerName = 'settings.containerNameRequired';
     }
     // if (settings.setupPath.length == 0) {
-    if (!settings.find(item => item['name'] == 'setupPath') || !settings.find(item => item['name'] == 'setupPath').value.length) {
+    if (
+      !settings.find((item) => item['name'] == 'setupPath') ||
+      !settings.find((item) => item['name'] == 'setupPath').value.length
+    ) {
       errors.setupPath = 'settings.setupPathRequired';
     }
 
@@ -128,7 +117,7 @@ function FormDomains() {
   const handleSubmitSettings = async (e) => {
     e.preventDefault();
     debugLog('Form settings Submitted:', settings);
-    
+
     setSubmissionSettings('submitting');
     setErrorMessage(null);
     setSuccessMessage(null);
@@ -139,13 +128,11 @@ function FormDomains() {
 
     try {
       // await saveSettings(
-        // settings.containerName,
-        // settings.setupPath,
-        // settings.dnsProvider,
+      // settings.containerName,
+      // settings.setupPath,
+      // settings.dnsProvider,
       // );
-      await saveSettings(
-        settings,
-      );
+      await saveSettings(settings);
       setSubmissionSettings('success');
       setSuccessMessage('settings.settingsSaved');
       fetchSettings(); // Refresh the settings
@@ -153,85 +140,88 @@ function FormDomains() {
       setSubmissionSettings('error');
       errorLog(t('api.errors.saveSettings'), error);
       // setErrorMessage('api.errors.saveSettings');
-      setErrorMessage({key: 'api.errors.saveSettings', values: { error: error.message }});
+      setErrorMessage({
+        key: 'api.errors.saveSettings',
+        values: { error: error.message },
+      });
     }
   };
-
 
   // https://www.w3schools.com/react/react_useeffect.asp
   useEffect(() => {
     fetchAll();
   }, []);
 
-
   // if (isLoading && !settings && !Object.keys(settings).length) {
   if (isLoading && !settings.length) {
     return <LoadingSpinner />;
   }
-  
+
   // onClick={fetchAll()}
-  
+
   return (
     <>
       <AlertMessage type="danger" message={errorMessage} />
       <AlertMessage type="success" message={successMessage} />
-      
-        <div className="float-end">
-          <Button
-            variant="warning"
-            size="sm"
-            icon="recycle"
-            title={t('common.refresh')}
-            className="me-2"
-            onClick={() => fetchAll()}
-          />
-        </div>
 
-        <form onSubmit={handleSubmitSettings} className="form-wrapper">
-          <FormField
-            type="text"
-            id="containerName"
-            name="containerName"
-            label="settings.containerName"
-            value={getValueFromArrayOfObj(settings, 'containerName')}
-            onChange={handleChangeSettings}
-            placeholder="dms"
-            error={formErrors.containerName}
-            helpText="settings.containerNameHelp"
-            required
-          />
+      <div className="float-end">
+        <Button
+          variant="warning"
+          size="sm"
+          icon="recycle"
+          title={t('common.refresh')}
+          className="me-2"
+          onClick={() => fetchAll()}
+        />
+      </div>
 
-          <FormField
-            type="text"
-            id="setupPath"
-            name="setupPath"
-            label="settings.setupPath"
-            value={getValueFromArrayOfObj(settings, 'setupPath')}
-            onChange={handleChangeSettings}
-            placeholder="/usr/local/bin/setup"
-            error={formErrors.setupPath}
-            helpText="settings.setupPathHelp"
-            required
-          />
-        
-          <FormField
-            type="text"
-            id="dnsProvider"
-            name="dnsProvider"
-            label="settings.dnsProvider"
-            value={getValueFromArrayOfObj(settings, 'dnsProvider')}
-            onChange={handleChangeSettings}
-            placeholder="CloudFlare"
-            error={formErrors.dnsProvider}
-            helpText="settings.dnsProviderHelp"
-          />
-        
-          <Button type="submit" variant="primary" text="settings.saveButtonSettings" />
-        </form>
+      <form onSubmit={handleSubmitSettings} className="form-wrapper">
+        <FormField
+          type="text"
+          id="containerName"
+          name="containerName"
+          label="settings.containerName"
+          value={getValueFromArrayOfObj(settings, 'containerName')}
+          onChange={handleChangeSettings}
+          placeholder="dms"
+          error={formErrors.containerName}
+          helpText="settings.containerNameHelp"
+          required
+        />
+
+        <FormField
+          type="text"
+          id="setupPath"
+          name="setupPath"
+          label="settings.setupPath"
+          value={getValueFromArrayOfObj(settings, 'setupPath')}
+          onChange={handleChangeSettings}
+          placeholder="/usr/local/bin/setup"
+          error={formErrors.setupPath}
+          helpText="settings.setupPathHelp"
+          required
+        />
+
+        <FormField
+          type="text"
+          id="dnsProvider"
+          name="dnsProvider"
+          label="settings.dnsProvider"
+          value={getValueFromArrayOfObj(settings, 'dnsProvider')}
+          onChange={handleChangeSettings}
+          placeholder="CloudFlare"
+          error={formErrors.dnsProvider}
+          helpText="settings.dnsProviderHelp"
+        />
+
+        <Button
+          type="submit"
+          variant="primary"
+          text="settings.saveButtonSettings"
+        />
+      </form>
     </>
   );
-
 }
 
 export default FormDomains;
-

@@ -28,11 +28,11 @@ i18n
   .use(initReactI18next)
   // init i18next
   .init({
-    fallbackLng: 'en',    // default language
+    fallbackLng: 'en', // default language
     supportedLngs: supportedLngs,
     nonExplicitSupportedLngs: true, //support language variation
     interpolation: {
-      escapeValue: false,   // not needed for react as it escapes by default
+      escapeValue: false, // not needed for react as it escapes by default
     },
     detection: {
       order: ['localStorage', 'navigator'],
